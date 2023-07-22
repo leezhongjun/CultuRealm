@@ -1,0 +1,7 @@
+Flask
+flask_jwt_extended
+flask_sqlalchemy
+pandas
+Werkzeug
+flask_mail
+flask-cors

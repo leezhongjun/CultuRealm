@@ -11,6 +11,10 @@ npm install
 npm run dev
 ```
 
+3. Change .example.env to .env and change the variables to your own
+
 frontend stack:
+
 react ts
+
 tailwind css
