@@ -1,16 +1,24 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useSignIn } from "react-auth-kit";
+import { useSignIn, useIsAuthenticated } from "react-auth-kit";
 import axios from "axios";
-
-import Cookies from "js-cookie";
+axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
 export default function Login() {
+  const isAuthenticated = useIsAuthenticated();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/");
+    }
+  });
+
   const location = useLocation();
 
-  const [alertRender, setAlertRender] = useState(true);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const signIn = useSignIn();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -19,9 +27,9 @@ export default function Login() {
     ).value;
     const password = (document.getElementById("password") as HTMLInputElement)
       .value;
-    const staySignedIn = (
-      document.getElementById("remember") as HTMLInputElement
-    ).checked;
+    // const staySignedIn = (
+    //   document.getElementById("remember") as HTMLInputElement
+    // ).checked;
     try {
       const res = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/login",
@@ -32,42 +40,43 @@ export default function Login() {
       );
       console.log(res);
       const msg = res.data.message;
-      if (msg === "Registered successfully") {
-        navigate("/login", { state: { mainText: "Success!", subText: msg } });
+      if (msg === "Login successful") {
+        signIn({
+          token: res.data.accessToken,
+          expiresIn: res.data.expiresIn,
+          tokenType: "Bearer",
+          authState: { username: res.data.username },
+          refreshToken: res.data.refreshToken,
+          refreshTokenExpireIn: res.data.refreshTokenExpireIn,
+        });
+        navigate("/", {
+          state: { mainText: "Success!", subText: msg },
+        });
       } else {
-        navigate("/sign-up", { state: { mainText: "Error!", subText: msg } });
+        navigate("/login", {
+          state: { mainText: "Error!", subText: msg },
+        });
       }
     } catch (error) {
       console.log(error);
     }
-    alert(
-      `emailUsername: ${emailUsername}\nPassword: ${password}\nRemember me: ${staySignedIn}`
-    );
   };
+
   let alertDiv;
   if (location.state) {
+    // console.log(className);
     alertDiv = (
       <>
         <div
-          className={`bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative`}
+          className={
+            location.state.mainText == "Success!"
+              ? "bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+              : "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          }
           role="alert"
         >
           <strong className="font-bold">{location.state.mainText} </strong>
           <span className="block sm:inline">{location.state.subText}</span>
-          <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
-            <svg
-              className={`fill-current h-6 w-6 text-green-500`}
-              role="button"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              onClick={() => {
-                setAlertRender(false);
-              }}
-            >
-              <title>Close</title>
-              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
-            </svg>
-          </span>
         </div>
         <br></br>
       </>
@@ -77,7 +86,7 @@ export default function Login() {
   return (
     <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
       <div className="w-full p-6 m-auto bg-white rounded-md shadow-xl lg:max-w-xl">
-        {alertDiv && alertRender ? alertDiv : null}
+        {alertDiv}
         <h1 className="text-3xl font-semibold text-center text-purple-700 capitalize">
           Login
         </h1>
@@ -107,7 +116,7 @@ export default function Login() {
             <div className="flex items-center justify-end">
               <input
                 id="password"
-                type="password"
+                type={isPasswordVisible ? "text" : "password"}
                 className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
                 placeholder="************"
                 required
@@ -158,21 +167,21 @@ export default function Login() {
               </button>
             </div>
           </div>
-          <div className="flex">
+          {/* <div className="flex">
             <input id="remember" type="checkbox" className="mr-1" />
             <label
               htmlFor="remember"
               className="block text-sm font-semibold text-gray-600"
             >
               Stay Signed In
-            </label>
-            <Link
-              to="/reset-password"
-              className="ml-auto text-sm text-purple-600 hover:underline"
-            >
-              Forget Password?
-            </Link>
-          </div>
+            </label> */}
+          <Link
+            to="/reset-password"
+            className="ml-auto text-sm text-purple-600 hover:underline"
+          >
+            Forget Password?
+          </Link>
+          {/* </div> */}
           <div className="mt-6">
             <input
               className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600"
@@ -181,7 +190,8 @@ export default function Login() {
             />
           </div>
         </form>
-        <div className="relative flex items-center justify-center w-full mt-6 border border-t">
+        {/* google sign in*/}
+        {/* <div className="relative flex items-center justify-center w-full mt-6 border border-t">
           <div className="absolute px-5 bg-white">Or</div>
         </div>
         <div className="flex mt-4 gap-x-2">
@@ -198,7 +208,7 @@ export default function Login() {
               <path d="M16.318 13.714v5.484h9.078c-0.37 2.354-2.745 6.901-9.078 6.901-5.458 0-9.917-4.521-9.917-10.099s4.458-10.099 9.917-10.099c3.109 0 5.193 1.318 6.38 2.464l4.339-4.182c-2.786-2.599-6.396-4.182-10.719-4.182-8.844 0-16 7.151-16 16s7.156 16 16 16c9.234 0 15.365-6.49 15.365-15.635 0-1.052-0.115-1.854-0.255-2.651z"></path>
             </svg>
           </button>
-        </div>
+        </div> */}
 
         <p className="mt-8 text-xs font-light text-center text-gray-700">
           {" "}

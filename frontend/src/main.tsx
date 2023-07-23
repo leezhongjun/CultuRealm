@@ -12,10 +12,13 @@ import Leaderboard from "./pages/Leaderboard";
 import TopStories from "./pages/TopStories";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
-import SignOut from "./components/SignOut";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
+import NewPassword from "./pages/NewPassword";
+import refreshApi from "./components/RefreshApi";
+
+import { AuthProvider, RequireAuth } from "react-auth-kit";
 
 function Router() {
   return (
@@ -26,12 +29,26 @@ function Router() {
         <Route path="community-stories" element={<Community />} />
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="top-stories" element={<TopStories />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="sign-out" element={<SignOut />} />
+        <Route
+          path="settings"
+          element={
+            <RequireAuth loginPath={"/login"}>
+              <Settings />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="profile"
+          element={
+            <RequireAuth loginPath={"/login"}>
+              <Profile />
+            </RequireAuth>
+          }
+        />
         <Route path="login" element={<Login />} />
         <Route path="sign-up" element={<SignUp />} />
         <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="reset-new-password" element={<NewPassword />} />
       </Route>
     </Routes>
   );
@@ -39,8 +56,16 @@ function Router() {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Router />
-    </BrowserRouter>
+    <AuthProvider
+      authType="cookie"
+      authName="_auth"
+      cookieDomain={window.location.hostname}
+      refresh={refreshApi}
+      cookieSecure={false}
+    >
+      <BrowserRouter>
+        <Router />
+      </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>
 );
