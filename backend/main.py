@@ -74,7 +74,7 @@ def get_reset_token(email):
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
 
-# This doesnt invalidate the link after the password is reset, but it expires in an hour
+# This doesnt invalidate the link after the password is reset, but it expires in an hour, this also doesnt have server side validation for password
 @app.route('/reset_password', methods=['POST'])
 def reset_password():
     data = request.get_json()
