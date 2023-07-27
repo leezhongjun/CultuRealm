@@ -65,6 +65,8 @@ export default function Login() {
   let alertDiv;
   if (location.state) {
     // console.log(className);
+    location.state.mainText = location.state.mainText || "Error!";
+    location.state.subText = location.state.subText || "Something went wrong";
     alertDiv = (
       <>
         <div

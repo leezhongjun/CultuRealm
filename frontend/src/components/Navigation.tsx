@@ -56,14 +56,14 @@ export default function Navigation() {
 
   return (
     <>
-      <Disclosure as="nav" className="bg-gray-100">
+      <Disclosure as="nav" className="bg-blue-100">
         {({ open }) => (
           <>
             <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
               <div className="relative flex h-16 items-center justify-between">
                 <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                   {/* Mobile menu button*/}
-                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-blue-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-300">
                     <span className="sr-only">Open main menu</span>
                     {open ? (
                       <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -76,7 +76,7 @@ export default function Navigation() {
                   <div className="flex flex-shrink-0 items-center">
                     <Link
                       to="/"
-                      className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400"
+                      className="font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400"
                     >
                       CultuRealm
                     </Link>
@@ -90,8 +90,8 @@ export default function Navigation() {
                           onClick={renderSettingContainer}
                           className={classNames(
                             window.location.pathname === item.href
-                              ? "bg-gray-900 text-white"
-                              : "text-gray-600 hover:bg-gray-700 hover:text-white",
+                              ? "bg-blue-300 text-gray-900"
+                              : "text-gray-600 hover:bg-blue-200 hover:text-gray-700",
                             "rounded-md px-3 py-2 text-sm font-medium"
                           )}
                           aria-current={item.current ? "page" : undefined}
@@ -105,13 +105,6 @@ export default function Navigation() {
                 <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                   {isAuthenticated() ? (
                     <>
-                      <button
-                        type="button"
-                        className="rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                      >
-                        <span className="sr-only">View notifications</span>
-                        <BellIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
                       <Menu as="div" className="relative ml-3">
                         <div>
                           <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -163,7 +156,7 @@ export default function Navigation() {
                             </Menu.Item>
                             <Menu.Item>
                               {({ active }) => (
-                                <button
+                                <Link
                                   onClick={() => {
                                     renderSettingContainer(true);
                                     signOutFunc();
@@ -174,7 +167,7 @@ export default function Navigation() {
                                   )}
                                 >
                                   Sign out
-                                </button>
+                                </Link>
                               )}
                             </Menu.Item>
                           </Menu.Items>
@@ -186,14 +179,14 @@ export default function Navigation() {
                       <Link
                         to="/login"
                         onClick={renderSettingContainer}
-                        className="text-gray-600 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-small"
+                        className="text-gray-600 hover:bg-blue-200 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-small"
                       >
                         Login
                       </Link>
                       <Link
                         to="/sign-up"
                         onClick={renderSettingContainer}
-                        className="text-gray-600 hover:bg-gray-700 hover:text-white px-1.5 py-2 rounded-md text-sm font-small"
+                        className="text-gray-600 hover:bg-blue-200 hover:text-gray-700 px-1.5 py-2 rounded-md text-sm font-small"
                       >
                         Sign up
                       </Link>
@@ -213,8 +206,8 @@ export default function Navigation() {
                     onClick={renderSettingContainer}
                     className={classNames(
                       window.location.pathname === item.href
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                        ? "bg-blue-300 text-gray-900"
+                        : "text-gray-600 hover:bg-blue-200 hover:text-gray-700",
                       "block rounded-md px-3 py-2 text-base font-medium"
                     )}
                     aria-current={item.current ? "page" : undefined}
