@@ -56,7 +56,7 @@ export default function Navigation() {
 
   return (
     <>
-      <Disclosure as="nav" className="bg-gray-800">
+      <Disclosure as="nav" className="bg-gray-100">
         {({ open }) => (
           <>
             <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -74,7 +74,10 @@ export default function Navigation() {
                 </div>
                 <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                   <div className="flex flex-shrink-0 items-center">
-                    <Link to="/" className="font-semibold text-yellow-100">
+                    <Link
+                      to="/"
+                      className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400"
+                    >
                       CultuRealm
                     </Link>
                   </div>
@@ -88,7 +91,7 @@ export default function Navigation() {
                           className={classNames(
                             window.location.pathname === item.href
                               ? "bg-gray-900 text-white"
-                              : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                              : "text-gray-600 hover:bg-gray-700 hover:text-white",
                             "rounded-md px-3 py-2 text-sm font-medium"
                           )}
                           aria-current={item.current ? "page" : undefined}
@@ -183,14 +186,14 @@ export default function Navigation() {
                       <Link
                         to="/login"
                         onClick={renderSettingContainer}
-                        className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-small"
+                        className="text-gray-600 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-small"
                       >
                         Login
                       </Link>
                       <Link
                         to="/sign-up"
                         onClick={renderSettingContainer}
-                        className="text-gray-300 hover:bg-gray-700 hover:text-white px-1.5 py-2 rounded-md text-sm font-small"
+                        className="text-gray-600 hover:bg-gray-700 hover:text-white px-1.5 py-2 rounded-md text-sm font-small"
                       >
                         Sign up
                       </Link>

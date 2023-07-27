@@ -87,7 +87,7 @@ export default function Login() {
     <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
       <div className="w-full p-6 m-auto bg-white rounded-md shadow-xl lg:max-w-xl">
         {alertDiv}
-        <h1 className="text-3xl font-semibold text-center text-purple-700 capitalize">
+        <h1 className="text-3xl font-semibold text-center text-blue-700 capitalize">
           Login
         </h1>
         <form id="login-form" className="mt-6" onSubmit={handleSubmit}>
@@ -101,7 +101,7 @@ export default function Login() {
             <input
               id="emailUsername"
               type="text"
-              className="block w-full peer px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              className="block w-full peer px-4 py-2 mt-2 text-blue-700 bg-white border rounded-md focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="Email or Username"
               required
             />
@@ -117,14 +117,15 @@ export default function Login() {
               <input
                 id="password"
                 type={isPasswordVisible ? "text" : "password"}
-                className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                className="block w-full px-4 py-2 mt-2 text-blue-700 bg-white border rounded-md focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
                 placeholder="************"
                 required
               />
               <button
                 className="absolute mt-2 mr-4 focus:outline-none"
-                onClick={(e) => {
-                  e.preventDefault();
+                type="button"
+                tabIndex={-1}
+                onClick={() => {
                   setIsPasswordVisible(!isPasswordVisible);
                 }}
               >
@@ -177,14 +178,14 @@ export default function Login() {
             </label> */}
           <Link
             to="/reset-password"
-            className="ml-auto text-sm text-purple-600 hover:underline"
+            className="ml-auto text-sm text-blue-600 hover:underline"
           >
             Forget Password?
           </Link>
           {/* </div> */}
           <div className="mt-6">
             <input
-              className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600"
+              className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
               type="submit"
               value="Login"
             />
@@ -215,7 +216,7 @@ export default function Login() {
           Don't have an account?{" "}
           <Link
             to="/sign-up"
-            className="font-medium text-purple-600 hover:underline"
+            className="font-medium text-blue-600 hover:underline"
           >
             Sign up
           </Link>

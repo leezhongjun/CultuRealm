@@ -106,7 +106,7 @@ export default function NewPassword() {
   return (
     <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
       <div className="w-full p-6 m-auto bg-white rounded-md shadow-xl lg:max-w-xl">
-        <h1 className="text-3xl font-semibold text-center text-purple-700 capitalize">
+        <h1 className="text-3xl font-semibold text-center text-blue-700 capitalize">
           Set New Password
         </h1>
         <form id="login-form" className="mt-6" onSubmit={handleSubmit}>
@@ -121,10 +121,10 @@ export default function NewPassword() {
               <input
                 id="password"
                 type={isPasswordVisible ? "text" : "password"}
-                className={`block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 ${
+                className={`block w-full px-4 py-2 mt-2 text-blue-700 bg-white border rounded-md focus:border-blue-400 ${
                   password && !passwordStrong
                     ? "focus:ring-red-300"
-                    : "focus:ring-purple-300"
+                    : "focus:ring-blue-300"
                 } focus:outline-none focus:ring focus:ring-opacity-40`}
                 placeholder="************"
                 value={password}
@@ -135,8 +135,9 @@ export default function NewPassword() {
               />
               <button
                 className="absolute mt-2 mr-4 focus:outline-none"
-                onClick={(e) => {
-                  e.preventDefault();
+                type="button"
+                tabIndex={-1}
+                onClick={() => {
                   setIsPasswordVisible(!isPasswordVisible);
                 }}
               >
@@ -200,10 +201,10 @@ export default function NewPassword() {
               <input
                 id="password2"
                 type={isConfirmPasswordVisible ? "text" : "password"}
-                className={`block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 ${
+                className={`block w-full px-4 py-2 mt-2 text-blue-700 bg-white border rounded-md focus:border-blue-400 ${
                   confirmPassword && !passwordMatch
                     ? "focus:ring-red-300"
-                    : "focus:ring-purple-300"
+                    : "focus:ring-blue-300"
                 } focus:outline-none focus:ring focus:ring-opacity-40`}
                 placeholder="************"
                 value={confirmPassword}
@@ -211,8 +212,9 @@ export default function NewPassword() {
               />
               <button
                 className="absolute mt-2 mr-4 focus:outline-none"
-                onClick={(e) => {
-                  e.preventDefault();
+                type="button"
+                tabIndex={-1}
+                onClick={() => {
                   setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
                 }}
               >
@@ -268,8 +270,8 @@ export default function NewPassword() {
             <input
               className={
                 passwordStrong && passwordMatch
-                  ? `w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none`
-                  : `w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-400 rounded-md cursor-not-allowed focus:outline-none`
+                  ? `w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none`
+                  : `w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-400 rounded-md cursor-not-allowed focus:outline-none`
               }
               type="submit"
               value="Set New Password"
