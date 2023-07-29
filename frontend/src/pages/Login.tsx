@@ -187,7 +187,7 @@ export default function Login() {
           {/* </div> */}
           <div className="mt-6">
             <input
-              className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+              className="w-full text-sm font-medium px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
               type="submit"
               value="Login"
             />
