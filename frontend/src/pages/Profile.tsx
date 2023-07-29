@@ -1,34 +1,61 @@
-import { useState } from "react";
-import reactLogo from "../assets/react.svg";
-import viteLogo from "/vite.svg";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useAuthHeader } from 'react-auth-kit';
+axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
-function App() {
-  const [count, setCount] = useState(0);
+const Profile = () => {
+  const [jsonData, setJsonData] = useState(null);
+  const [blobData, setBlobData] = useState(null);
+  const authHeader = useAuthHeader()
+
+  useEffect(() => {
+    const fetchPref = async () => {
+      try {
+        const response = await axios.get(import.meta.env.VITE_BACKEND_ENDPOINT + "/user_pref", {
+          headers: {
+            "Access-Control-Allow-Origin":"*",
+            Authorization: authHeader(),
+            // 'Content-Type': 'application/json'
+          }
+        });
+        const jsonifiedData = response.data;
+        setJsonData(jsonifiedData);
+        console.log(jsonifiedData);
+        console.log(jsonData);
+      } catch (error) {
+        console.error(error); 
+      }
+    };
+
+    fetchPref();
+
+  
+    const fetchProfilePic = async () => {
+      try {
+        const response = await axios.get(import.meta.env.VITE_BACKEND_ENDPOINT + "/user_profile_pic", {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            Authorization: authHeader(),
+          },
+          responseType: 'arraybuffer' // set response type to arraybuffer to get binary data
+        });
+        const binaryData = response.data;
+        setBlobData(binaryData);
+      } catch (error) {
+        console.error(error);
+      }}
+
+    fetchProfilePic();
+
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR profile
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      <h1>Your Profile</h1>
+      {jsonData && <pre>{JSON.stringify(jsonData, null, 2)}</pre>}
+      {blobData && <img src={window.URL.createObjectURL(new Blob([blobData], {type: 'image/jpeg'}))} alt="Profile Picture" />}
+    </div>
   );
-}
+};
 
-export default App;
+export default Profile;

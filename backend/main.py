@@ -1,11 +1,11 @@
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 import datetime
-import os
+import os, json
 from dotenv import load_dotenv
 from flask_cors import CORS
 
@@ -60,6 +60,23 @@ class TokenBlocklist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False, index=True)
     type = db.Column(db.String(16), nullable=False)
+
+class UserProfile(db.Model):
+    username = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True, nullable=False)
+    race = db.Column(db.String(80), nullable=False)
+    religion = db.Column(db.String(80), nullable=False)
+    gender = db.Column(db.String(80), nullable=False)
+    high_score = db.Column(db.Integer)
+    stories_played = db.Column(db.Integer)
+    achievements = db.Column(db.String(80)) #prob a string of formatted file_paths
+    profile_pic = db.Column(db.LargeBinary)
+    image_style = db.Column(db.LargeBinary)
+
+    def toDict(self):
+        d = self.__dict__
+        del d[next(iter(d))]
+        return d
+    
 
 # Callback function to check if a JWT exists in the database blocklist
 @jwt.token_in_blocklist_loader
@@ -188,7 +205,97 @@ def protected():
     username = get_jwt_identity()
     return jsonify(logged_in_as=username)
 
+### Profile Pic ###
+@app.route('/user_profile_pic', methods=['GET','POST'])
+@jwt_required()
+def profile_pic():
+    print('file post 1')
+    if request.method == 'POST':
+        username = get_jwt_identity()['username']
+        user_profile = UserProfile.query.filter_by(username=username).first()
+        print('file post 2')
+        file = request.files.get('profile_pic')
+        print('file post 3')
+        if file:
+            # Read the binary data of the file using the read() method
+            binary_data = file.read()
+            # print(binary_data)
+            user_profile.profile_pic = binary_data
+            db.session.commit()
+
+            return {'success': True}
+        else:
+            return {'success': False, 'message': 'No file uploaded.'}
+    else:
+        username = get_jwt_identity()['username']
+        user_profile = UserProfile.query.filter_by(username=username).first()
+        binary_data = user_profile.profile_pic
+        return Response(binary_data, content_type='image/jpeg')
+    
+### Preference ###
+@app.route('/user_pref', methods=['GET','POST'])
+@jwt_required()
+def set_pref():
+    if request.method == 'POST':
+        data = request.get_json()
+        print('--------------------------------------------------------------')
+        print(data)
+        print('--------------------------------------------------------------')
+        print('test 1')
+        username = get_jwt_identity()['username']
+        print('test 1.5')
+        if username: 
+            print('has username')
+            print(type(username))
+            print(username)
+            print(len(username))
+            print(str(username))
+        else: print('no username')
+        print(username)
+        
+        user_profile = UserProfile.query.filter_by(username=username).first()
+        print('test 2')
+        if not user_profile:
+            print('test 3')
+            user_profile = UserProfile(username=username,
+                                        race=data['race'],
+                                        religion=data['religion'],
+                                        gender=data['gender'])
+            print('test 4')
+            db.session.add(user_profile)
+        else:
+            print('test 5')
+            user_profile.race = data['race']
+            user_profile.religion=data['religion']
+            user_profile.gender=data['gender']
+
+            print('----------------------------------------------------')
+            print(user_profile)
+            print('----------------------------------------------------')
+
+        print('test 6')
+        db.session.commit()
+        return 'Success'
+    else:
+        print('get test')
+        username = get_jwt_identity()['username']
+        print(username)
+        print('----------------------------------------------')
+        user_profile = UserProfile.query.filter_by(username=username).first()
+        print(type(user_profile))
+        print(user_profile)
+        print(str(user_profile))
+        dict_to_jsonify = user_profile.toDict()
+        dict_to_jsonify['profile_pic'] = ''
+        print(f"jsonifying {dict_to_jsonify}")
+        dict_jsonified = jsonify(dict_to_jsonify)
+        print(f"jsonified = {dict_jsonified}")
+        # print(dict(dict_jsonified))
+        return dict_jsonified
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+

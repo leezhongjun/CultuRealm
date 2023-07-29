@@ -1,0 +1,7 @@
+table: user preferences, see proposal
+
+add route : get_pref --> username = get_jwt_identity() --> query db with username
+
+add route: set_pref --> request.get_json returns python dict --> update db
+
+
