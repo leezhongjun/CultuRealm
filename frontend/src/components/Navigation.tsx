@@ -107,7 +107,7 @@ export default function Navigation() {
                     <>
                       <Menu as="div" className="relative ml-3">
                         <div>
-                          <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                          <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
                             <span className="sr-only">Open user menu</span>
                             <img
                               className="h-8 w-8 rounded-full"
@@ -179,14 +179,14 @@ export default function Navigation() {
                       <Link
                         to="/login"
                         onClick={renderSettingContainer}
-                        className="text-gray-600 hover:bg-blue-200 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-small"
+                        className="text-gray-600 hover:bg-blue-200 hover:text-gray-700 px-2 py-2 rounded-md text-sm font-medium"
                       >
                         Login
                       </Link>
                       <Link
                         to="/sign-up"
                         onClick={renderSettingContainer}
-                        className="text-gray-600 hover:bg-blue-200 hover:text-gray-700 px-1.5 py-2 rounded-md text-sm font-small"
+                        className="text-gray-600 hover:bg-blue-200 hover:text-gray-700 px-1.5 py-2 rounded-md text-sm font-medium"
                       >
                         Sign up
                       </Link>
