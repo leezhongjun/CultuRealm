@@ -45,7 +45,7 @@ export default function Login() {
           token: res.data.accessToken,
           expiresIn: res.data.expiresIn,
           tokenType: "Bearer",
-          authState: { username: res.data.username },
+          authState: { id: res.data.id },
           refreshToken: res.data.refreshToken,
           refreshTokenExpireIn: res.data.refreshTokenExpireIn,
         });

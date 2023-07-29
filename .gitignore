@@ -32,3 +32,4 @@ frontend/.env
 # database
 backend/database.db
 backend/.env
+backend/__pycache__/
