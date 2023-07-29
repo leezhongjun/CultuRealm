@@ -209,13 +209,13 @@ def protected():
 @app.route('/user_profile_pic', methods=['GET','POST'])
 @jwt_required()
 def profile_pic():
-    print('file post 1')
+    # print('file post 1')
     if request.method == 'POST':
         username = get_jwt_identity()['username']
         user_profile = UserProfile.query.filter_by(username=username).first()
-        print('file post 2')
+        # print('file post 2')
         file = request.files.get('profile_pic')
-        print('file post 3')
+        # print('file post 3')
         if file:
             # Read the binary data of the file using the read() method
             binary_data = file.read()
@@ -238,58 +238,58 @@ def profile_pic():
 def set_pref():
     if request.method == 'POST':
         data = request.get_json()
-        print('--------------------------------------------------------------')
-        print(data)
-        print('--------------------------------------------------------------')
-        print('test 1')
+        # print('--------------------------------------------------------------')
+        # print(data)
+        # print('--------------------------------------------------------------')
+        # print('test 1')
         username = get_jwt_identity()['username']
-        print('test 1.5')
-        if username: 
-            print('has username')
-            print(type(username))
-            print(username)
-            print(len(username))
-            print(str(username))
-        else: print('no username')
-        print(username)
+        # print('test 1.5')
+        # if username: 
+        #     print('has username')
+        #     print(type(username))
+        #     print(username)
+        #     print(len(username))
+        #     print(str(username))
+        # else: print('no username')
+        # print(username)
         
         user_profile = UserProfile.query.filter_by(username=username).first()
-        print('test 2')
+        # print('test 2')
         if not user_profile:
-            print('test 3')
+            # print('test 3')
             user_profile = UserProfile(username=username,
                                         race=data['race'],
                                         religion=data['religion'],
                                         gender=data['gender'])
-            print('test 4')
+            # print('test 4')
             db.session.add(user_profile)
         else:
-            print('test 5')
+            # print('test 5')
             user_profile.race = data['race']
             user_profile.religion=data['religion']
             user_profile.gender=data['gender']
 
-            print('----------------------------------------------------')
-            print(user_profile)
-            print('----------------------------------------------------')
+            # print('----------------------------------------------------')
+            # print(user_profile)
+            # print('----------------------------------------------------')
 
-        print('test 6')
+        # print('test 6')
         db.session.commit()
         return 'Success'
     else:
-        print('get test')
+        # print('get test')
         username = get_jwt_identity()['username']
-        print(username)
-        print('----------------------------------------------')
+        # print(username)
+        # print('----------------------------------------------')
         user_profile = UserProfile.query.filter_by(username=username).first()
-        print(type(user_profile))
-        print(user_profile)
-        print(str(user_profile))
+        # print(type(user_profile))
+        # print(user_profile)
+        # print(str(user_profile))
         dict_to_jsonify = user_profile.toDict()
         dict_to_jsonify['profile_pic'] = ''
-        print(f"jsonifying {dict_to_jsonify}")
+        # print(f"jsonifying {dict_to_jsonify}")
         dict_jsonified = jsonify(dict_to_jsonify)
-        print(f"jsonified = {dict_jsonified}")
+        # print(f"jsonified = {dict_jsonified}")
         # print(dict(dict_jsonified))
         return dict_jsonified
 
