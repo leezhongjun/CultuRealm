@@ -388,8 +388,8 @@ export default function SignUp() {
             <input
               className={
                 passwordStrong && passwordMatch && emailValid && usernameValid
-                  ? `w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none`
-                  : `w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-400 rounded-md cursor-not-allowed focus:outline-none`
+                  ? `text-sm font-medium w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none`
+                  : `text-sm font-medium w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-400 rounded-md cursor-not-allowed focus:outline-none`
               }
               type="submit"
               value="Sign up"
