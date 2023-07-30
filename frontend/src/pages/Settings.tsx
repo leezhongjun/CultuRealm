@@ -1,50 +1,51 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { useAuthHeader } from "react-auth-kit";
+import { useAuthHeader, useAuthUser } from "react-auth-kit";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import ProcessAchievements from "../components/Achievements";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
 import { useMyContext } from "../components/Context";
 
-function Settings() {
-  const styles = ["Pixel", "Photorealistic", "Cartoon", "Anime"];
+export const styles = ["Pixel", "Photorealistic", "Cartoon", "Anime"];
 
-  function generateAges() {
-    const objectsArray = [];
+function generateAges() {
+  const objectsArray = [];
 
-    for (let i = 5; i <= 50; i++) {
-      const name = i === 50 ? "50+" : i.toString();
-      objectsArray.push(name);
-    }
-    objectsArray.push("Unspecified");
-    return objectsArray;
+  for (let i = 5; i <= 50; i++) {
+    const name = i === 50 ? "50+" : i.toString();
+    objectsArray.push(name);
   }
+  objectsArray.push("Unspecified");
+  return objectsArray;
+}
 
-  const ages = generateAges();
+export const ages = generateAges();
 
-  const genders = ["Male", "Female", "Other", "Unspecified"];
+export const genders = ["Male", "Female", "Other", "Unspecified"];
 
-  const races = [
-    "Chinese",
-    "Indian",
-    "Malay",
-    "Eurasian",
-    "Other",
-    "Unspecified",
-  ];
+export const races = [
+  "Chinese",
+  "Indian",
+  "Malay",
+  "Eurasian",
+  "Other",
+  "Unspecified",
+];
 
-  const religions = [
-    "Buddhism",
-    "Christianity",
-    "Islam",
-    "Hinduism",
-    "Other",
-    "Unspecified",
-  ];
+export const religions = [
+  "Buddhism",
+  "Christianity",
+  "Islam",
+  "Hinduism",
+  "Other",
+  "Unspecified",
+];
 
+function Settings() {
   const [highScore, setHighScore] = useState(0);
   const [gamesPlayed, setGamesPlayed] = useState(0);
+  const [rating, setRating] = useState(0);
   const [achievements, setAchievements] = useState("");
 
   const [username, setUsername] = useState("");
@@ -61,6 +62,7 @@ function Settings() {
   // const [isEditing, setIsEditing] = useState(false);
 
   const authHeader = useAuthHeader();
+  const authUser = useAuthUser();
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [imgSrc, setImgSrc] = useState(defaultProfilePic);
   const [uploadResult, setUploadResult] = useState("");
@@ -77,7 +79,6 @@ function Settings() {
           {},
           {
             headers: {
-              "Access-Control-Allow-Origin": "*",
               Authorization: authHeader(),
             },
           }
@@ -94,6 +95,7 @@ function Settings() {
         setUsername(jsonifiedData["username"]);
         setEmail(jsonifiedData["email"]);
 
+        setRating(jsonifiedData["rating"]);
         setHighScore(jsonifiedData["high_score"]);
         setGamesPlayed(jsonifiedData["stories_played"]);
         setAchievements(jsonifiedData["achievements"]); // process achievements
@@ -108,12 +110,12 @@ function Settings() {
       try {
         const response = await axios.post(
           import.meta.env.VITE_BACKEND_ENDPOINT + "/get_user_profile_pic",
-          {},
+          authUser(),
           {
             headers: {
-              Authorization: authHeader(),
+              "Content-Type": "application/json",
             },
-            responseType: "arraybuffer", // set response type to arraybuffer to get binary data
+            responseType: "arraybuffer",
           }
         );
         const binaryData = response.data;
@@ -193,7 +195,7 @@ function Settings() {
       <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
         <div className="mb-4 col-span-full xl:mb-2">
           <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-            Profile settings
+            Settings
           </h1>
         </div>
         <div className="col-span-full xl:col-auto">
@@ -292,7 +294,11 @@ function Settings() {
                   value={style}
                 >
                   {styles.map((style) => {
-                    return <option value={style}>{style}</option>;
+                    return (
+                      <option key={style} value={style}>
+                        {style}
+                      </option>
+                    );
                   })}
                 </select>
               </div>
@@ -392,7 +398,9 @@ function Settings() {
                   >
                     {ages.map((age) => {
                       return (
-                        <option value={age}>{age}</option> // default value instead
+                        <option key={age} value={age}>
+                          {age}
+                        </option> // default value instead
                       );
                     })}
                   </select>
@@ -423,7 +431,11 @@ function Settings() {
                     value={gender}
                   >
                     {genders.map((gender) => {
-                      return <option value={gender}>{gender}</option>;
+                      return (
+                        <option key={gender} value={gender}>
+                          {gender}
+                        </option>
+                      );
                     })}
                   </select>
                 </div>
@@ -453,7 +465,11 @@ function Settings() {
                     value={race}
                   >
                     {races.map((race) => {
-                      return <option value={race}>{race}</option>;
+                      return (
+                        <option key={race} value={race}>
+                          {race}
+                        </option>
+                      );
                     })}
                   </select>
                 </div>
@@ -483,7 +499,11 @@ function Settings() {
                     value={religion}
                   >
                     {religions.map((religion) => {
-                      return <option value={religion}>{religion}</option>;
+                      return (
+                        <option key={religion} value={religion}>
+                          {religion}
+                        </option>
+                      );
                     })}
                   </select>
                 </div>
@@ -502,11 +522,25 @@ function Settings() {
               </div>
             </form>
           </div>
-          <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+          {/* <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
             <h3 className="mb-4 text-xl font-semibold dark:text-white">
               Statistics
             </h3>
             <div className="grid grid-cols-6 gap-6">
+              <div className="col-span-6 sm:col-span-3">
+                <label
+                  htmlFor="image-style"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Rating
+                </label>
+                <p
+                  id="image-style"
+                  className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                >
+                  {rating}
+                </p>
+              </div>
               <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="image-style"
@@ -526,7 +560,7 @@ function Settings() {
                   htmlFor="image-style"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
-                  Games played
+                  Stories played
                 </label>
                 <p
                   id="image-style"
@@ -550,7 +584,7 @@ function Settings() {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
           {/* <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
             <h3 className="mb-4 text-xl font-semibold dark:text-white">
               Password information

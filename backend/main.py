@@ -69,14 +69,10 @@ class UserProfile(db.Model):
     age = db.Column(db.String(16), nullable=False)
     high_score = db.Column(db.Integer)
     stories_played = db.Column(db.Integer)
+    rating = db.Column(db.Integer)
     achievements = db.Column(db.String(80)) #prob a string of formatted file_paths
     profile_pic = db.Column(db.LargeBinary)
     image_style = db.Column(db.String(16))
-
-    def toDict(self):
-        d = self.__dict__
-        del d[next(iter(d))]
-        return d
     
 
 # Callback function to check if a JWT exists in the database blocklist
@@ -224,9 +220,10 @@ def set_profile_pic():
         return {'message': 'Successfully removed profile picture'}
 
 @app.route('/get_user_profile_pic', methods=['POST'])
-@jwt_required()
 def get_profile_pic():
-    id = get_jwt_identity()['id']
+    data = request.get_json()
+    print(data, flush=True)
+    id = data["id"]
     user_profile = UserProfile.query.filter_by(id=id).first()
     if not user_profile:
         return {'message': 'User profile not found'}
@@ -272,6 +269,32 @@ def get_user_pref():
     res['profile_pic'] = None
 
     return res
+
+@app.route('/get_user_pref_public', methods=['POST'])
+def get_user_pref_by_id():
+    data = request.get_json()
+    user_profile = UserProfile.query.filter_by(id=data['id']).first()
+    if not user_profile:
+        return {'message': 'User profile not found'}
+    res = {}
+    for key in settings.default_user_profile:
+        res[key] = getattr(user_profile, key)
+    res['username'] = user_profile.username
+    res['email'] = None # remove email
+    res['image_style'] = None # remove image style
+    res['profile_pic'] = None
+
+    return res
+
+@app.route('/leaderboard', methods=['POST'])
+def leaderboard():
+    data = request.get_json()
+    users = UserProfile.query.order_by(UserProfile.rating.desc()).limit(data['limit']).all()
+    res = []
+    for user in users:
+        res.append({'username': user.username, 'rating': user.rating, 'race': user.race, 'age': user.age, 'achievements': user.achievements, 'id': user.id})
+    return jsonify(res)
+
 
 if __name__ == '__main__':
     with app.app_context():

@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
 import NewPassword from "./pages/NewPassword";
+import Profile from "./pages/Profile";
 import refreshApi from "./components/RefreshApi";
 import MyContextProvider from "./components/Context";
 
@@ -37,6 +38,9 @@ function Router() {
             </RequireAuth>
           }
         />
+        <Route path="profile">
+          <Route path=":id" element={<Profile />} />
+        </Route>
         <Route path="login" element={<Login />} />
         <Route path="sign-up" element={<SignUp />} />
         <Route path="reset-password" element={<ResetPassword />} />

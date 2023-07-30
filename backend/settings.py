@@ -7,5 +7,6 @@ default_user_profile = {
     'achievements': '',
     'profile_pic': None,
     'image_style': 'Photorealistic',
-    'age': 'Unspecified'
+    'age': 'Unspecified',
+    'rating': 0
 }

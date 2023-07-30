@@ -6,3 +6,4 @@ Werkzeug
 flask_mail
 flask-cors
 watchdog
+python-dotenv

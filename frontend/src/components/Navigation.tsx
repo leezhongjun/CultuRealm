@@ -2,8 +2,12 @@ import { Fragment, useState, useContext, useEffect } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { useIsAuthenticated } from "react-auth-kit";
-import { useSignOut, useAuthHeader } from "react-auth-kit";
+import {
+  useIsAuthenticated,
+  useSignOut,
+  useAuthHeader,
+  useAuthUser,
+} from "react-auth-kit";
 import axios from "axios";
 import Cookies from "js-cookie";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
@@ -16,9 +20,9 @@ function classNames(...classes) {
 }
 
 const navigation = [
-  { name: "Play a story", href: "/story", current: false },
+  { name: "Play a Story", href: "/story", current: false },
   { name: "Community Stories", href: "/community-stories", current: false },
-  { name: "View top stories", href: "/top-stories", current: false },
+  { name: "View Top Stories", href: "/top-stories", current: false },
   { name: "Leaderboard", href: "/leaderboard", current: false },
 ];
 
@@ -31,6 +35,7 @@ export default function Navigation() {
 
   const signOut = useSignOut();
   const authHeader = useAuthHeader();
+  const authUser = useAuthUser();
   const navigate = useNavigate();
   async function signOutFunc() {
     //sign out logic
@@ -62,11 +67,8 @@ export default function Navigation() {
     try {
       const response = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/get_user_profile_pic",
-        {},
+        authUser(),
         {
-          headers: {
-            Authorization: authHeader(),
-          },
           responseType: "arraybuffer", // set response type to arraybuffer to get binary data
         }
       );
@@ -84,7 +86,9 @@ export default function Navigation() {
 
   const { contextValue } = useMyContext();
   useEffect(() => {
-    fetchProfilePic();
+    if (isAuthenticated()) {
+      fetchProfilePic();
+    }
   }, [contextValue]);
 
   return (
@@ -162,6 +166,20 @@ export default function Navigation() {
                             <Menu.Item>
                               {({ active }) => (
                                 <Link
+                                  to={`/profile/${authUser()["id"]}`}
+                                  onClick={renderSettingContainer}
+                                  className={classNames(
+                                    active ? "bg-gray-100" : "",
+                                    "block px-4 py-2 text-sm text-gray-700"
+                                  )}
+                                >
+                                  Profile
+                                </Link>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }) => (
+                                <Link
                                   to="/settings"
                                   onClick={renderSettingContainer}
                                   className={classNames(
@@ -169,7 +187,7 @@ export default function Navigation() {
                                     "block px-4 py-2 text-sm text-gray-700"
                                   )}
                                 >
-                                  Profile settings
+                                  Settings
                                 </Link>
                               )}
                             </Menu.Item>
