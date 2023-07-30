@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, createContext, useState } from "react";
 import ReactDOM from "react-dom/client";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -16,9 +16,9 @@ import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
 import NewPassword from "./pages/NewPassword";
 import refreshApi from "./components/RefreshApi";
+import MyContextProvider from "./components/Context";
 
 import { AuthProvider, RequireAuth } from "react-auth-kit";
-import { QueryClient, QueryClientProvider } from "react-query";
 
 function Router() {
   return (
@@ -48,16 +48,20 @@ function Router() {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider
-      authType="cookie"
-      authName="_auth"
-      cookieDomain={window.location.hostname}
-      refresh={refreshApi}
-      cookieSecure={false}
-    >
-      <BrowserRouter>
-        <Router />
-      </BrowserRouter>
-    </AuthProvider>
+    <MyContextProvider>
+      <>
+        <AuthProvider
+          authType="cookie"
+          authName="_auth"
+          cookieDomain={window.location.hostname}
+          refresh={refreshApi}
+          cookieSecure={false}
+        >
+          <BrowserRouter>
+            <Router />
+          </BrowserRouter>
+        </AuthProvider>
+      </>
+    </MyContextProvider>
   </React.StrictMode>
 );

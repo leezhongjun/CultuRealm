@@ -1,64 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useAuthHeader } from "react-auth-kit";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import ProcessAchievements from "../components/Achievements";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
+import { useMyContext } from "../components/Context";
+
 function Settings() {
-  const stylesDef = [
-    { name: "Pixel", selected: false },
-    { name: "Photorealistic", selected: false },
-    { name: "Cartoon", selected: false },
-    { name: "Anime", selected: false },
-  ];
+  const styles = ["Pixel", "Photorealistic", "Cartoon", "Anime"];
 
   function generateAges() {
     const objectsArray = [];
 
     for (let i = 5; i <= 50; i++) {
       const name = i === 50 ? "50+" : i.toString();
-      const selected = false;
-
-      const obj = { name, selected };
-      objectsArray.push(obj);
+      objectsArray.push(name);
     }
-    objectsArray.push({ name: "Unspecified", selected: false });
+    objectsArray.push("Unspecified");
     return objectsArray;
   }
 
-  const agesDef = generateAges();
+  const ages = generateAges();
 
-  const gendersDef = [
-    { name: "Male", selected: false },
-    { name: "Female", selected: false },
-    { name: "Other", selected: false },
-    { name: "Unspecified", selected: false },
+  const genders = ["Male", "Female", "Other", "Unspecified"];
+
+  const races = [
+    "Chinese",
+    "Indian",
+    "Malay",
+    "Eurasian",
+    "Other",
+    "Unspecified",
   ];
 
-  const racesDef = [
-    { name: "Chinese", selected: false },
-    { name: "Indian", selected: false },
-    { name: "Malay", selected: false },
-    { name: "Eurasian", selected: false },
-    { name: "Other", selected: false },
-    { name: "Unspecified", selected: false },
+  const religions = [
+    "Buddhism",
+    "Christianity",
+    "Islam",
+    "Hinduism",
+    "Other",
+    "Unspecified",
   ];
-
-  const religionsDef = [
-    { name: "Buddhism", selected: false },
-    { name: "Christianity", selected: false },
-    { name: "Islam", selected: false },
-    { name: "Hinduism", selected: false },
-    { name: "Other", selected: false },
-    { name: "Unspecified", selected: false },
-  ];
-
-  const [styles, setStyles] = useState(stylesDef);
-  const [ages, setAges] = useState(agesDef);
-  const [genders, setGenders] = useState(gendersDef);
-  const [races, setRaces] = useState(racesDef);
-  const [religions, setReligions] = useState(religionsDef);
 
   const [highScore, setHighScore] = useState(0);
   const [gamesPlayed, setGamesPlayed] = useState(0);
@@ -84,6 +67,8 @@ function Settings() {
   const [settingResult, setSettingResult] = useState("");
   const [profileResult, setProfileResult] = useState("");
 
+  const { contextValue, setContextValue } = useMyContext();
+
   useEffect(() => {
     const fetchPref = async () => {
       try {
@@ -100,29 +85,10 @@ function Settings() {
         const jsonifiedData = response.data;
         console.log(jsonifiedData);
 
-        styles[
-          styles.findIndex((x) => x.name === jsonifiedData["image_style"])
-        ].selected = true;
-        setStyles(styles);
         setStyle(jsonifiedData["image_style"]);
-        ages[ages.findIndex((x) => x.name === jsonifiedData["age"])].selected =
-          true;
-        setAges(ages);
         setAge(jsonifiedData["age"]);
-        genders[
-          genders.findIndex((x) => x.name === jsonifiedData["gender"])
-        ].selected = true;
-        setGenders(genders);
         setGender(jsonifiedData["gender"]);
-        races[
-          races.findIndex((x) => x.name === jsonifiedData["race"])
-        ].selected = true;
-        setRaces(races);
         setRace(jsonifiedData["race"]);
-        religions[
-          religions.findIndex((x) => x.name === jsonifiedData["religion"])
-        ]["selected"] = true;
-        setReligions(religions);
         setReligion(jsonifiedData["religion"]);
 
         setUsername(jsonifiedData["username"]);
@@ -179,6 +145,7 @@ function Settings() {
       }
     );
     setUploadResult(res.data.message);
+    setContextValue(!contextValue);
   };
 
   const handleSubmit = async (
@@ -220,6 +187,7 @@ function Settings() {
       }
     }
   };
+
   return (
     <>
       <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
@@ -283,6 +251,7 @@ function Settings() {
                           className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                           onClick={() => {
                             setImgSrc(defaultProfilePic);
+                            setProfilePic(null);
                           }}
                         >
                           Delete
@@ -301,30 +270,6 @@ function Settings() {
                       </div>
                     </div>
                   </form>
-                  {/* <form>
-                    <input
-                      type="file"
-                      className="inline-flex items-center text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                    >
-                      <svg
-                        className="w-4 h-4 mr-2 -ml-1"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"></path>
-                        <path d="M9 13h2v5a1 1 0 11-2 0v-5z"></path>
-                      </svg>
-                      Upload picture
-                    </input>
-                    <input type="submit" value="Submit" />
-                  </form>
-                  <button
-                    type="button"
-                    className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                  >
-                    Delete
-                  </button> */}
                 </div>
               </div>
             </div>
@@ -335,50 +280,22 @@ function Settings() {
             </h3>
             <form id="form2" onSubmit={(e) => handleSubmit("settings", e)}>
               <div className="mb-4">
-                <label
-                  htmlFor="image-style"
-                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                >
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                   Image style
                 </label>
                 <select
-                  id="image-style"
                   name="countries"
                   className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   onChange={(e) => {
                     setStyle(e.target.value);
                   }}
+                  value={style}
                 >
                   {styles.map((style) => {
-                    return (
-                      <option selected={style.selected}>{style.name}</option>
-                    );
+                    return <option value={style}>{style}</option>;
                   })}
                 </select>
               </div>
-              {/* <div className="mb-6">
-              <label
-                htmlFor="settings-timezone"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Time Zone
-              </label>
-              <select
-                id="settings-timezone"
-                name="countries"
-                className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-              >
-                <option>GMT+0 Greenwich Mean Time (GMT)</option>
-                <option selected={true}>
-                  GMT+1 Central European Time (CET)
-                </option>
-                <option>GMT+2 Eastern European Time (EET)</option>
-                <option>GMT+3 Moscow Time (MSK)</option>
-                <option>GMT+5 Pakistan Standard Time (PKT)</option>
-                <option>GMT+8 China Standard Time (CST)</option>
-                <option>GMT+10 Eastern Australia Standard Time (AEST)</option>
-              </select>
-            </div> */}
               <div className="space-y-2">
                 <button
                   className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
@@ -471,10 +388,11 @@ function Settings() {
                     onFocus={(e) => {
                       setAge(e.target.value);
                     }}
+                    value={age}
                   >
                     {ages.map((age) => {
                       return (
-                        <option selected={age.selected}>{age.name}</option> // default value instead
+                        <option value={age}>{age}</option> // default value instead
                       );
                     })}
                   </select>
@@ -502,13 +420,10 @@ function Settings() {
                     onFocus={(e) => {
                       setGender(e.target.value);
                     }}
+                    value={gender}
                   >
                     {genders.map((gender) => {
-                      return (
-                        <option selected={gender.selected}>
-                          {gender.name}
-                        </option>
-                      );
+                      return <option value={gender}>{gender}</option>;
                     })}
                   </select>
                 </div>
@@ -535,11 +450,10 @@ function Settings() {
                     onFocus={(e) => {
                       setRace(e.target.value);
                     }}
+                    value={race}
                   >
                     {races.map((race) => {
-                      return (
-                        <option selected={race.selected}>{race.name}</option>
-                      );
+                      return <option value={race}>{race}</option>;
                     })}
                   </select>
                 </div>
@@ -566,13 +480,10 @@ function Settings() {
                     onFocus={(e) => {
                       setReligion(e.target.value);
                     }}
+                    value={religion}
                   >
                     {religions.map((religion) => {
-                      return (
-                        <option selected={religion.selected}>
-                          {religion.name}
-                        </option>
-                      );
+                      return <option value={religion}>{religion}</option>;
                     })}
                   </select>
                 </div>

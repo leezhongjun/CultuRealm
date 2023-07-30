@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useContext, useEffect } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link, Outlet, useNavigate } from "react-router-dom";
@@ -7,6 +7,9 @@ import { useSignOut, useAuthHeader } from "react-auth-kit";
 import axios from "axios";
 import Cookies from "js-cookie";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
+
+import { useMyContext } from "../components/Context";
+import defaultProfilePic from "../assets/default_profile_pic.png";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -21,6 +24,7 @@ const navigation = [
 
 export default function Navigation() {
   const [isRender, renderSettingContainer] = useState(false);
+  const [imgSrc, setImgSrc] = useState(defaultProfilePic);
 
   const isAuthenticated = useIsAuthenticated();
   console.log(isAuthenticated());
@@ -53,6 +57,35 @@ export default function Navigation() {
       },
     });
   }
+
+  const fetchProfilePic = async () => {
+    try {
+      const response = await axios.post(
+        import.meta.env.VITE_BACKEND_ENDPOINT + "/get_user_profile_pic",
+        {},
+        {
+          headers: {
+            Authorization: authHeader(),
+          },
+          responseType: "arraybuffer", // set response type to arraybuffer to get binary data
+        }
+      );
+      const binaryData = response.data;
+      console.log(binaryData.byteLength > 0);
+      if (binaryData.byteLength > 0) {
+        setImgSrc(window.URL.createObjectURL(new Blob([binaryData])));
+      } else {
+        setImgSrc(defaultProfilePic);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const { contextValue } = useMyContext();
+  useEffect(() => {
+    fetchProfilePic();
+  }, [contextValue]);
 
   return (
     <>
@@ -111,7 +144,7 @@ export default function Navigation() {
                             <span className="sr-only">Open user menu</span>
                             <img
                               className="h-8 w-8 rounded-full"
-                              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                              src={imgSrc}
                               alt=""
                             />
                           </Menu.Button>
