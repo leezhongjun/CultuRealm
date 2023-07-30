@@ -204,7 +204,7 @@ function Settings() {
               <img
                 className="mb-4 rounded-lg w-28 h-28 sm:mb-0 xl:mb-4 2xl:mb-0"
                 src={imgSrc}
-                alt="Jese picture"
+                alt="Profile picture"
               ></img>
               <div>
                 <h3 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">

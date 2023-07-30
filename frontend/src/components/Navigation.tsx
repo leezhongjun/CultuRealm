@@ -149,7 +149,7 @@ export default function Navigation() {
                             <img
                               className="h-8 w-8 rounded-full"
                               src={imgSrc}
-                              alt=""
+                              alt="Profile picture"
                             />
                           </Menu.Button>
                         </div>
