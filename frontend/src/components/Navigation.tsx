@@ -129,20 +129,6 @@ export default function Navigation() {
                             <Menu.Item>
                               {({ active }) => (
                                 <Link
-                                  to="/profile"
-                                  onClick={renderSettingContainer}
-                                  className={classNames(
-                                    active ? "bg-gray-100" : "",
-                                    "block px-4 py-2 text-sm text-gray-700"
-                                  )}
-                                >
-                                  Your Profile
-                                </Link>
-                              )}
-                            </Menu.Item>
-                            <Menu.Item>
-                              {({ active }) => (
-                                <Link
                                   to="/settings"
                                   onClick={renderSettingContainer}
                                   className={classNames(
@@ -150,7 +136,7 @@ export default function Navigation() {
                                     "block px-4 py-2 text-sm text-gray-700"
                                   )}
                                 >
-                                  Settings
+                                  Profile settings
                                 </Link>
                               )}
                             </Menu.Item>

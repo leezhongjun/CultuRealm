@@ -250,6 +250,8 @@ def set_user_pref():
         user_profile.religion = data['religion']
         user_profile.gender = data['gender']
         user_profile.image_style = data['image_style']
+        user_profile.username = data['username']
+        user_profile.email = data['email']
 
     db.session.commit()
     return jsonify({'message': 'Success'})

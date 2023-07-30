@@ -11,7 +11,6 @@ import Community from "./pages/Community";
 import Leaderboard from "./pages/Leaderboard";
 import TopStories from "./pages/TopStories";
 import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
@@ -19,6 +18,7 @@ import NewPassword from "./pages/NewPassword";
 import refreshApi from "./components/RefreshApi";
 
 import { AuthProvider, RequireAuth } from "react-auth-kit";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 function Router() {
   return (
@@ -34,14 +34,6 @@ function Router() {
           element={
             <RequireAuth loginPath={"/login"}>
               <Settings />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="profile"
-          element={
-            <RequireAuth loginPath={"/login"}>
-              <Profile />
             </RequireAuth>
           }
         />

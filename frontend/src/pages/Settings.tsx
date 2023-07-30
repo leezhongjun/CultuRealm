@@ -2,73 +2,87 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuthHeader } from "react-auth-kit";
 import defaultProfilePic from "../assets/default_profile_pic.png";
+import ProcessAchievements from "../components/Achievements";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
-const styles = [
-  { name: "Pixel", selected: true },
-  { name: "Photorealistic", selected: false },
-  { name: "Cartoon", selected: false },
-  { name: "Anime", selected: false },
-];
-
-function generateAges() {
-  const objectsArray = [];
-
-  for (let i = 5; i <= 18; i++) {
-    const name = i === 18 ? "18+" : i.toString();
-    const selected = false;
-
-    const obj = { name, selected };
-    objectsArray.push(obj);
-  }
-  objectsArray.push({ name: "Unspecified", selected: true });
-  return objectsArray;
-}
-
-const ages = generateAges();
-
-const genders = [
-  { name: "Male", selected: false },
-  { name: "Female", selected: false },
-  { name: "Other", selected: false },
-  { name: "Unspecified", selected: true },
-];
-
-const races = [
-  { name: "Chinese", selected: true },
-  { name: "Indian", selected: false },
-  { name: "Malay", selected: false },
-  { name: "Eurasian", selected: false },
-  { name: "Other", selected: false },
-  { name: "Unspecified", selected: false },
-];
-
-const religions = [
-  { name: "Buddhism", selected: true },
-  { name: "Christianity", selected: false },
-  { name: "Islam", selected: false },
-  { name: "Hinduism", selected: false },
-  { name: "Other", selected: false },
-  { name: "Unspecified", selected: false },
-];
-
-const highScore = 100;
-const gamesPlayed = 1000;
-const achievements = "achievements text here, maybe seperate component";
-
 function Settings() {
-  // const [race, setRace] = useState("");
-  // const [religion, setReligion] = useState("");
-  // const [gender, setGender] = useState("");
+  const stylesDef = [
+    { name: "Pixel", selected: false },
+    { name: "Photorealistic", selected: false },
+    { name: "Cartoon", selected: false },
+    { name: "Anime", selected: false },
+  ];
+
+  function generateAges() {
+    const objectsArray = [];
+
+    for (let i = 5; i <= 50; i++) {
+      const name = i === 50 ? "50+" : i.toString();
+      const selected = false;
+
+      const obj = { name, selected };
+      objectsArray.push(obj);
+    }
+    objectsArray.push({ name: "Unspecified", selected: false });
+    return objectsArray;
+  }
+
+  const agesDef = generateAges();
+
+  const gendersDef = [
+    { name: "Male", selected: false },
+    { name: "Female", selected: false },
+    { name: "Other", selected: false },
+    { name: "Unspecified", selected: false },
+  ];
+
+  const racesDef = [
+    { name: "Chinese", selected: false },
+    { name: "Indian", selected: false },
+    { name: "Malay", selected: false },
+    { name: "Eurasian", selected: false },
+    { name: "Other", selected: false },
+    { name: "Unspecified", selected: false },
+  ];
+
+  const religionsDef = [
+    { name: "Buddhism", selected: false },
+    { name: "Christianity", selected: false },
+    { name: "Islam", selected: false },
+    { name: "Hinduism", selected: false },
+    { name: "Other", selected: false },
+    { name: "Unspecified", selected: false },
+  ];
+
+  const [styles, setStyles] = useState(stylesDef);
+  const [ages, setAges] = useState(agesDef);
+  const [genders, setGenders] = useState(gendersDef);
+  const [races, setRaces] = useState(racesDef);
+  const [religions, setReligions] = useState(religionsDef);
+
+  const [highScore, setHighScore] = useState(0);
+  const [gamesPlayed, setGamesPlayed] = useState(0);
+  const [achievements, setAchievements] = useState("");
+
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+
+  const [race, setRace] = useState("");
+  const [religion, setReligion] = useState("");
+  const [gender, setGender] = useState("");
+  const [age, setAge] = useState("");
+  const [style, setStyle] = useState("");
+
   // const [profile_pic, setProfile_pic] = useState<File | null>(null);
   // const [errorMessage, setErrorMessage] = useState("");
   // const [isEditing, setIsEditing] = useState(false);
 
   const authHeader = useAuthHeader();
   const [profilePic, setProfilePic] = useState<File | null>(null);
-  const [blobData, setBlobData] = useState<ArrayBuffer | null>(null);
-  const [jsonData, setJsonData] = useState(null);
+  const [imgSrc, setImgSrc] = useState(defaultProfilePic);
   const [uploadResult, setUploadResult] = useState("");
+  const [settingResult, setSettingResult] = useState("");
+  const [profileResult, setProfileResult] = useState("");
 
   useEffect(() => {
     const fetchPref = async () => {
@@ -84,9 +98,39 @@ function Settings() {
           }
         );
         const jsonifiedData = response.data;
-        setJsonData(jsonifiedData);
         console.log(jsonifiedData);
-        console.log(jsonData);
+
+        styles[
+          styles.findIndex((x) => x.name === jsonifiedData["image_style"])
+        ].selected = true;
+        setStyles(styles);
+        setStyle(jsonifiedData["image_style"]);
+        ages[ages.findIndex((x) => x.name === jsonifiedData["age"])].selected =
+          true;
+        setAges(ages);
+        setAge(jsonifiedData["age"]);
+        genders[
+          genders.findIndex((x) => x.name === jsonifiedData["gender"])
+        ].selected = true;
+        setGenders(genders);
+        setGender(jsonifiedData["gender"]);
+        races[
+          races.findIndex((x) => x.name === jsonifiedData["race"])
+        ].selected = true;
+        setRaces(races);
+        setRace(jsonifiedData["race"]);
+        religions[
+          religions.findIndex((x) => x.name === jsonifiedData["religion"])
+        ]["selected"] = true;
+        setReligions(religions);
+        setReligion(jsonifiedData["religion"]);
+
+        setUsername(jsonifiedData["username"]);
+        setEmail(jsonifiedData["email"]);
+
+        setHighScore(jsonifiedData["high_score"]);
+        setGamesPlayed(jsonifiedData["stories_played"]);
+        setAchievements(jsonifiedData["achievements"]); // process achievements
       } catch (error) {
         console.error(error);
       }
@@ -107,7 +151,10 @@ function Settings() {
           }
         );
         const binaryData = response.data;
-        setBlobData(binaryData);
+        console.log(binaryData.byteLength > 0);
+        if (binaryData.byteLength > 0) {
+          setImgSrc(window.URL.createObjectURL(new Blob([binaryData])));
+        }
       } catch (error) {
         console.error(error);
       }
@@ -134,6 +181,45 @@ function Settings() {
     setUploadResult(res.data.message);
   };
 
+  const handleSubmit = async (
+    type: String,
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    const json = {
+      race: race,
+      religion: religion,
+      gender: gender,
+      age: age,
+      image_style: style,
+      username: username,
+      email: email,
+    };
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_BACKEND_ENDPOINT + "/set_user_pref",
+        json,
+        {
+          headers: {
+            Authorization: authHeader(),
+          },
+        }
+      );
+      console.log(res.data);
+      if (type === "settings") {
+        setSettingResult("Successfully saved settings");
+      } else {
+        setProfileResult("Successfully saved profile");
+      }
+    } catch (error) {
+      console.log(error);
+      if (type === "settings") {
+        setSettingResult("An error occurred");
+      } else {
+        setProfileResult("An error occurred");
+      }
+    }
+  };
   return (
     <>
       <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
@@ -147,13 +233,7 @@ function Settings() {
             <div className="items-center sm:flex xl:block 2xl:flex sm:space-x-4 xl:space-x-0 2xl:space-x-4">
               <img
                 className="mb-4 rounded-lg w-28 h-28 sm:mb-0 xl:mb-4 2xl:mb-0"
-                src={
-                  blobData
-                    ? window.URL.createObjectURL(
-                        new Blob([blobData], { type: "image/jpeg" })
-                      )
-                    : defaultProfilePic
-                }
+                src={imgSrc}
                 alt="Jese picture"
               ></img>
               <div>
@@ -164,7 +244,7 @@ function Settings() {
                   JPG, JPEG, GIF or PNG
                 </div>
                 <div className="flex items-center space-x-4">
-                  <form id="form2" onSubmit={handleSubmitPfp}>
+                  <form id="form" onSubmit={handleSubmitPfp}>
                     <div>
                       <div className="flex items-center space-x-4 mb-4">
                         <label
@@ -190,8 +270,10 @@ function Settings() {
                               if (e.target.files) {
                                 const res =
                                   await e.target.files[0].arrayBuffer();
-                                setBlobData(res);
                                 setProfilePic(e.target.files[0]);
+                                setImgSrc(
+                                  window.URL.createObjectURL(new Blob([res]))
+                                );
                               }
                             }}
                           />
@@ -199,7 +281,9 @@ function Settings() {
                         <button
                           type="button"
                           className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                          onClick={() => setBlobData(null)}
+                          onClick={() => {
+                            setImgSrc(defaultProfilePic);
+                          }}
                         >
                           Delete
                         </button>
@@ -249,26 +333,30 @@ function Settings() {
             <h3 className="mb-4 text-xl font-semibold dark:text-white">
               Settings
             </h3>
-            <div className="mb-4">
-              <label
-                htmlFor="image-style"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Image style
-              </label>
-              <select
-                id="image-style"
-                name="countries"
-                className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-              >
-                {styles.map((style) => {
-                  return (
-                    <option selected={style.selected}>{style.name}</option>
-                  );
-                })}
-              </select>
-            </div>
-            {/* <div className="mb-6">
+            <form id="form2" onSubmit={(e) => handleSubmit("settings", e)}>
+              <div className="mb-4">
+                <label
+                  htmlFor="image-style"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Image style
+                </label>
+                <select
+                  id="image-style"
+                  name="countries"
+                  className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  onChange={(e) => {
+                    setStyle(e.target.value);
+                  }}
+                >
+                  {styles.map((style) => {
+                    return (
+                      <option selected={style.selected}>{style.name}</option>
+                    );
+                  })}
+                </select>
+              </div>
+              {/* <div className="mb-6">
               <label
                 htmlFor="settings-timezone"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -291,11 +379,18 @@ function Settings() {
                 <option>GMT+10 Eastern Australia Standard Time (AEST)</option>
               </select>
             </div> */}
-            <div>
-              <button className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600">
-                Save all
-              </button>
-            </div>
+              <div className="space-y-2">
+                <button
+                  className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                  type="submit"
+                >
+                  Save all
+                </button>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {settingResult}
+                </p>
+              </div>
+            </form>
           </div>
         </div>
         <div className="col-span-2">
@@ -303,37 +398,53 @@ function Settings() {
             <h3 className="mb-4 text-xl font-semibold dark:text-white">
               Preferences
             </h3>
-            <form action="#">
+            <form id="form3" onSubmit={(e) => handleSubmit("profile", e)}>
               <div className="grid grid-cols-6 gap-6">
                 <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="first-name"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Username
                   </label>
                   <input
                     type="text"
-                    name="first-name"
-                    id="first-name"
                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    placeholder="Bonnie"
+                    defaultValue={username}
+                    placeholder={username}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setUsername(e.target.value);
+                    }}
+                    onInput={(e) => {
+                      setUsername(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setUsername(e.target.value);
+                    }}
                     required
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="first-name"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Email
                   </label>
                   <input
                     type="text"
-                    name="first-name"
-                    id="first-name"
                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    placeholder="Bonnie"
+                    defaultValue={email}
+                    placeholder={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setEmail(e.target.value);
+                    }}
+                    onInput={(e) => {
+                      setEmail(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setEmail(e.target.value);
+                    }}
                     required
                   />
                 </div>
@@ -348,6 +459,18 @@ function Settings() {
                     id="image-style"
                     name="countries"
                     className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    onChange={(e) => {
+                      setAge(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setAge(e.target.value);
+                    }}
+                    onInput={(e) => {
+                      setAge(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setAge(e.target.value);
+                    }}
                   >
                     {ages.map((age) => {
                       return (
@@ -367,6 +490,18 @@ function Settings() {
                     id="image-style"
                     name="countries"
                     className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    onChange={(e) => {
+                      setGender(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setGender(e.target.value);
+                    }}
+                    onInput={(e) => {
+                      setGender(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setGender(e.target.value);
+                    }}
                   >
                     {genders.map((gender) => {
                       return (
@@ -388,6 +523,18 @@ function Settings() {
                     id="image-style"
                     name="countries"
                     className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    onChange={(e) => {
+                      setRace(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setRace(e.target.value);
+                    }}
+                    onInput={(e) => {
+                      setRace(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setRace(e.target.value);
+                    }}
                   >
                     {races.map((race) => {
                       return (
@@ -407,6 +554,18 @@ function Settings() {
                     id="image-style"
                     name="countries"
                     className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    onChange={(e) => {
+                      setReligion(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setReligion(e.target.value);
+                    }}
+                    onInput={(e) => {
+                      setReligion(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setReligion(e.target.value);
+                    }}
                   >
                     {religions.map((religion) => {
                       return (
@@ -418,13 +577,16 @@ function Settings() {
                   </select>
                 </div>
 
-                <div className="col-span-6 sm:col-full">
+                <div className="space-y-2">
                   <button
-                    className="px-3 py-2 text-sm font-medium tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                    className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                     type="submit"
                   >
                     Save all
                   </button>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {profileResult}
+                  </p>
                 </div>
               </div>
             </form>
