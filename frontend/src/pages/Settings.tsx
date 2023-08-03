@@ -6,6 +6,11 @@ import ProcessAchievements from "../components/Achievements";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
 import { useMyContext } from "../components/Context";
+import {
+  checkIsEmailValid,
+  checkIsNameValid,
+  checkIsUsernameValid,
+} from "./SignUp";
 
 export const styles = ["Pixel", "Photorealistic", "Cartoon", "Anime"];
 
@@ -50,6 +55,7 @@ function Settings() {
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
 
   const [race, setRace] = useState("");
   const [religion, setReligion] = useState("");
@@ -94,6 +100,7 @@ function Settings() {
 
         setUsername(jsonifiedData["username"]);
         setEmail(jsonifiedData["email"]);
+        setName(jsonifiedData["name"]);
 
         setRating(jsonifiedData["rating"]);
         setHighScore(jsonifiedData["high_score"]);
@@ -163,8 +170,22 @@ function Settings() {
       image_style: style,
       username: username,
       email: email,
+      name: name,
     };
     try {
+      if (!checkIsUsernameValid(username)) {
+        setProfileResult("Username is invalid");
+        return;
+      }
+      if (!checkIsEmailValid(email)) {
+        setProfileResult("Email is invalid");
+        return;
+      }
+      if (!checkIsNameValid(name)) {
+        setProfileResult("Name is invalid");
+        return;
+      }
+
       const res = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/set_user_pref",
         json,
@@ -179,6 +200,9 @@ function Settings() {
         setSettingResult("Successfully saved settings");
       } else {
         setProfileResult("Successfully saved profile");
+        if (res.data.message !== "Success") {
+          setProfileResult(res.data.message);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -372,6 +396,33 @@ function Settings() {
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-3">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Name{" "}
+                    <span className="text-xs text-gray-500">
+                      (Characters in the story will call you by this name.)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    defaultValue={name}
+                    placeholder={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setName(e.target.value);
+                    }}
+                    onInput={(e) => {
+                      setName(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setName(e.target.value);
+                    }}
+                    required
+                  />
+                </div>
+                <div className="col-span-6 sm:col-span-3">
                   <label
                     htmlFor="image-style"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -508,7 +559,7 @@ function Settings() {
                   </select>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-full">
                   <button
                     className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                     type="submit"

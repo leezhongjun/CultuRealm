@@ -60,6 +60,7 @@ class TokenBlocklist(db.Model):
 class UserProfile(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     username = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     password = db.Column(db.String(120), nullable=False)
 
@@ -157,7 +158,7 @@ def register():
     if user:
         return jsonify({'message': 'Username already exists'})
     
-    new_user_profile = UserProfile(username=data['username'], email=data['email'], password=hashed_password, id=str(uuid.uuid4()), **settings.default_user_profile)
+    new_user_profile = UserProfile(name=data['name'], username=data['username'], email=data['email'], password=hashed_password, id=str(uuid.uuid4()), **settings.default_user_profile)
     db.session.add(new_user_profile)
     db.session.commit()
     return jsonify({'message': 'Registered successfully'})
@@ -242,12 +243,19 @@ def set_user_pref():
     if not user_profile:
         return jsonify({'message': 'User profile not found'})
     else:
+        # check if username or email already exists
+        if UserProfile.query.filter_by(email=data['email']).first() and data['email'] != user_profile.email:
+            return jsonify({'message': 'Email already exists'})
+        if UserProfile.query.filter_by(username=data['username']).first() and data['username'] != user_profile.username:
+            return jsonify({'message': 'Username already exists'})
+
         user_profile.age = data['age']
         user_profile.race = data['race']
         user_profile.religion = data['religion']
         user_profile.gender = data['gender']
         user_profile.image_style = data['image_style']
         user_profile.username = data['username']
+        user_profile.name = data['name']
         user_profile.email = data['email']
 
     db.session.commit()
@@ -265,6 +273,7 @@ def get_user_pref():
     for key in settings.default_user_profile:
         res[key] = getattr(user_profile, key)
     res['username'] = user_profile.username
+    res['name'] = user_profile.name
     res['email'] = user_profile.email
     res['profile_pic'] = None
 
@@ -280,6 +289,7 @@ def get_user_pref_by_id():
     for key in settings.default_user_profile:
         res[key] = getattr(user_profile, key)
     res['username'] = user_profile.username
+    res['name'] = user_profile.name
     res['email'] = None # remove email
     res['image_style'] = None # remove image style
     res['profile_pic'] = None
@@ -292,7 +302,7 @@ def leaderboard():
     users = UserProfile.query.order_by(UserProfile.rating.desc()).limit(data['limit']).all()
     res = []
     for user in users:
-        res.append({'username': user.username, 'rating': user.rating, 'race': user.race, 'age': user.age, 'achievements': user.achievements, 'id': user.id})
+        res.append({'name': user.name, 'username': user.username, 'rating': user.rating, 'race': user.race, 'age': user.age, 'achievements': user.achievements, 'id': user.id})
     return jsonify(res)
 
 

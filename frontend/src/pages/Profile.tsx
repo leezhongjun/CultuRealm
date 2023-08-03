@@ -15,7 +15,7 @@ function Profile() {
   const [achievements, setAchievements] = useState("");
 
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
 
   const [race, setRace] = useState("");
   const [religion, setReligion] = useState("");
@@ -52,6 +52,7 @@ function Profile() {
         setReligion(jsonifiedData["religion"]);
 
         setUsername(jsonifiedData["username"]);
+        setName(jsonifiedData["name"]);
 
         setRating(jsonifiedData["rating"]);
         setHighScore(jsonifiedData["high_score"]);
@@ -115,6 +116,17 @@ function Profile() {
                     type="text"
                     className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     value={username}
+                    disabled
+                  />
+                </div>
+                <div className="col-span-6 sm:col-span-3 py-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    value={name}
                     disabled
                   />
                 </div>

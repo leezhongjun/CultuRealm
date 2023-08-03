@@ -6,6 +6,21 @@ import axios from "axios";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 // NO AUTOCOMPLETE FOR FORM FIELDS COS THAT IS SUPER MESSY
 
+export const checkIsEmailValid = (email: string) => {
+  return /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/.test(
+    email
+  );
+};
+
+export const checkIsUsernameValid = (username: string) => {
+  return /^(?=.*[A-Za-z0-9]).{1,80}$/.test(username);
+};
+
+export const checkIsNameValid = (name: string) => {
+  // only letters, spaces, and hyphens, and max 80 chars
+  return /^[a-zA-Z- ]{1,80}$/.test(name);
+};
+
 export default function SignUp() {
   const isAuthenticated = useIsAuthenticated();
   const navigate = useNavigate();
@@ -29,15 +44,8 @@ export default function SignUp() {
   const [username, setUsername] = useState("");
   const [usernameValid, setUsernameValid] = useState(false);
 
-  const checkIsEmailValid = (email: string) => {
-    return /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/.test(
-      email
-    );
-  };
-
-  const checkIsUsernameValid = (username: string) => {
-    return /^(?=.*[A-Za-z0-9]).{1,80}$/.test(username);
-  };
+  const [name, setName] = useState("");
+  const [nameValid, setNameValid] = useState(false);
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
@@ -47,6 +55,11 @@ export default function SignUp() {
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(event.target.value);
     setUsernameValid(checkIsUsernameValid(event.target.value));
+  };
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value);
+    setNameValid(checkIsNameValid(event.target.value));
   };
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,6 +121,7 @@ export default function SignUp() {
         {
           email: email,
           username: username,
+          name: name,
           password: password,
         }
       );
@@ -129,7 +143,7 @@ export default function SignUp() {
               token: res.data.accessToken,
               expiresIn: res.data.expiresIn,
               tokenType: "Bearer",
-              authState: { username: res.data.username },
+              authState: { id: res.data.id },
               refreshToken: res.data.refreshToken,
               refreshTokenExpireIn: res.data.refreshTokenExpireIn,
             });
@@ -224,6 +238,41 @@ export default function SignUp() {
               }
             >
               Please enter a username with 1-80 characters and at least 1
+              alphanumeric character.
+            </p>
+          </div>
+          <div className="mb-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-semibold text-gray-800"
+            >
+              Name{" "}
+              <span className="text-xs text-gray-500">
+                (Characters in the story will call you by this name.)
+              </span>
+            </label>
+            <input
+              id="name"
+              type="text"
+              className={`block w-full px-4 py-2 mt-2 text-blue-700 bg-white border rounded-md focus:border-blue-400 ${
+                name && !nameValid
+                  ? "focus:ring-red-300"
+                  : "focus:ring-blue-300"
+              } focus:outline-none focus:ring focus:ring-opacity-40`}
+              placeholder="Name"
+              onInput={handleNameChange}
+              onFocus={handleNameChange}
+              onChange={handleNameChange}
+              onBlur={handleNameChange}
+              autoComplete="off"
+              required
+            />
+            <p
+              className={
+                name && !nameValid ? "mt-2 text-pink-600 text-sm" : "hidden"
+              }
+            >
+              Please enter a name with 1-80 characters and at least 1
               alphanumeric character.
             </p>
           </div>
