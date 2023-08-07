@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 import uuid
 
-from utils import checkPassword, checkEmail, checkUsername
+from utils import checkPassword, checkEmail, checkUsername, story_seeds
 import settings
 
 load_dotenv()
@@ -74,6 +74,16 @@ class UserProfile(db.Model):
     achievements = db.Column(db.String(80)) #prob a string of formatted file_paths
     profile_pic = db.Column(db.LargeBinary)
     image_style = db.Column(db.String(16))
+
+class UserStories(db.Model):
+    id = db.Column(db.String(36), primary_key=True)
+    user_id = db.Column(db.String(36), nullable=False)
+    story_index = db.Column(db.Integer, nullable=False)
+    story_text = db.Column(db.String(1000), nullable=False) # split into 1000 char chunks
+    story_choice_1 = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
+    story_choice_2 = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
+    user_choice = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
+    img_link = db.Column(db.String(100), nullable=False) # link to image, max 100 chars
     
 
 # Callback function to check if a JWT exists in the database blocklist

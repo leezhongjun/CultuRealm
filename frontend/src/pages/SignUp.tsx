@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useIsAuthenticated, useSignIn } from "react-auth-kit";
 import axios from "axios";
+import { useMyContext } from "../components/Context";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 // NO AUTOCOMPLETE FOR FORM FIELDS COS THAT IS SUPER MESSY
 
@@ -46,6 +47,8 @@ export default function SignUp() {
 
   const [name, setName] = useState("");
   const [nameValid, setNameValid] = useState(false);
+
+  const { contextValue, setContextValue } = useMyContext();
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
@@ -147,6 +150,8 @@ export default function SignUp() {
               refreshToken: res.data.refreshToken,
               refreshTokenExpireIn: res.data.refreshTokenExpireIn,
             });
+
+            setContextValue(!contextValue);
             navigate("/", {
               state: { mainText: "Success!", subText: msg },
             });

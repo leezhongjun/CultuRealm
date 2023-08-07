@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSignIn, useIsAuthenticated } from "react-auth-kit";
 import axios from "axios";
+import { useMyContext } from "../components/Context";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
 export default function Login() {
@@ -18,6 +19,7 @@ export default function Login() {
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
+  const { contextValue, setContextValue } = useMyContext();
   const signIn = useSignIn();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -49,6 +51,8 @@ export default function Login() {
           refreshToken: res.data.refreshToken,
           refreshTokenExpireIn: res.data.refreshTokenExpireIn,
         });
+
+        setContextValue(!contextValue);
         navigate("/", {
           state: { mainText: "Success!", subText: msg },
         });

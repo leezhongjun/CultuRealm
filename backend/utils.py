@@ -9,4 +9,4 @@ def checkEmail(email):
 def checkUsername(username):
     return bool(re.match(r"^(?=.*[A-Za-z0-9]).{1,80}$", username))
 
-print(checkUsername('basda@jbkjad m'))
+story_seeds = []
