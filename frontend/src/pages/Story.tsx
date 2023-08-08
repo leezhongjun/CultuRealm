@@ -133,14 +133,29 @@ function App() {
       {/* With Suggested Responses */}
       {data.checked === true &&
       <div className='grid grid-cols-4 gap-3'>
-        <div className="grid bg-red-100">
-          <h1>Row 2: For suggested response</h1>
+        <div className="grid p-10">
+          <input type="radio" id="react-option-1" name="react-option" value="" className="hidden peer" required />
+          <label htmlFor="react-option-1" className="rounded-3xl text-2xl inline-flex justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
+            <div className="block">
+              Suggested response 1 a b c d e f g h i j k l m n o p q r s t u v w x y z 
+            </div>
+          </label>
         </div>
-        <div className="grid bg-red-100">
-
+        <div className="grid  p-10">
+          <input type="radio" id="react-option-2" name="react-option" value="" className="hidden peer" required />
+          <label htmlFor="react-option-2" className="rounded-3xl text-2xl inline-flex justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
+            <div className="block">
+              Suggested response 2
+            </div>
+          </label>
         </div>
-        <div className="grid bg-red-100">
-
+        <div className="grid  p-10">
+          <input type="radio" id="react-option-3" name="react-option" value="" className="hidden peer" required />
+          <label htmlFor="react-option-3" className="rounded-3xl text-2xl inline-flex justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
+            <div className="block">
+              Suggested response 3
+            </div>
+          </label>
         </div>
         <div className="grid bg-red-100">
           Button here
