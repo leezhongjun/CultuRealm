@@ -114,10 +114,27 @@ function App() {
 
   function Gameplay() {
     return (
-    <div>
-      <h1>Game</h1>
-      <h2>{String(data.checked)}</h2>
+    <div className="grid grid-rows-3 gap-3 h-screen">
+
+    {/* {Row 1} */}
+    <div className="grid row-span-2 grid-cols-2 gap-3">
+      {/* Row 1 Grid 1 */}
+      <div className="bg-green-500">
+        <h1>Row 1 Grid 1: For story texts -- and probably User response at bottom</h1>
+        Test: checkbox value: {String(data.checked)}
+      </div>
+      {/* Row 1 Grid 2 */}
+      <div className="bg-blue-500">
+        <h1>Row 1 Grid 2: For image</h1>
+      </div>
     </div>
+    {/* {Row 2} */}
+    <div className="grid row-span-1 bg-red-500">
+      <h1>Row 2: For suggested response -- and probably User response at top</h1>
+    </div>
+
+    </div>
+
     
     );
   }
