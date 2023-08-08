@@ -58,7 +58,7 @@ function App() {
         </div>
       </div>
       <div>
-        <ParticlesBg type="square" bg={true} />
+      <ParticlesBg num={10} type="square" bg={true} />
       </div>
     </>
   );
