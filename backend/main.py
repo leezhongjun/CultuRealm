@@ -315,7 +315,7 @@ def leaderboard():
         res.append({'name': user.name, 'username': user.username, 'rating': user.rating, 'race': user.race, 'age': user.age, 'achievements': user.achievements, 'id': user.id})
     return jsonify(res)
 
-@app.route('/handle_gameplay', methods=['POST']) #for story page
+@app.route('/handle_gameplay', methods=['POST']) #backend for story page
 def handle_gameplay():
     data = request.get_json()
     print(data)

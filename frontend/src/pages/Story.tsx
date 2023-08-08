@@ -116,25 +116,49 @@ function App() {
     return (
     <div className="grid grid-rows-3 gap-3 h-screen">
 
-    {/* {Row 1} */}
+    {/* Row 1 */}
     <div className="grid row-span-2 grid-cols-2 gap-3">
       {/* Row 1 Grid 1 */}
-      <div className="bg-green-500">
+      <div className="bg-green-100">
         <h1>Row 1 Grid 1: For story texts -- and probably User response at bottom</h1>
         Test: checkbox value: {String(data.checked)}
       </div>
       {/* Row 1 Grid 2 */}
-      <div className="bg-blue-500">
+      <div className="bg-blue-100">
         <h1>Row 1 Grid 2: For image</h1>
       </div>
     </div>
-    {/* {Row 2} */}
-    <div className="grid row-span-1 bg-red-500">
-      <h1>Row 2: For suggested response -- and probably User response at top</h1>
-    </div>
+    {/* Row 2 */}
+    <div className="grid row-span-1 grid-rows-1 gap-3">
+      {/* With Suggested Responses */}
+      {data.checked === true &&
+      <div className='grid grid-cols-4 gap-3'>
+        <div className="grid bg-red-100">
+          <h1>Row 2: For suggested response</h1>
+        </div>
+        <div className="grid bg-red-100">
+
+        </div>
+        <div className="grid bg-red-100">
+
+        </div>
+        <div className="grid bg-red-100">
+          Button here
+        </div>
+      </div>}
+      {/* Without Suggested Responses */}
+      {data.checked === false &&
+      <div className='grid grid-cols-4 gap-3'>
+        <div className="grid col-span-3 bg-red-100">
+          <h1>Row 2:</h1>
+        </div>
+        <div className="grid col-span-1 bg-red-100">
+          Button here
+        </div>
+      </div>}
 
     </div>
-
+    </div>
     
     );
   }
