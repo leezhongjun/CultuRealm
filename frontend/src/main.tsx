@@ -20,13 +20,21 @@ import refreshApi from "./components/RefreshApi";
 import MyContextProvider from "./components/Context";
 
 import { AuthProvider, RequireAuth } from "react-auth-kit";
+import NotFound from "./pages/NotFound";
 
 function Router() {
   return (
     <Routes>
       <Route path="/" element={<Navigation />}>
         <Route index element={<Home />} />
-        <Route path="story" element={<Story />} />
+        <Route
+          path="story"
+          element={
+            <RequireAuth loginPath={"/login"}>
+              <Story />
+            </RequireAuth>
+          }
+        />
         <Route path="community-stories" element={<Community />} />
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="top-stories" element={<TopStories />} />
@@ -45,6 +53,7 @@ function Router() {
         <Route path="sign-up" element={<SignUp />} />
         <Route path="reset-password" element={<ResetPassword />} />
         <Route path="reset-new-password" element={<NewPassword />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

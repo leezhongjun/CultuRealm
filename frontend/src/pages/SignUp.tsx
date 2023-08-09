@@ -19,7 +19,7 @@ export const checkIsUsernameValid = (username: string) => {
 
 export const checkIsNameValid = (name: string) => {
   // only letters, spaces, and hyphens, and max 80 chars
-  return /^[a-zA-Z- ]{1,80}$/.test(name);
+  return /^(?=.*[A-Za-z])[A-Za-z -]{1,80}$/.test(name);
 };
 
 export default function SignUp() {
@@ -277,8 +277,8 @@ export default function SignUp() {
                 name && !nameValid ? "mt-2 text-pink-600 text-sm" : "hidden"
               }
             >
-              Please enter a name with 1-80 characters and at least 1
-              alphanumeric character.
+              Please enter a name with 1-80 characters, at least 1 letter, and
+              only letters, spaces, or hyphens.
             </p>
           </div>
           <div className="mb-2">
@@ -441,7 +441,11 @@ export default function SignUp() {
           <div className="mt-6">
             <input
               className={
-                passwordStrong && passwordMatch && emailValid && usernameValid
+                passwordStrong &&
+                passwordMatch &&
+                emailValid &&
+                usernameValid &&
+                nameValid
                   ? `text-sm font-medium w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none`
                   : `text-sm font-medium w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-400 rounded-md cursor-not-allowed focus:outline-none`
               }
@@ -452,7 +456,8 @@ export default function SignUp() {
                   passwordStrong &&
                   passwordMatch &&
                   emailValid &&
-                  usernameValid
+                  usernameValid &&
+                  nameValid
                 )
               }
             />

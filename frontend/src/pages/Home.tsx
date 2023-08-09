@@ -29,19 +29,26 @@ function App() {
                 data-aos="zoom-y-out"
                 data-aos-delay="150"
               >
-                Experience cultures with unique and interactive stories
+                The future of Cultural Education
               </p>
               <div
                 className="max-w-xs mx-auto sm:max-w-none sm:flex sm:justify-center"
                 data-aos="zoom-y-out"
                 data-aos-delay="300"
               >
-                <div>
+                <div className="flex items-center space-x-4 mb-4 justify-center">
                   <Link
                     to="/story"
                     className="px-4 py-2 text-base font-medium tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                   >
-                    Play Now
+                    Play Stories
+                  </Link>
+
+                  <Link
+                    to="/story"
+                    className="px-4 py-2 text-base font-medium tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                  >
+                    Play Quizzes
                   </Link>
                 </div>
                 {/* <div>
@@ -58,7 +65,7 @@ function App() {
         </div>
       </div>
       <div>
-      <ParticlesBg num={10} type="square" bg={true} />
+        <ParticlesBg num={10} type="square" bg={true} />
       </div>
     </>
   );

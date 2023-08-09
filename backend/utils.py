@@ -9,4 +9,46 @@ def checkEmail(email):
 def checkUsername(username):
     return bool(re.match(r"^(?=.*[A-Za-z0-9]).{1,80}$", username))
 
-story_seeds = []
+def checkName(name):
+    return bool(re.match(r"^(?=.*[A-Za-z])[A-Za-z -]{1,80}$", name))
+
+achievements = [
+    {
+        "name": "Helpful User",
+        "description": "User offers help to another character",
+        "is_achieved": False,
+        "emoji": "💁"
+    },
+    {
+        "name": "Compliment Giver",
+        "description": "User gives a compliment to another character",
+        "is_achieved": False,
+        "emoji": "🥰"
+    },
+    {
+        "name": "Cultural Ambassador",
+        "description": "User shares their own culture",
+        "is_achieved": False,
+        "emoji": "🌍"
+    },
+    {
+        "name": "Cultural Explorer",
+        "description": "User asks about another character's culture",
+        "is_achieved": False,
+        "emoji": "🧐"
+    },
+    {
+        "name": "Master of Laughter",
+        "description": "User makes another character laugh",
+        "is_achieved": False,
+        "emoji": "😄"
+    },
+    {
+        "name": "Knowledge Sharer",
+        "description": "User teaches another character something new",
+        "is_achieved": False,
+        "emoji": "🧠"
+    }
+]
+
+breakpoints = [1, 3, 5, 10, 50]

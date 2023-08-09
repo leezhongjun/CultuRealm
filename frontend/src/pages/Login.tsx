@@ -70,7 +70,7 @@ export default function Login() {
   if (location.state) {
     // console.log(className);
     location.state.mainText = location.state.mainText || "Error!";
-    location.state.subText = location.state.subText || "Something went wrong";
+    location.state.subText = location.state.subText || "Login in to continue";
     alertDiv = (
       <>
         <div

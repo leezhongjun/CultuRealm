@@ -48,11 +48,6 @@ export const religions = [
 ];
 
 function Settings() {
-  const [highScore, setHighScore] = useState(0);
-  const [gamesPlayed, setGamesPlayed] = useState(0);
-  const [rating, setRating] = useState(0);
-  const [achievements, setAchievements] = useState("");
-
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -101,11 +96,6 @@ function Settings() {
         setUsername(jsonifiedData["username"]);
         setEmail(jsonifiedData["email"]);
         setName(jsonifiedData["name"]);
-
-        setRating(jsonifiedData["rating"]);
-        setHighScore(jsonifiedData["high_score"]);
-        setGamesPlayed(jsonifiedData["stories_played"]);
-        setAchievements(jsonifiedData["achievements"]); // process achievements
       } catch (error) {
         console.error(error);
       }
@@ -274,7 +264,7 @@ function Settings() {
                         </label>
                         <button
                           type="button"
-                          className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                          className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                           onClick={() => {
                             setImgSrc(defaultProfilePic);
                             setProfilePic(null);
@@ -288,7 +278,7 @@ function Settings() {
                           className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                           type="submit"
                         >
-                          Save all
+                          Save
                         </button>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           {uploadResult}
@@ -331,7 +321,7 @@ function Settings() {
                   className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                   type="submit"
                 >
-                  Save all
+                  Save
                 </button>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {settingResult}
@@ -564,7 +554,7 @@ function Settings() {
                     className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                     type="submit"
                   >
-                    Save all
+                    Save
                   </button>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {profileResult}

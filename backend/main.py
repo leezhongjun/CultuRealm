@@ -9,9 +9,12 @@ import os, json
 from dotenv import load_dotenv
 from flask_cors import CORS
 import uuid
+import json
+import random
 
-from utils import checkPassword, checkEmail, checkUsername, story_seeds
+from utils import checkPassword, checkEmail, checkUsername, checkName
 import settings
+from apis import *
 
 load_dotenv()
 
@@ -71,20 +74,28 @@ class UserProfile(db.Model):
     high_score = db.Column(db.Integer)
     stories_played = db.Column(db.Integer)
     rating = db.Column(db.Integer)
-    achievements = db.Column(db.String(80)) #prob a string of formatted file_paths
+    achievements = db.Column(db.String(80)) # format "achivement_id:achivement_times achivement_id:achivement_times"
     profile_pic = db.Column(db.LargeBinary)
     image_style = db.Column(db.String(16))
 
 class UserStories(db.Model):
-    id = db.Column(db.String(36), primary_key=True)
-    user_id = db.Column(db.String(36), nullable=False)
-    story_index = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.String(36), nullable=False, primary_key=True)
+    story_index = db.Column(db.Integer, nullable=False, primary_key=True)
     story_text = db.Column(db.String(1000), nullable=False) # split into 1000 char chunks
-    story_choice_1 = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
-    story_choice_2 = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
     user_choice = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
     img_link = db.Column(db.String(100), nullable=False) # link to image, max 100 chars
-    
+    achievements = db.Column(db.String(80), nullable=False) # format "achivement_id:achivement_times achivement_id:achivement_times"
+    keywords = db.Column(db.String(350), nullable=False) # keywords from story_text, saved as json list
+ 
+class UserState(db.Model):
+    id = db.Column(db.String(36), primary_key=True)
+    quiz_index = db.Column(db.Integer, nullable=False, default=-1)
+    suggestions = db.Column(db.Boolean, nullable=False, default=False)
+    story_index = db.Column(db.Integer, nullable=False, default=-1)
+    story_seeds = db.Column(db.String(3000), nullable=False, default="[]") # max 3000 chars
+    story_state = db.Column(db.String(5000), nullable=False, default="") # max 5000 chars
+    story_choice_1 = db.Column(db.String(400), nullable=False, default="") # Choices are max 400 chars
+    story_choice_2 = db.Column(db.String(400), nullable=False, default="") # Choices are max 400 chars
 
 # Callback function to check if a JWT exists in the database blocklist
 @jwt.token_in_blocklist_loader
@@ -146,13 +157,15 @@ If you did not make this request then simply ignore this email and no changes wi
 def register():
     data = request.get_json()
 
-    # check if password, confirm_password, email, and username are valid
+    # check if password, confirm_password, email, name, and username are valid
     if checkPassword(data['password']) == False:
         return jsonify({'message': 'Password must be 8-30 characters long, contain at least one letter, one number, and one special character'})
     if checkEmail(data['email']) == False:
         return jsonify({'message': 'Invalid email'})
     if checkUsername(data['username']) == False:
         return jsonify({'message': 'Invalid username'})
+    if checkName(data['name']) == False:
+        return jsonify({'message': 'Invalid name'})
     
     # check if email or username already exists
     if UserProfile.query.filter_by(email=data['email']).first():
@@ -169,7 +182,9 @@ def register():
         return jsonify({'message': 'Username already exists'})
     
     new_user_profile = UserProfile(name=data['name'], username=data['username'], email=data['email'], password=hashed_password, id=str(uuid.uuid4()), **settings.default_user_profile)
+    new_user_state = UserState(id=new_user_profile.id)
     db.session.add(new_user_profile)
+    db.session.add(new_user_state)
     db.session.commit()
     return jsonify({'message': 'Registered successfully'})
 
@@ -321,6 +336,140 @@ def handle_gameplay():
     print(data)
     return jsonify(data)
 
+@app.route('/handle_image_style', methods=['POST'])
+@jwt_required()
+def img_style():
+    id = get_jwt_identity()['id']
+    user = UserProfile.query.filter_by(id=id).first()
+    return {'image_style': user.image_style}
+
+@app.route('/start_story', methods=['POST'])
+@jwt_required()
+def start_story():
+    id = get_jwt_identity()['id']
+    data = request.get_json()
+    # clear previous story
+    # remove old story from db
+    # delete all entries in UserStories db with user id
+    UserStories.query.filter_by(user_id=id).delete()
+
+    # get user state
+    user_state = UserState.query.filter_by(id=id).first()
+
+    # create new story
+    # get user data
+    user_profile = UserProfile.query.filter_by(id=id).first()
+    # get story seeds
+    story_seeds = json.loads(user_state.story_seeds)
+    
+    # create more seeds if len == 0
+    if len(story_seeds) == 0:
+        story_seeds = get_story_seeds(age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+
+    # sample a seed
+    i = random.randint(0, len(story_seeds) - 1)
+    seed = story_seeds[i]
+
+    # remove the seed from the list
+    story_seeds.pop(i)
+
+    # update db with new seed list
+    user_state.story_seeds = json.dumps(story_seeds)
+
+    # call api -> story text
+    story_text = get_start_story(seed=seed, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+    story_state = [{
+        "role": "assistant",
+        "content": story_text,
+    }]
+    user_state.story_state = json.dumps(story_state)
+    # # get image style from data
+    # image_style = data['image_style']
+    # # update image style in db
+    # user_profile.image_style = image_style
+    # call api -> story image
+    img_url = get_start_img(story_text, user_profile.image_style)
+    user_state.img_url = img_url
+
+    # call api -> story audio
+
+    # update suggestions in UserState
+    if data["suggestions"]:
+        user_state.suggestions = True
+        # call api -> suggestions
+        suggestions = get_suggestions(story_text)
+        user_state.story_choice_1 = suggestions[0]
+        user_state.story_choice_2 = suggestions[1]
+    else:
+        user_state.suggestions = False
+    # if achivement call api -> achivement
+    new_achivements = ""
+    
+    # get keyword list
+    keywords = get_keywords(story_text)
+
+    # write to db
+    # make new entry in UserStories db
+    user_story = UserStories(user_id=id, story_index=0, story_text=story_text, user_choice="", img_link=img_url, achievements=new_achivements, keywords=json.dumps(keywords))
+    db.session.add(user_story)
+    # set story index to 0 in db
+    user_state.story_index = 0
+    # return data
+    db.session.commit()
+    return {'story_text': story_text, 'img_link': img_url, 'user_choice': "", 'achievements': new_achivements, 'keywords': keywords}
+
+# regen img endpoint
+@app.route('/regen_img', methods=['POST'])
+@jwt_required()
+def regen_img():
+    id = get_jwt_identity()['id']
+    data = request.get_json()
+    # call api -> img gen
+    return
+
+
+# regen suggestion endpoint
+@app.route('/regen_suggestion', methods=['POST'])
+@jwt_required()
+def regen_suggestion():
+    id = get_jwt_identity()['id']
+    data = request.get_json()
+    # call api -> suggestions
+    return
+
+
+@app.route('/story_index', methods=['POST'])
+@jwt_required()
+def story_index():
+    id = get_jwt_identity()['id']
+    data = request.get_json()
+    user_state = UserState.query.filter_by(id=id).first()
+    # if not new index
+    if data["index"] <= user_state.story_index:
+        # query db
+        user_story = UserStories.query.filter_by(user_id=id, story_index=data["index"]).first()
+        # return data
+        return {'story_text': user_story.story_text, 'img_link': user_story.img_link, 'user_choice': user_story.user_choice, 'achievements': user_story.achievements, 'keywords': json.loads(user_story.keywords)}
+
+
+    # if new index
+    # if previous index need resp, get user response from data
+    # censor user response form data
+    # write to db
+    # if achivement, add achivement to database
+    # return data
+    return
+
+@app.route('/get_state', methods=['POST'])
+@jwt_required()
+def get_story_state():
+    id = get_jwt_identity()['id']
+    state = UserState.query.filter_by(id=id).first()
+    if state is None:
+        state = UserState(id=id)
+        db.session.add(state)
+        db.session.commit()
+    return {'story_playing': state.story_index, 'quiz_playing': state.quiz_index}
 
 if __name__ == '__main__':
     with app.app_context():
