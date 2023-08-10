@@ -83,7 +83,8 @@ class UserStories(db.Model):
     story_index = db.Column(db.Integer, nullable=False, primary_key=True)
     story_text = db.Column(db.String(1000), nullable=False) # split into 1000 char chunks
     user_choice = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
-    img_link = db.Column(db.String(100), nullable=False) # link to image, max 100 chars
+    img_url = db.Column(db.String(100), nullable=False) # link to image, max 100 chars
+    img_prompt = db.Column(db.String(300), nullable=False) # prompt for image, max 100 chars
     achievements = db.Column(db.String(80), nullable=False) # format "achivement_id:achivement_times achivement_id:achivement_times"
     keywords = db.Column(db.String(350), nullable=False) # keywords from story_text, saved as json list
  
@@ -273,6 +274,12 @@ def set_user_pref():
             return jsonify({'message': 'Email already exists'})
         if UserProfile.query.filter_by(username=data['username']).first() and data['username'] != user_profile.username:
             return jsonify({'message': 'Username already exists'})
+        
+        if data['age'] != user_profile.age or data['race'] != user_profile.race or data['gender'] != user_profile.gender:
+            user_state = UserState.query.filter_by(id=id).first()
+            user_state.story_seeds = "[]"
+            user_state.story_index = -1
+            user_state.story_state = ""
 
         user_profile.age = data['age']
         user_profile.race = data['race']
@@ -383,23 +390,23 @@ def start_story():
         "content": story_text,
     }]
     user_state.story_state = json.dumps(story_state)
-    # # get image style from data
-    # image_style = data['image_style']
-    # # update image style in db
-    # user_profile.image_style = image_style
-    # call api -> story image
-    img_url = get_start_img(story_text, user_profile.image_style)
-    user_state.img_url = img_url
 
-    # call api -> story audio
+    # image gen 
+    img_prompt = get_start_img_prompt(story_text)
+    # img_url = gen_img(img_prompt, user_profile.image_style)
+
+    # call api -> story audio (do in frontend)
 
     # update suggestions in UserState
+    kwargs = {}
     if data["suggestions"]:
         user_state.suggestions = True
         # call api -> suggestions
         suggestions = get_suggestions(story_text)
         user_state.story_choice_1 = suggestions[0]
         user_state.story_choice_2 = suggestions[1]
+        kwargs["suggestion_1"] = suggestions[0]
+        kwargs["suggestion_2"] = suggestions[1]
     else:
         user_state.suggestions = False
     # if achivement call api -> achivement
@@ -410,13 +417,13 @@ def start_story():
 
     # write to db
     # make new entry in UserStories db
-    user_story = UserStories(user_id=id, story_index=0, story_text=story_text, user_choice="", img_link=img_url, achievements=new_achivements, keywords=json.dumps(keywords))
+    user_story = UserStories(user_id=id, story_index=0, story_text=story_text, user_choice="", img_url="", img_prompt=img_prompt, achievements=new_achivements, keywords=json.dumps(keywords))
     db.session.add(user_story)
     # set story index to 0 in db
     user_state.story_index = 0
     # return data
     db.session.commit()
-    return {'story_text': story_text, 'img_link': img_url, 'user_choice': "", 'achievements': new_achivements, 'keywords': keywords}
+    return {'image_style': user_profile.image_style,'story_text': story_text, 'user_choice': "", 'achievements': new_achivements, 'keywords': keywords, **kwargs}
 
 # regen img endpoint
 @app.route('/regen_img', methods=['POST'])
@@ -425,8 +432,32 @@ def regen_img():
     id = get_jwt_identity()['id']
     data = request.get_json()
     # call api -> img gen
-    return
+    user_profile = UserProfile.query.filter_by(id=id).first()
+    # get image style from data
+    image_style = data['image_style']
+    # update image style in db
+    user_profile.image_style = image_style
+    story_index = data['story_index']
+    user_story = UserStories.query.filter_by(user_id=id, story_index=story_index).first()
+    img_prompt = user_story.img_prompt
+    img_url = gen_img(img_prompt, user_profile.image_style)
+    user_story.img_url = img_url
 
+    db.session.commit()
+    return {'image_url': img_url}
+
+# reset story index endpoint
+@app.route('/reset_story_index', methods=['POST'])
+@jwt_required()
+def reset_story_index():
+    id = get_jwt_identity()['id']
+    # query db
+    user_state = UserState.query.filter_by(id=id).first()
+    # set story index to 0 in db
+    user_state.story_index = -1
+    db.session.commit()
+    # return data
+    return {'message': "Success"}
 
 # regen suggestion endpoint
 @app.route('/regen_suggestion', methods=['POST'])
@@ -449,7 +480,7 @@ def story_index():
         # query db
         user_story = UserStories.query.filter_by(user_id=id, story_index=data["index"]).first()
         # return data
-        return {'story_text': user_story.story_text, 'img_link': user_story.img_link, 'user_choice': user_story.user_choice, 'achievements': user_story.achievements, 'keywords': json.loads(user_story.keywords)}
+        return {'story_text': user_story.story_text, 'img_url': user_story.img_url, 'user_choice': user_story.user_choice, 'achievements': user_story.achievements, 'keywords': json.loads(user_story.keywords)}
 
 
     # if new index
@@ -469,7 +500,7 @@ def get_story_state():
         state = UserState(id=id)
         db.session.add(state)
         db.session.commit()
-    return {'story_playing': state.story_index, 'quiz_playing': state.quiz_index}
+    return {'story_index': state.story_index, 'quiz_index': state.quiz_index}
 
 if __name__ == '__main__':
     with app.app_context():

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import reactLogo from "../assets/react.svg";
 import viteLogo from "/vite.svg";
+import loadingIcon from "../assets/loading-balls.svg";
 import ParticlesBg from "particles-bg";
 import axios from "axios";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
@@ -36,30 +37,57 @@ import HighlightedParagraph from "../components/HighlightedPara";
 
 function App() {
   const [currentPage, setCurrentPage] = useState(-1);
-  const [data, setData] = useState({ checked: null });
+  const [needSuggestions, setNeedSuggestions] = useState(false);
+  const [style, setStyle] = useState("Photorealistic");
+  const [resp, setResp] = useState("");
+  const [action, setAction] = useState("do");
+  const [suggestion1, setSuggestion1] = useState("Loading...");
+  const [suggestion2, setSuggestion2] = useState("Loading...");
+  const [imgSrc, setImgSrc] = useState(loadingIcon);
+  const [storyText, setStoryText] = useState("Loading...");
+  const [phrases, setPhrases] = useState([]);
+  const [feedback, setFeedback] = useState("Loading...");
+  const [latestIndex, setLatestIndex] = useState(-1);
+  const [showResponseSubmit, setShowResponseSubmit] = useState(true);
 
-  const handleFormSubmit = async (event) => {
+  const startStoryForm = async (event) => {
     event.preventDefault(); //Don't refresh page
 
-    setCurrentPage(currentPage + 1);
-
+    setCurrentPage(0);
     const checkbox = document.getElementById(
       "default-checkbox"
     ) as HTMLInputElement;
-    const checkboxValue = checkbox.checked;
+    setNeedSuggestions(checkbox.checked);
+    setLatestIndex(0);
 
     try {
       const response = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/start_story",
-        { suggestions: checkboxValue },
+        { suggestions: checkbox.checked },
         {
           headers: {
             Authorization: authHeader(),
           },
         }
       );
-      setData(response.data);
-      console.log(response.data);
+      const data = response.data;
+      console.log(data);
+      setSuggestion1(data.suggestion_1);
+      setSuggestion2(data.suggestion_2);
+      setStoryText(data.story_text);
+      setPhrases(data.keywords);
+      setStyle(data.image_style);
+      setFeedback("");
+      const response_img = await axios.post(
+        import.meta.env.VITE_BACKEND_ENDPOINT + "/regen_img",
+        { image_style: data.image_style, story_index: 0 },
+        {
+          headers: {
+            Authorization: authHeader(),
+          },
+        }
+      );
+      setImgSrc(response_img.data.image_url);
     } catch (error) {
       console.error(error);
     }
@@ -81,6 +109,7 @@ function App() {
         );
         // console.log(response);
         setCurrentPage(response.data.story_index);
+        setLatestIndex(response.data.story_index);
       } catch (error) {
         console.error(error);
       }
@@ -119,7 +148,7 @@ function App() {
                   data-aos-delay="300"
                 >
                   <div>
-                    <form onSubmit={handleFormSubmit} className="py-0">
+                    <form onSubmit={startStoryForm} className="py-0">
                       <button
                         type="submit"
                         className="px-4 py-2 text-base font-medium tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
@@ -156,40 +185,24 @@ function App() {
   }
 
   function Gameplay() {
-    const [style, setStyle] = useState("Photorealistic");
-    const [resp, setResp] = useState("");
-    const [action, setAction] = useState("do");
-    const [suggestion1, setSuggestion1] = useState("Loading...");
-    const [suggestion2, setSuggestion2] = useState("Loading...");
-    const [imgSrc, setImgSrc] = useState("https://picsum.photos/1024");
-    const [storyText, setStoryText] = useState("Loading...");
-    const [phrases, setPhrases] = useState([]);
-    const [feedback, setFeedback] = useState("Loading...");
-    const [latestIndex, setLatestIndex] = useState(true);
-    const [showSuggestions, setShowSuggestions] = useState(data.checked);
-    const [showResponseSubmit, setShowResponseSubmit] = useState(false);
+    function handleSuggestionClick(suggestion: String) {
+      const strs = suggestion.split(": ");
+      setAction(strs[0].toLowerCase());
+      setResp(strs[1]);
+    }
 
-    // useEffect(() => {
-    //   const fetchData = async () => {
-    //     try {
-    //       const response = await axios.post(
-    //         import.meta.env.VITE_BACKEND_ENDPOINT + "/get_state",
-    //         {},
-    //         {
-    //           headers: {
-    //             Authorization: authHeader(),
-    //           },
-    //         }
-    //       );
-    //       console.log(response);
-    //       setCurrentPage(response.data.story_index);
-    //     } catch (error) {
-    //       console.error(error);
-    //     }
-    //   };
-    //   fetchData();
-    // }, [currentPage]);
-
+    async function handleImageRegen() {
+      const response = await axios.post(
+        import.meta.env.VITE_BACKEND_ENDPOINT + "/regen_img",
+        { image_style: style, story_index: currentPage },
+        {
+          headers: {
+            Authorization: authHeader(),
+          },
+        }
+      );
+      setImgSrc(response.data.image_url);
+    }
     return (
       <>
         <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
@@ -230,8 +243,7 @@ function App() {
                       Say:
                     </option>
                   </select>
-                  <input
-                    type="text"
+                  <textarea
                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     value={resp}
                     placeholder={
@@ -267,7 +279,7 @@ function App() {
                 )}
               </form>
             </div>
-            {showSuggestions && showResponseSubmit && (
+            {needSuggestions && showResponseSubmit && (
               <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <h3 className="mb-4 text-xl font-semibold dark:text-white">
                   Suggestions
@@ -275,18 +287,25 @@ function App() {
                 <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
                   <button
                     className=" mb-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                    onClick={() => {}}
+                    onClick={() => {
+                      handleSuggestionClick(suggestion1);
+                    }}
                   >
                     {suggestion1}
                   </button>
                   <button
                     className=" mb-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                    onClick={() => {}}
+                    onClick={() => {
+                      handleSuggestionClick(suggestion2);
+                    }}
                   >
                     {suggestion2}
                   </button>
                 </div>
-                <button className="  mb-4 text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600">
+                <button
+                  className="  mb-4 text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                  onClick={() => {}}
+                >
                   Regenerate
                 </button>
               </div>
@@ -310,7 +329,7 @@ function App() {
                 <img
                   className="mb-4 rounded-lg w-1024 h-1024 sm:mb-0 xl:mb-4 2xl:mb-0"
                   src={imgSrc}
-                  alt="random"
+                  alt="Loading icon"
                 />
               </div>
               <form id="form-img" onSubmit={(e) => handleSubmit("settings", e)}>
@@ -338,7 +357,11 @@ function App() {
                 <div className="space-y-2">
                   <button
                     className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                    type="submit"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setImgSrc(loadingIcon);
+                      handleImageRegen();
+                    }}
                   >
                     Regenerate
                   </button>
@@ -358,7 +381,7 @@ function App() {
               Previous
             </button>
           )}
-          {!latestIndex && (
+          {!(currentPage === latestIndex) && (
             <button
               className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
               onClick={() => {
@@ -372,6 +395,15 @@ function App() {
             className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
             onClick={() => {
               setCurrentPage(-1);
+              axios.post(
+                import.meta.env.VITE_BACKEND_ENDPOINT + "/reset_story_index",
+                {},
+                {
+                  headers: {
+                    Authorization: authHeader(),
+                  },
+                }
+              );
             }}
           >
             New Story

@@ -3,17 +3,19 @@ from dotenv import load_dotenv
 import os
 import json
 
-from img_api import get_image
+from img_api import get_image, upload_from_data
 from utils import achievements, breakpoints
 import time
 
 load_dotenv()
 
-openai.api_base = "https://chimeragpt.adventblocks.cc/api/v1"
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_base = "https://free.churchless.tech/v1/"
+# openai.api_base = "https://chimeragpt.adventblocks.cc/api/v1"
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = ""
 
 styles = {
-    "Photorealistic": "realistic, highly detailed, art-station, trending on artstation, masterpiece, great artwork, ultra render realistic n-9, 4k UHD, 8k, 16k, 20k, octane render, stunning detail",
+    "Photorealistic": "realistic, highly detailed, art-station, trending on artstation, masterpiece, great artwork, ultra render realistic n-9, 4k, 8k, 16k, 20k",
     "Pixel": "16 bit pixel art, cinematic still, hdr, pixelated full body, character icon concept art, pixel perfect",
     "Cartoon": "cartoon, intricate, sharp focus, illustration, highly detailed, digital painting, concept art, matte, art by wlop and artgerm and ivan shishkin and andrey shishkin, masterpiece",
     "Anime": "anime, digital art, trending on artstation, pixiv, hyperdetailed, 8k realistic, symmetrical, high coherence, depth of field, very coherent artwork"
@@ -31,6 +33,7 @@ def ask_gpt(prompt, max_tokens=0, temp=-1):
         allow_fallback=True,
         **kwarg
     )
+    # print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 def ask_gpt_convo(messages):
@@ -39,6 +42,7 @@ def ask_gpt_convo(messages):
         messages=messages,
         allow_fallback=True
     )
+    # print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 def get_story_seeds(age, gender, race):
@@ -114,7 +118,7 @@ def get_start_story(seed, name, age, race, gender):
     return ask_gpt_convo(messages)
 
 
-def get_start_img(text, style):
+def get_start_img_prompt(text):
     prompt = f"""There is an image that accompanies the text in the story. 
 
 STORY:
@@ -122,18 +126,9 @@ STORY:
 
 An adult that just saw the image without reading the story. Describe what the adult saw in simple English, in a single sentence, and include the races, ages, and genders of the people in the description. Do not include character names. Use simple sentence structure. Start the description with "An image of ..."
 """
-    img_prompt = ask_gpt(prompt) + " " + styles[style]
-    retry = True
-    while retry:
-        try:
-            response = openai.Image.create(
-                prompt=img_prompt,
-                n=1,  # images count
-                size="1024x1024"
-            )
-            return response["data"][0]["url"]
-        except:
-            pass
+    img_prompt = ask_gpt(prompt)
+    
+    return img_prompt
 
 def get_suggestions(text):
     prompt = f"""Generate 2 possible user responses for this story. Follow the format specified.
@@ -151,18 +146,26 @@ STORY:
 {text}
 """
     
-    resp = ask_gpt(prompt, temp=1)
-    print(resp)
     res = []
-    for r in resp.split('\n'):
-        if "Do: " in r:
-            res.append("Do: " + r.split("Do: ")[-1])
-        elif "Say: " in r:
-            res.append("Say: " + r.split("Say: ")[-1])
+    while len(res) < 2:
+        res = []
+        try:
+            resp = ask_gpt(prompt, temp=1)
+            for r in resp.split('\n'):
+                s = ''
+                if "Do: " in r:
+                    s = "Do: " + r.split("Do: ")[-1]
+                elif "Say: " in r:
+                    s = "Say: " + r.split("Say: ")[-1]
+                if s.strip():
+                    res.append(s)
+        except:
+            pass
+    
     return res
 
 def get_keywords(text):
-    prompt = f"""Extract only very specific and important cultures, cultural activities, cultural events, cultural festivals, cultural customs, cultural traditions and cultural items from the following text. There might be none. Return it as a Python list.
+    prompt = f"""Extract only very specific and important important cultures and cultural from the following text. There might be none. Return it as a Python list.
 
 Follow this format for the output: ["...", "..."]
 
@@ -174,3 +177,12 @@ Text:
         return []
     res = "[" + res.split('[')[-1].split(']')[0] + "]"
     return eval(res)
+
+def gen_img(prompt, style):
+    while True:
+        try:
+            res = get_image(prompt + " " + styles[style])
+            img = res
+            return upload_from_data(img)
+        except:
+            pass

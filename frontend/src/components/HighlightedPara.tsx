@@ -10,7 +10,12 @@ const HighlightedParagraph: React.FC<HighlightedParagraphProps> = ({
   phrases,
 }) => {
   const highlightedPhrases = phrases.map((phrase, index) => (
-    <a key={index} href={`/${phrase}`} className="text-blue-500">
+    <a
+      key={index}
+      href={`https://you.com/search?q=What+is+a%3A+${phrase}&fromSearchBar=true&tbm=youchat`}
+      target="_blank"
+      className="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline"
+    >
       {phrase}
     </a>
   ));
@@ -21,7 +26,7 @@ const HighlightedParagraph: React.FC<HighlightedParagraphProps> = ({
       new RegExp(`^${phrase}$`, "i").test(match)
     );
     return matchingPhrase
-      ? `<a href="/${matchingPhrase}" class="text-blue-500">${match}</a>`
+      ? `<a href="https://you.com/search?q=What+is+a%3A+${matchingPhrase}&fromSearchBar=true&tbm=youchat" target="_blank" class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline">${match}</a>`
       : match;
   });
 
