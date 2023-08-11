@@ -12,43 +12,41 @@ def checkUsername(username):
 def checkName(name):
     return bool(re.match(r"^(?=.*[A-Za-z])[A-Za-z -]{1,80}$", name))
 
-achievements = [
-    {
-        "name": "Helpful User",
-        "description": "User offers help to another character",
-        "is_achieved": False,
-        "emoji": "💁"
-    },
-    {
-        "name": "Compliment Giver",
-        "description": "User gives a compliment to another character",
-        "is_achieved": False,
-        "emoji": "🥰"
-    },
-    {
-        "name": "Cultural Ambassador",
-        "description": "User shares their own culture",
-        "is_achieved": False,
-        "emoji": "🌍"
-    },
-    {
-        "name": "Cultural Explorer",
-        "description": "User asks about another character's culture",
-        "is_achieved": False,
-        "emoji": "🧐"
-    },
-    {
-        "name": "Master of Laughter",
-        "description": "User makes another character laugh",
-        "is_achieved": False,
-        "emoji": "😄"
-    },
-    {
-        "name": "Knowledge Sharer",
-        "description": "User teaches another character something new",
-        "is_achieved": False,
-        "emoji": "🧠"
-    }
-]
+def calc_new_rating(score, total_games, current_rating):
+    """
+    Calculate the rating change based on the score achieved in a single-player game using the Elo rating system.
 
-breakpoints = [1, 3, 5, 10, 50]
+    :param score: The score achieved in the game (out of 100).
+    :param total_games: The total number of games the user has played.
+    :param current_rating: The user's current rating.
+    :param k_factor: The K-factor determines the sensitivity of rating changes. Default is 32.
+    :return: The calculated rating change.
+    """
+    score -= 62.5
+    k_factor = 2
+    if total_games <= 10:
+        k_factor = 5  # Higher K-factor for initial games
+    elif total_games <= 50:
+        k_factor = 3  # Lower K-factor as player becomes more established
+    elif total_games <= 100:
+        k_factor = 2.5
+    
+    expected_score = 1 / (1 + 10**((current_rating - score) / 400))
+    rating_change = k_factor * (score - expected_score)
+    new_rating = current_rating + rating_change
+
+    return int(new_rating)
+
+def parse_achievements(s):
+    """Parse achievements from a string."""
+    m = {}
+    if s != "":
+        for x in s.split(' '):
+            i, j = x.split(':')
+            m[int(i)] = int(j)
+    return m
+
+def format_achievements(m):
+    """Format achievements into a string."""
+    return ' '.join(f'{i}:{j}' for i, j in m.items())
+

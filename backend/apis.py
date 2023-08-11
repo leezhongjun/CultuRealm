@@ -4,15 +4,13 @@ import os
 import json
 
 from img_api import get_image, upload_from_data
-from utils import achievements, breakpoints
+from settings import achievements, breakpoints
 import time
 
 load_dotenv()
 
-openai.api_base = "https://free.churchless.tech/v1/"
-# openai.api_base = "https://chimeragpt.adventblocks.cc/api/v1"
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.api_key = ""
+openai.api_base=os.environ['OPENAI_API_BASE_2']
+openai.api_key=os.environ['OPENAI_API_KEY_2']
 
 styles = {
     "Photorealistic": "realistic, highly detailed, art-station, trending on artstation, masterpiece, great artwork, ultra render realistic n-9, 4k, 8k, 16k, 20k",
@@ -115,7 +113,7 @@ def get_start_story(seed, name, age, race, gender):
     messages = [
         {"role": "system", "content": system_prompt(seed, name, age, race, gender)}
     ]
-    return ask_gpt_convo(messages).replace("*", "") # remove all asterisks
+    return ask_gpt_convo(messages).replace("*", ""), messages[0] # remove all asterisks
 
 
 def get_start_img_prompt(text):
@@ -184,5 +182,98 @@ def gen_img(prompt, style):
             res = get_image(prompt + " " + styles[style])
             img = res
             return upload_from_data(img)
+        except:
+            pass
+
+
+def moderate_input(user_input):
+    openai.api_base=os.environ['OPENAI_API_BASE']
+    openai.api_key=os.environ['OPENAI_API_KEY']
+    response = openai.Moderation.create(
+        input=user_input
+    )
+    openai.api_base=os.environ['OPENAI_API_BASE_2']
+    openai.api_key=os.environ['OPENAI_API_KEY_2']
+    cat = []
+    for k in response['results'][0]['categories'].keys():
+        if response['results'][0]['categories'][k]:
+            cat.append(k)
+    return response['results'][0]['flagged'], cat
+
+
+def get_feedback_and_score(user_response, text):
+    prompt = f"""Evaluate the following USER RESPONSE to the STORY CONTEXT based on how well the user respected and appreciated other cultures if the scenario gives the user a chance to do so. Let's think step by step. Then, rate the response on a scale of 1 to 100 based on the same basis.
+
+Example output:
+EXPLANATION: [explanation]
+
+SCORE: [score]/100
+
+STORY CONTEXT:
+{text}
+
+USER RESPONSE:
+{user_response}
+"""
+    score = ''
+    explanation = ''
+    while score == '' or explanation == '':
+        try:
+            res = ask_gpt(prompt, temp=0)
+            reses = res.split("EXPLANATION: ")[-1].split("SCORE: ")
+            score = reses[-1].split("/100")[0]
+            explanation = reses[0].strip()
+        except:
+            pass
+    try:
+        score = int(score)
+    except:
+        score = 0
+    return explanation, score
+
+def get_opportunity_score(name, text):
+    prompt = f'''Rate the quality and quantity of opportunities given to demonstrate their ability to respect and appreciate other cultures to the user, {name}, during the following STORY CONTEXT on a scale of 1 to 100.
+
+Example output:
+SCORE: [score]/100
+
+STORY CONTEXT:
+{text}
+'''
+    score = ''
+    while score == '':
+        try:
+            res = ask_gpt(prompt, temp=0, max_tokens=10)
+            score = res.split("SCORE: ")[-1].split("/100")[0]
+        except:
+            pass
+    try:
+        score = int(score)
+    except:
+        score = 90
+    return score
+
+def get_achievements_score(name, text, user_response):
+    prompt = f"""Modify the JSON formatted list of achievements based on if any of the achievements were achieved in the text. 
+
+ACHIEVEMENTS:
+{achievements}
+
+The user is {name}.
+
+TEXT:
+
+User: {user_response}
+
+{text}"""
+    while True:
+        try:
+            res = ask_gpt(prompt, temp=0)
+            res = json.loads("[" + res.split("[")[-1].split(']')[0] + "]")
+            ls =[]
+            for i, x in enumerate(res):
+                if x['is_achieved']:
+                    ls.append(i)
+            return ls
         except:
             pass

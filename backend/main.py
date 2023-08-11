@@ -12,7 +12,7 @@ import uuid
 import json
 import random
 
-from utils import checkPassword, checkEmail, checkUsername, checkName
+from utils import checkPassword, checkEmail, checkUsername, checkName, calc_new_rating, parse_achievements, format_achievements
 import settings
 from apis import *
 
@@ -99,6 +99,9 @@ class UserState(db.Model):
     suggestion_1 = db.Column(db.String(400), nullable=False, default="") # Choices are max 400 chars
     suggestion_2 = db.Column(db.String(400), nullable=False, default="") # Choices are max 400 chars
     score = db.Column(db.Integer, nullable=False, default=0)
+    opp_score = db.Column(db.Integer, nullable=False, default=0)
+    final_score = db.Column(db.Integer, nullable=False, default=0)
+    old_rating = db.Column(db.Integer, nullable=False, default=1500)
 
 # Callback function to check if a JWT exists in the database blocklist
 @jwt.token_in_blocklist_loader
@@ -339,7 +342,7 @@ def leaderboard():
         res.append({'name': user.name, 'username': user.username, 'rating': user.rating, 'race': user.race, 'age': user.age, 'achievements': user.achievements, 'id': user.id})
     return jsonify(res)
 
-@app.route('/handle_gameplay', methods=['POST']) #backend for story page
+@app.route('/handle_gameplay', methods=['POST']) # backend for story page
 def handle_gameplay():
     data = request.get_json()
     print(data)
@@ -386,8 +389,10 @@ def start_story():
     user_state.story_seeds = json.dumps(story_seeds)
 
     # call api -> story text
-    story_text = get_start_story(seed=seed, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
-    story_state = [{
+    story_text = "END"
+    while "END" in story_text:
+        story_text, system_message = get_start_story(seed=seed, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+    story_state = [system_message, {
         "role": "assistant",
         "content": story_text,
     }]
@@ -405,6 +410,7 @@ def start_story():
         user_state.suggestions = True
         # call api -> suggestions
         suggestions = get_suggestions(story_text)
+        suggestions = [suggestion.replace('*', '') for suggestion in suggestions]
         user_state.suggestion_1 = suggestions[0]
         user_state.suggestion_2 = suggestions[1]
         kwargs["suggestion_1"] = suggestions[0]
@@ -455,7 +461,7 @@ def reset_story_index():
     id = get_jwt_identity()['id']
     # query db
     user_state = UserState.query.filter_by(id=id).first()
-    # set story index to 0 in db
+    # set story index to -1 in db
     user_state.story_index = -1
     db.session.commit()
     # return data
@@ -471,8 +477,8 @@ def regen_suggestions():
     user_state = UserState.query.filter_by(id=id).first()
     user_story = UserStories.query.filter_by(user_id=id, story_index=story_index).first()
     suggestions = get_suggestions(user_story.story_text)
-    user_state.suggestion_1 = suggestions[0]
-    user_state.suggestion_1 = suggestions[1]
+    user_state.suggestion_1 = suggestions[0].replace('*', '')
+    user_state.suggestion_1 = suggestions[1].replace('*', '')
     db.session.commit()
     return {'suggestion_1': suggestions[0], 'suggestion_2': suggestions[1]}
 
@@ -488,27 +494,109 @@ def story_index():
     if user_state.story_index < 0:
         return {'story_starting': True}
     
+    user_profile = UserProfile.query.filter_by(id=id).first()
+    cur_story_index = data['story_index']
+
+    # if end index
+    final = cur_story_index == settings.max_story_index
+
     # if not new index
-    if data["story_index"] <= user_state.story_index:
+    if cur_story_index <= user_state.story_index:
         # query db
-        user_story = UserStories.query.filter_by(user_id=id, story_index=data["story_index"]).first()
-        user_profile = UserProfile.query.filter_by(id=id).first()
+        user_story = UserStories.query.filter_by(user_id=id, story_index=cur_story_index).first()
         kwargs = {}
-        if user_state.suggestions and data["story_index"] == user_state.story_index:
+        if user_state.suggestions and cur_story_index == user_state.story_index and not final:
             kwargs['suggestion_1'] = user_state.suggestion_1
             kwargs['suggestion_2'] = user_state.suggestion_2
-        # return data
-        return {'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
 
-    
+        if final:
+            kwargs['final_score'] = user_state.final_score
+            kwargs['new_rating'] = user_profile.rating
+            kwargs['old_rating'] = user_state.old_rating
+            
+        # return data
+        return {'is_final':final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
 
     # if new index
-    # if previous index need resp, get user response from data
-    # censor user response form data
+    # get resp
+    resp = data["user_response"] # resp here is "do: ..."
+
+    # response moderation
+    flagged, cats =  moderate_input(resp)
+    if flagged:
+        flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + ", ".join(cats) + "."
+        return {'flagged': True, 'flagged_text': flagged_text}
+
+    story_state = json.loads(user_state.story_state)
+    story_state += [{
+        "role": "user",
+        "content": "I " + resp + ("\n\nSTORY ENDS THIS TURN" if final else "."),
+    }]
+    story_text = "SOMERANDOMSTRING" if final else "END"
+    while (final and "SOMERANDOMSTRING" in story_text) or (not final and "END" in story_text):
+        story_text = ask_gpt_convo(story_state).replace("*", "")
+    story_state += [{
+        "role": "assistant",
+        "content": story_text,
+    }]
+    user_state.story_state = json.dumps(story_state)
+
+    # keywords
+    keywords = get_keywords(story_text)
+    
+    # feedback
+    feedback, score = get_feedback_and_score(resp, story_text)
+    opp_score = 0 if score==0 else get_opportunity_score(user_profile.name, story_text)
+    user_state.opp_score += opp_score
+    user_state.score += score * opp_score
+    
+    if final:
+        # final score updating
+        final_score = int(user_state.score * (100 / user_state.opp_score) / 100)
+        user_state.final_score = final_score
+        user_profile.stories_played += 1
+        if final_score > user_profile.high_score:
+            user_profile.high_score = final_score
+
+        # rating
+        user_state.old_rating = user_profile.rating
+        user_profile.rating = calc_new_rating(final_score, user_profile.stories_played, user_state.old_rating)
+
+
+    # achivement
+    achievements_ls = get_achievements_score(user_profile.name, story_text, "I " + resp)
+    achievements_dict = parse_achievements(user_profile.achievements)
+    ach_d_new = {}
+    for ach in achievements_ls:
+        if ach not in achievements_dict.keys():
+            achievements_dict[ach] = 0
+        achievements_dict[ach] += 1
+        ach_d_new[ach] = achievements_dict[ach]
+    new_achievements = format_achievements(ach_d_new)
+    user_profile.achievements = format_achievements(achievements_dict)
+
+    # suggestions
+    if user_state.suggestions:
+        suggestions = get_suggestions(story_text)
+        user_state.suggestion_1 = suggestions[0]
+        user_state.suggestion_2 = suggestions[1]
+
+    # img prompt
+    img_prompt = get_start_img_prompt(story_text)
+    
     # write to db
-    # if achivement, add achivement to database
+    user_state.story_index = cur_story_index
+    prev_user_story = UserStories.query.filter_by(user_id=id, story_index=cur_story_index-1).first()
+    prev_user_story.user_response = resp
+    prev_user_story.feedback = feedback
+    prev_user_story.achievements = new_achievements
+
+    new_user_story = UserStories(user_id=id, story_index=cur_story_index, story_text=story_text, img_prompt=img_prompt, img_url="", user_response="", feedback="", achievements="", keywords=json.dumps(keywords))
+    db.session.add(new_user_story)
+    db.session.commit()
+
     # return data
-    return
+    return {'flagged': False, 'achievements': new_achievements, 'feedback': feedback}
 
 @app.route('/get_state', methods=['POST'])
 @jwt_required()
