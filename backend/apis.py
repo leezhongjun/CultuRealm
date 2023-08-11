@@ -115,7 +115,7 @@ def get_start_story(seed, name, age, race, gender):
     messages = [
         {"role": "system", "content": system_prompt(seed, name, age, race, gender)}
     ]
-    return ask_gpt_convo(messages)
+    return ask_gpt_convo(messages).replace("*", "") # remove all asterisks
 
 
 def get_start_img_prompt(text):
@@ -165,7 +165,7 @@ STORY:
     return res
 
 def get_keywords(text):
-    prompt = f"""Extract only very specific and important important cultures and cultural from the following text. There might be none. Return it as a Python list.
+    prompt = f"""Extract only very specific and important cultures, religions, cultural and religious from the following text. There might be none. Return it as a Python list.
 
 Follow this format for the output: ["...", "..."]
 

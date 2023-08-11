@@ -59,7 +59,10 @@ function App() {
     ) as HTMLInputElement;
     setNeedSuggestions(checkbox.checked);
     setLatestIndex(0);
-
+    setSuggestion1("Loading...");
+    setSuggestion2("Loading...");
+    setStoryText("Loading...");
+    setImgSrc(loadingIcon);
     try {
       const response = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/start_story",
@@ -78,6 +81,7 @@ function App() {
       setPhrases(data.keywords);
       setStyle(data.image_style);
       setFeedback("");
+      setResp("");
       const response_img = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/regen_img",
         { image_style: data.image_style, story_index: 0 },
@@ -94,6 +98,40 @@ function App() {
   };
 
   // call state api, set page to corect page
+
+  const getStoryData = async (
+    page: number,
+    latestPage: number = latestIndex
+  ) => {
+    try {
+      const response = await axios.post(
+        import.meta.env.VITE_BACKEND_ENDPOINT + "/story_index",
+        { story_index: page },
+        {
+          headers: {
+            Authorization: authHeader(),
+          },
+        }
+      );
+      console.log(response);
+      if (!response.data.story_starting) {
+        setNeedSuggestions(response.data.has_suggestions);
+        if (response.data.has_suggestions && page === latestPage) {
+          setSuggestion1(response.data.suggestion_1);
+          setSuggestion2(response.data.suggestion_2);
+        }
+        setStoryText(response.data.story_text);
+        setPhrases(response.data.keywords);
+        setStyle(response.data.image_style);
+        setFeedback(response.data.feedback);
+        setResp(response.data.user_response);
+        setImgSrc(response.data.image_url);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const authHeader = useAuthHeader();
   useEffect(() => {
     const fetchData = async () => {
@@ -110,6 +148,7 @@ function App() {
         // console.log(response);
         setCurrentPage(response.data.story_index);
         setLatestIndex(response.data.story_index);
+        getStoryData(response.data.story_index, response.data.story_index);
       } catch (error) {
         console.error(error);
       }
@@ -203,10 +242,25 @@ function App() {
       );
       setImgSrc(response.data.image_url);
     }
+
+    async function handleSuggestionsRegen() {
+      const response = await axios.post(
+        import.meta.env.VITE_BACKEND_ENDPOINT + "/regen_suggestions",
+        { story_index: currentPage },
+        {
+          headers: {
+            Authorization: authHeader(),
+          },
+        }
+      );
+      setSuggestion1(response.data.suggestion_1);
+      setSuggestion2(response.data.suggestion_2);
+    }
+
     return (
       <>
         <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
-          <div className="mb-4 col-span-full xl:mb-2">
+          <div className="px-2 mb-4 col-span-full xl:mb-2">
             <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
               Story
             </h1>
@@ -304,7 +358,12 @@ function App() {
                 </div>
                 <button
                   className="  mb-4 text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                  onClick={() => {}}
+                  type="button"
+                  onClick={() => {
+                    setSuggestion1("Loading...");
+                    setSuggestion2("Loading...");
+                    handleSuggestionsRegen();
+                  }}
                 >
                   Regenerate
                 </button>
@@ -357,8 +416,8 @@ function App() {
                 <div className="space-y-2">
                   <button
                     className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                    onClick={(event) => {
-                      event.preventDefault();
+                    type="button"
+                    onClick={() => {
                       setImgSrc(loadingIcon);
                       handleImageRegen();
                     }}
@@ -376,6 +435,7 @@ function App() {
               className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
               onClick={() => {
                 setCurrentPage(currentPage - 1);
+                getStoryData(currentPage - 1);
               }}
             >
               Previous
@@ -386,6 +446,7 @@ function App() {
               className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
               onClick={() => {
                 setCurrentPage(currentPage + 1);
+                getStoryData(currentPage + 1);
               }}
             >
               Next

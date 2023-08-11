@@ -82,12 +82,13 @@ class UserStories(db.Model):
     user_id = db.Column(db.String(36), nullable=False, primary_key=True)
     story_index = db.Column(db.Integer, nullable=False, primary_key=True)
     story_text = db.Column(db.String(1000), nullable=False) # split into 1000 char chunks
-    user_choice = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
+    user_response = db.Column(db.String(400), nullable=False) # Choices are max 400 chars
     img_url = db.Column(db.String(100), nullable=False) # link to image, max 100 chars
     img_prompt = db.Column(db.String(300), nullable=False) # prompt for image, max 100 chars
     achievements = db.Column(db.String(80), nullable=False) # format "achivement_id:achivement_times achivement_id:achivement_times"
     keywords = db.Column(db.String(350), nullable=False) # keywords from story_text, saved as json list
- 
+    feedback = db.Column(db.String(1000), nullable=False) # feedback from user, max 1000 chars
+
 class UserState(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     quiz_index = db.Column(db.Integer, nullable=False, default=-1)
@@ -95,8 +96,9 @@ class UserState(db.Model):
     story_index = db.Column(db.Integer, nullable=False, default=-1)
     story_seeds = db.Column(db.String(3000), nullable=False, default="[]") # max 3000 chars
     story_state = db.Column(db.String(5000), nullable=False, default="") # max 5000 chars
-    story_choice_1 = db.Column(db.String(400), nullable=False, default="") # Choices are max 400 chars
-    story_choice_2 = db.Column(db.String(400), nullable=False, default="") # Choices are max 400 chars
+    suggestion_1 = db.Column(db.String(400), nullable=False, default="") # Choices are max 400 chars
+    suggestion_2 = db.Column(db.String(400), nullable=False, default="") # Choices are max 400 chars
+    score = db.Column(db.Integer, nullable=False, default=0)
 
 # Callback function to check if a JWT exists in the database blocklist
 @jwt.token_in_blocklist_loader
@@ -403,8 +405,8 @@ def start_story():
         user_state.suggestions = True
         # call api -> suggestions
         suggestions = get_suggestions(story_text)
-        user_state.story_choice_1 = suggestions[0]
-        user_state.story_choice_2 = suggestions[1]
+        user_state.suggestion_1 = suggestions[0]
+        user_state.suggestion_2 = suggestions[1]
         kwargs["suggestion_1"] = suggestions[0]
         kwargs["suggestion_2"] = suggestions[1]
     else:
@@ -417,13 +419,13 @@ def start_story():
 
     # write to db
     # make new entry in UserStories db
-    user_story = UserStories(user_id=id, story_index=0, story_text=story_text, user_choice="", img_url="", img_prompt=img_prompt, achievements=new_achivements, keywords=json.dumps(keywords))
+    user_story = UserStories(user_id=id, story_index=0, story_text=story_text, user_response="", img_url="", img_prompt=img_prompt, achievements=new_achivements, keywords=json.dumps(keywords), feedback="")
     db.session.add(user_story)
     # set story index to 0 in db
     user_state.story_index = 0
     # return data
     db.session.commit()
-    return {'image_style': user_profile.image_style,'story_text': story_text, 'user_choice': "", 'achievements': new_achivements, 'keywords': keywords, **kwargs}
+    return {'image_style': user_profile.image_style,'story_text': story_text, 'user_response': "", 'achievements': new_achivements, 'keywords': keywords, **kwargs}
 
 # regen img endpoint
 @app.route('/regen_img', methods=['POST'])
@@ -460,13 +462,19 @@ def reset_story_index():
     return {'message': "Success"}
 
 # regen suggestion endpoint
-@app.route('/regen_suggestion', methods=['POST'])
+@app.route('/regen_suggestions', methods=['POST'])
 @jwt_required()
-def regen_suggestion():
+def regen_suggestions():
     id = get_jwt_identity()['id']
     data = request.get_json()
-    # call api -> suggestions
-    return
+    story_index = data['story_index']
+    user_state = UserState.query.filter_by(id=id).first()
+    user_story = UserStories.query.filter_by(user_id=id, story_index=story_index).first()
+    suggestions = get_suggestions(user_story.story_text)
+    user_state.suggestion_1 = suggestions[0]
+    user_state.suggestion_1 = suggestions[1]
+    db.session.commit()
+    return {'suggestion_1': suggestions[0], 'suggestion_2': suggestions[1]}
 
 
 @app.route('/story_index', methods=['POST'])
@@ -475,13 +483,24 @@ def story_index():
     id = get_jwt_identity()['id']
     data = request.get_json()
     user_state = UserState.query.filter_by(id=id).first()
-    # if not new index
-    if data["index"] <= user_state.story_index:
-        # query db
-        user_story = UserStories.query.filter_by(user_id=id, story_index=data["index"]).first()
-        # return data
-        return {'story_text': user_story.story_text, 'img_url': user_story.img_url, 'user_choice': user_story.user_choice, 'achievements': user_story.achievements, 'keywords': json.loads(user_story.keywords)}
 
+    # story is starting
+    if user_state.story_index < 0:
+        return {'story_starting': True}
+    
+    # if not new index
+    if data["story_index"] <= user_state.story_index:
+        # query db
+        user_story = UserStories.query.filter_by(user_id=id, story_index=data["story_index"]).first()
+        user_profile = UserProfile.query.filter_by(id=id).first()
+        kwargs = {}
+        if user_state.suggestions and data["story_index"] == user_state.story_index:
+            kwargs['suggestion_1'] = user_state.suggestion_1
+            kwargs['suggestion_2'] = user_state.suggestion_2
+        # return data
+        return {'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
+
+    
 
     # if new index
     # if previous index need resp, get user response from data
