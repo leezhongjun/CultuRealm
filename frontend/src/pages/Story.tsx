@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useAuthHeader } from "react-auth-kit";
 import loadingIcon from "../assets/loading-balls.svg";
 import ParticlesBg from "particles-bg";
+import { HiSpeakerWave } from "react-icons/hi2";
+import { AiFillPauseCircle } from "react-icons/ai";
+import { FaStop, FaPause, FaPlay } from "react-icons/fa";
 import axios from "axios";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
@@ -57,8 +60,36 @@ function App() {
   const [rating, setRating] = useState(0);
   const [ratingDiff, setRatingDiff] = useState("");
   const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const authHeader = useAuthHeader();
+  const synth = window.speechSynthesis;
+  const handleSpeak = () => {
+    if (storyText && !isSpeaking) {
+      setIsSpeaking(true);
+      if (isPaused) {
+        setIsPaused(false);
+        synth.resume();
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(storyText);
+      synth.speak(utterance);
+    } else if (storyText && isSpeaking) {
+      setIsSpeaking(false);
+      if (synth.speaking) {
+        synth.pause();
+        setIsPaused(true);
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    setIsSpeaking(false);
+    if (synth.speaking) {
+      synth.cancel();
+    }
+  };
 
   const startStoryForm = async (event) => {
     event.preventDefault(); //Don't refresh page
@@ -116,6 +147,9 @@ function App() {
     latestPage: number = latestIndex
   ) => {
     try {
+      synth.cancel();
+      setIsPaused(false);
+      setIsSpeaking(false);
       const response = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/story_index",
         { story_index: page },
@@ -340,7 +374,34 @@ function App() {
                 <h3 className="mb-4 text-xl font-semibold dark:text-white ">
                   Text
                 </h3>
-                <HighlightedParagraph paragraph={storyText} phrases={phrases} />
+                <div className="mb-4">
+                  <HighlightedParagraph
+                    paragraph={storyText}
+                    phrases={phrases}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <button
+                    className="font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                    onClick={handleSpeak}
+                  >
+                    {isSpeaking ? (
+                      <FaPause />
+                    ) : isPaused ? (
+                      <FaPlay />
+                    ) : (
+                      <HiSpeakerWave />
+                    )}
+                  </button>
+                  {isSpeaking && (
+                    <button
+                      className="font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                      onClick={handleCancel}
+                    >
+                      <FaStop />
+                    </button>
+                  )}
+                </div>
               </div>
               {!showFinal && (
                 <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
