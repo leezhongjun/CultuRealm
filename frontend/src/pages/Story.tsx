@@ -40,7 +40,7 @@ import HighlightedParagraph from "../components/HighlightedPara";
 
 function App() {
   const [currentPage, setCurrentPage] = useState(-1);
-  const [needSuggestions, setNeedSuggestions] = useState(false);
+  const [needSuggestions, setNeedSuggestions] = useState(true);
   const [style, setStyle] = useState("Photorealistic");
   const [resp, setResp] = useState("");
   const [action, setAction] = useState("do");
@@ -62,6 +62,12 @@ function App() {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isCustomStory, setIsCustomStory] = useState(false);
+  const [customStoryText, setCustomStoryText] = useState("");
+  const [customStoryTitle, setCustomStoryTitle] = useState("");
+  const [isShareStory, setIsShareStory] = useState(false);
+  const [genStoryLoading, setGenStoryLoading] = useState(false);
+  const [prevHighScore, setPrevHighScore] = useState(false);
 
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
@@ -95,10 +101,6 @@ function App() {
     event.preventDefault(); //Don't refresh page
 
     setCurrentPage(0);
-    const checkbox = document.getElementById(
-      "default-checkbox"
-    ) as HTMLInputElement;
-    setNeedSuggestions(checkbox.checked);
     setLatestIndex(0);
     setSuggestion1("Loading...");
     setSuggestion2("Loading...");
@@ -109,7 +111,13 @@ function App() {
     try {
       const response = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/start_story",
-        { suggestions: checkbox.checked },
+        {
+          suggestions: needSuggestions,
+          is_custom: isCustomStory,
+          seed: customStoryText,
+          title: customStoryTitle,
+          is_share: isShareStory,
+        },
         {
           headers: {
             Authorization: authHeader(),
@@ -152,7 +160,7 @@ function App() {
       setIsSpeaking(false);
       const response = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/story_index",
-        { story_index: page },
+        { story_index: page, is_custom: isCustomStory },
         {
           headers: {
             Authorization: authHeader(),
@@ -186,11 +194,17 @@ function App() {
         if (response.data.is_final) {
           setShowFinal(true);
           setFinalScore(response.data.final_score);
-          setRating(response.data.new_rating);
-          setRatingDiff(
-            (response.data.new_rating >= response.data.old_rating ? "+" : "") +
-              (response.data.new_rating - response.data.old_rating).toString()
-          );
+          if (isCustomStory) {
+            setPrevHighScore(response.data.prev_high_score);
+          } else {
+            setRating(response.data.new_rating);
+            setRatingDiff(
+              (response.data.new_rating >= response.data.old_rating
+                ? "+"
+                : "") +
+                (response.data.new_rating - response.data.old_rating).toString()
+            );
+          }
           setNeedSuggestions(false);
         } else {
           setShowFinal(false);
@@ -292,6 +306,21 @@ function App() {
     setLoadingSubmit(false);
   };
 
+  async function suggestCustomStory() {
+    setGenStoryLoading(true);
+    const response = await axios.post(
+      import.meta.env.VITE_BACKEND_ENDPOINT + "/get_story_desc",
+      {},
+      {
+        headers: {
+          Authorization: authHeader(),
+        },
+      }
+    );
+    setCustomStoryText(response.data.story_desc);
+    setGenStoryLoading(false);
+  }
+
   return (
     <>
       {/* Story Landing Page */}
@@ -309,6 +338,11 @@ function App() {
                   <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400">
                     CultuRealm
                   </span>{" "}
+                  {isCustomStory && (
+                    <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-yellow-400">
+                      Custom{" "}
+                    </span>
+                  )}
                   Stories
                 </h1>
                 <div className="max-w-3xl mx-auto">
@@ -319,11 +353,7 @@ function App() {
                   >
                     Experience cultures with unique and interactive stories
                   </p>
-                  <div
-                    className="max-w-xs mx-auto sm:max-w-none sm:flex sm:justify-center"
-                    data-aos="zoom-y-out"
-                    data-aos-delay="300"
-                  >
+                  <div className="" data-aos="zoom-y-out" data-aos-delay="300">
                     <div>
                       <form onSubmit={startStoryForm} className="py-0">
                         <button
@@ -332,20 +362,131 @@ function App() {
                         >
                           Begin Your Story
                         </button>
-                        <div className="py-4 flex items-center">
+                        <div className="mt-1 py-4 flex justify-center">
                           <input
-                            id="default-checkbox"
+                            id="suggestion-checkbox"
                             type="checkbox"
-                            value=""
+                            checked={needSuggestions}
                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
+                            onClick={() => setNeedSuggestions(!needSuggestions)}
                           />
                           <label
-                            htmlFor="default-checkbox"
+                            htmlFor="suggestion-checkbox"
                             className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                           >
-                            Enable Suggested Responses (30% point penalty)
+                            Enable Suggested Responses
                           </label>
                         </div>
+                        <div className="flex justify-center ">
+                          <input
+                            id="custom-story-checkbox"
+                            type="checkbox"
+                            checked={isCustomStory}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
+                            onClick={() => setIsCustomStory(!isCustomStory)}
+                          />
+                          <label
+                            htmlFor="custom-story-checkbox"
+                            className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                          >
+                            Enable Custom Story
+                          </label>
+                        </div>
+                        {isCustomStory && (
+                          <div className="mt-2 justify-center bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                            <div className="flex flex-col">
+                              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-left">
+                                Title
+                              </label>
+                              <input
+                                type="text"
+                                value={customStoryTitle}
+                                placeholder="Custom Story Title"
+                                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                onChange={(e) =>
+                                  setCustomStoryTitle(e.target.value)
+                                }
+                                onBlur={(e) =>
+                                  setCustomStoryTitle(e.target.value)
+                                }
+                                onInput={(e) =>
+                                  setCustomStoryTitle(e.target.value)
+                                }
+                                onFocus={(e) =>
+                                  setCustomStoryTitle(e.target.value)
+                                }
+                                required
+                              />
+                              <label className="mt-2 block mb-2 text-sm font-medium text-gray-900 dark:text-white text-left">
+                                Description
+                              </label>
+                              <textarea
+                                value={customStoryText}
+                                placeholder="Custom Story Description"
+                                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                onChange={(e) =>
+                                  setCustomStoryText(e.target.value)
+                                }
+                                onBlur={(e) =>
+                                  setCustomStoryText(e.target.value)
+                                }
+                                onInput={(e) =>
+                                  setCustomStoryText(e.target.value)
+                                }
+                                onFocus={(e) =>
+                                  setCustomStoryText(e.target.value)
+                                }
+                                required
+                              />
+                              <div className="mt-5 flex">
+                                <input
+                                  id="share-story-checkbox"
+                                  type="checkbox"
+                                  checked={isShareStory}
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
+                                  onClick={() => setIsShareStory(!isShareStory)}
+                                />
+                                <label
+                                  htmlFor="share-story-checkbox"
+                                  className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                                >
+                                  Share on Community Stories
+                                </label>
+                              </div>
+                              <button
+                                className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                type="button"
+                                onClick={suggestCustomStory}
+                                disabled={genStoryLoading}
+                              >
+                                {genStoryLoading ? (
+                                  <>
+                                    <svg
+                                      aria-hidden="true"
+                                      role="status"
+                                      className="inline w-4 h-4 mr-3 text-white animate-spin"
+                                      viewBox="0 0 100 101"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                        fill="#71757E"
+                                      />
+                                      <path
+                                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                        fill="currentColor"
+                                      />
+                                    </svg>
+                                    Loading...
+                                  </>
+                                ) : (
+                                  "Generate a Random Story"
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </form>
                     </div>
                   </div>
@@ -409,10 +550,7 @@ function App() {
                     Response
                   </h3>
 
-                  <form
-                    id="form-resp"
-                    onSubmit={(e) => handleSubmit("settings", e)}
-                  >
+                  <form id="form-resp" onSubmit={(e) => submitUserResponse(e)}>
                     <div className="flex mb-4">
                       <select
                         name="resp"
@@ -468,8 +606,7 @@ function App() {
                       <div className="space-y-2">
                         <button
                           className="h-fit text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                          type="button"
-                          onClick={submitUserResponse}
+                          type="submit"
                           disabled={loadingSubmit}
                         >
                           {loadingSubmit ? (
@@ -589,10 +726,7 @@ function App() {
                     alt="Loading icon"
                   />
                 </div>
-                <form
-                  id="form-img"
-                  onSubmit={(e) => handleSubmit("settings", e)}
-                >
+                <form id="form-img">
                   <div className="mb-4">
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                       Image style

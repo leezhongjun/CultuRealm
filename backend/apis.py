@@ -61,17 +61,44 @@ def get_story_seeds(age, gender, race):
 List the summaries as a Python list. Follow the format strictly.
 Example Format: 
 ["...", ... ]"""
-    retry = True
-    while retry:
+    while True:
         try:
             res = ask_gpt(prompt)
             res = res.split("[")[-1].split("]")[0]
             res = "[" + res + "]"
             res = eval(res)
-            retry = False
+            return res
         except:
             pass
-    return res
+
+def get_story_seed(age, gender, race):
+    if gender == "Unspecified":
+        gender = ""
+    else:
+        gender = gender.strip().lower() + " "
+    if race == "Unspecified":
+        race = ""
+    else:
+        race = race.strip().capitalize() + " "
+    if age == "Unspecified":
+        age = ""
+    else:
+        age = f"a {age} year old "
+    prompt = f"""Generate a summary of a random cultural scenario set in Singapore where the user, {age}{gender}{race}who is a Singapore citizen can interact with one or more people from different cultures. The random cultural scenario should test the user, {age}{gender}{race}who is a Singaporean citizen on his ability to interact, respect and appreciate different cultures. The summary should be less than 3 sentences. Refer to the user in the summary.
+
+Format the summary as a Python list. Follow the format strictly.
+Example Format: 
+["[summary]"]
+"""
+    while True:
+        try:
+            res = ask_gpt(prompt, temp=1)
+            res = res.split("[")[-1].split("]")[0]
+            res = "[" + res + "]"
+            res = eval(res)
+            return res[0]
+        except:
+            pass
 
 def system_prompt(seed, name, age, race, gender):
     if gender == "Unspecified":

@@ -102,6 +102,17 @@ class UserState(db.Model):
     opp_score = db.Column(db.Integer, nullable=False, default=0)
     final_score = db.Column(db.Integer, nullable=False, default=0)
     old_rating = db.Column(db.Integer, nullable=False, default=1500)
+    custom_story_id = db.Column(db.String(36), nullable=False, default="")
+    old_high_score = db.Column(db.Integer, nullable=False, default=0)
+
+class CustomStories(db.Model):
+    id = db.Column(db.String(36), primary_key=True)
+    title = db.Column(db.String(80), nullable=False)
+    desc = db.Column(db.String(1000), nullable=False)
+    user_id = db.Column(db.String(36), nullable=False)
+    upvotes = db.Column(db.Integer, nullable=False, default=0)
+    play_count = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
 
 # Callback function to check if a JWT exists in the database blocklist
 @jwt.token_in_blocklist_loader
@@ -355,6 +366,15 @@ def img_style():
     user = UserProfile.query.filter_by(id=id).first()
     return {'image_style': user.image_style}
 
+@app.route('/get_story_desc', methods=['POST'])
+@jwt_required()
+def get_story_desc():
+    id = get_jwt_identity()['id']
+    user_profile = UserProfile.query.filter_by(id=id).first()
+    seed = get_story_seed(age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+
+    return {'story_desc': seed}
+
 @app.route('/start_story', methods=['POST'])
 @jwt_required()
 def start_story():
@@ -371,22 +391,34 @@ def start_story():
     # create new story
     # get user data
     user_profile = UserProfile.query.filter_by(id=id).first()
-    # get story seeds
-    story_seeds = json.loads(user_state.story_seeds)
-    
-    # create more seeds if len == 0
-    if len(story_seeds) == 0:
-        story_seeds = get_story_seeds(age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
 
-    # sample a seed
-    i = random.randint(0, len(story_seeds) - 1)
-    seed = story_seeds[i]
+    is_custom = data['is_custom']
 
-    # remove the seed from the list
-    story_seeds.pop(i)
+    if is_custom:
+        seed = data['seed']
+        user_state.custom_story_id = data["story_id"]
 
-    # update db with new seed list
-    user_state.story_seeds = json.dumps(story_seeds)
+        # if add to community
+        if data['is_share']:
+            title = data['title']
+            pass
+    else:
+        # get story seeds
+        story_seeds = json.loads(user_state.story_seeds)
+        
+        # create more seeds if len == 0
+        if len(story_seeds) == 0:
+            story_seeds = get_story_seeds(age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+
+        # sample a seed
+        i = random.randint(0, len(story_seeds) - 1)
+        seed = story_seeds[i]
+
+        # remove the seed from the list
+        story_seeds.pop(i)
+
+        # update db with new seed list
+        user_state.story_seeds = json.dumps(story_seeds)
 
     # call api -> story text
     story_text = "END"
@@ -463,6 +495,7 @@ def reset_story_index():
     user_state = UserState.query.filter_by(id=id).first()
     # set story index to -1 in db
     user_state.story_index = -1
+    user_state.custom_story_id = ""
     db.session.commit()
     # return data
     return {'message': "Success"}
@@ -499,6 +532,7 @@ def story_index():
 
     # if end index
     final = cur_story_index == settings.max_story_index
+    is_custom = data['is_custom']
 
     # if not new index
     if cur_story_index <= user_state.story_index:
@@ -511,6 +545,9 @@ def story_index():
 
         if final:
             kwargs['final_score'] = user_state.final_score
+            if is_custom:
+                # custom story previous high score
+                kwargs['prev_high_score'] = 0
             kwargs['new_rating'] = user_profile.rating
             kwargs['old_rating'] = user_state.old_rating
             
@@ -555,13 +592,26 @@ def story_index():
         final_score = int(user_state.score * (100 / user_state.opp_score) / 100)
         user_state.final_score = final_score
         user_profile.stories_played += 1
+
+        # just update user high score, regardless of custom or not
         if final_score > user_profile.high_score:
             user_profile.high_score = final_score
 
-        # rating
-        user_state.old_rating = user_profile.rating
-        user_profile.rating = calc_new_rating(final_score, user_profile.stories_played, user_state.old_rating)
+        if is_custom:
+            # save old high score to user state
+            if user_state.custom_story_id == "temp":
+                user_state.old_high_score = 0
+            else:
+                # save old high score of custom story in user state
+                # change high score in custom story
+                # increase custom story play count
+                pass
 
+        else:
+            # rating
+            user_state.old_rating = user_profile.rating
+            user_profile.rating = calc_new_rating(final_score, user_profile.stories_played, user_state.old_rating)
+    
 
     # achivement
     achievements_ls = get_achievements_score(user_profile.name, story_text, "I " + resp)
@@ -607,7 +657,33 @@ def get_story_state():
         state = UserState(id=id)
         db.session.add(state)
         db.session.commit()
-    return {'story_index': state.story_index, 'quiz_index': state.quiz_index}
+    return {'story_index': state.story_index, 'quiz_index': state.quiz_index, 'custom_story_id': state.custom_story_id}
+
+
+@app.route('/get_stories', methods=['POST'])
+def get_stories():
+    custom_stories = CustomStories.query.all()
+
+    # link user_id with username
+    for story in custom_stories:
+        user = UserProfile.query.filter_by(id=story.user_id).first()
+        story.username = user.username
+    
+    return {'stories': custom_stories}
+
+@app.route('/add_custom_story', methods=['POST'])
+@jwt_required()
+def add_custom_story():
+    id = get_jwt_identity()['id']
+    data = request.get_json()
+    story_text = data["story_text"]
+    title = data["title"]
+    story_id = str(uuid.uuid4())
+    new_custom_story = CustomStories(user_id=id, story_text=story_text, title=title, id=story_id)
+    db.session.add(new_custom_story)
+    db.session.commit()
+    return {'story_id': story_id}
+
 
 if __name__ == '__main__':
     with app.app_context():

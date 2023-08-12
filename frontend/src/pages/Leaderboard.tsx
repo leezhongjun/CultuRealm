@@ -130,8 +130,11 @@ function Leaderboard() {
             <tbody className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
               {leaderboardData.map((item, index) => (
                 <tr
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
                   key={index}
+                  onClick={() => {
+                    window.open(`/profile/${item.id}`, "_blank");
+                  }}
                 >
                   <th
                     scope="row"
@@ -139,15 +142,12 @@ function Leaderboard() {
                   >
                     {index + 1}
                   </th>
-                  <td className="border px-4 py-2 text-blue-500">
-                    <Link
-                      to={`/profile/${item.id}`}
-                      className="hover:text-blue-700 hover:underline"
-                    >
-                      {item.username}
-                    </Link>
+                  <td className="border px-4 py-2 text-black font-bold">
+                    {item.username}
                   </td>
-                  <td className="border px-4 py-2">{item.rating}</td>
+                  <td className="border px-4 py-2 text-black font-bold">
+                    {item.rating}
+                  </td>
                   <td className="border px-4 py-2">{item.race}</td>
                   <td className="border px-4 py-2">{item.age}</td>
                 </tr>
