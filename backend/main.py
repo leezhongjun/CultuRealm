@@ -66,9 +66,8 @@ class UserProfile(db.Model):
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     password = db.Column(db.String(120), nullable=False)
-
+    # religion = db.Column(db.String(80), nullable=False)
     race = db.Column(db.String(80), nullable=False)
-    religion = db.Column(db.String(80), nullable=False)
     gender = db.Column(db.String(80), nullable=False)
     age = db.Column(db.String(16), nullable=False)
     high_score = db.Column(db.Integer)
@@ -305,7 +304,7 @@ def set_user_pref():
 
         user_profile.age = data['age']
         user_profile.race = data['race']
-        user_profile.religion = data['religion']
+        # user_profile.religion = data['religion']
         user_profile.gender = data['gender']
         user_profile.image_style = data['image_style']
         user_profile.username = data['username']
@@ -765,6 +764,16 @@ def delete_story():
         db.session.delete(user_story_vote)
     db.session.commit()
     return {'success': True}
+
+@app.route('/completed_profile', methods=['POST'])
+@jwt_required()
+def completed_profile():
+    id = get_jwt_identity()['id']
+    user_profile = UserProfile.query.filter_by(id=id).first()
+    fields = [user_profile.race, user_profile.gender, user_profile.age]
+    completed_profile = all(field != "Unspecified" for field in fields)
+    return jsonify({'completed_profile':completed_profile})
+
 
 
 if __name__ == '__main__':

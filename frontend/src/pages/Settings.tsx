@@ -38,14 +38,14 @@ export const races = [
   "Unspecified",
 ];
 
-export const religions = [
-  "Buddhism",
-  "Christianity",
-  "Islam",
-  "Hinduism",
-  "Other",
-  "Unspecified",
-];
+// export const religions = [
+//   "Buddhism",
+//   "Christianity",
+//   "Islam",
+//   "Hinduism",
+//   "Other",
+//   "Unspecified",
+// ];
 
 function Settings() {
   const [username, setUsername] = useState("");
@@ -53,7 +53,7 @@ function Settings() {
   const [name, setName] = useState("");
 
   const [race, setRace] = useState("");
-  const [religion, setReligion] = useState("");
+  // const [religion, setReligion] = useState("");
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
   const [style, setStyle] = useState("");
@@ -91,7 +91,7 @@ function Settings() {
         setAge(jsonifiedData["age"]);
         setGender(jsonifiedData["gender"]);
         setRace(jsonifiedData["race"]);
-        setReligion(jsonifiedData["religion"]);
+        // setReligion(jsonifiedData["religion"]);
 
         setUsername(jsonifiedData["username"]);
         setEmail(jsonifiedData["email"]);
@@ -154,7 +154,7 @@ function Settings() {
     event.preventDefault();
     const json = {
       race: race,
-      religion: religion,
+      // religion: religion,
       gender: gender,
       age: age,
       image_style: style,
@@ -514,7 +514,7 @@ function Settings() {
                     })}
                   </select>
                 </div>
-                <div className="col-span-6 sm:col-span-3">
+                {/* <div className="col-span-6 sm:col-span-3">
                   <label
                     htmlFor="image-style"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -547,7 +547,7 @@ function Settings() {
                       );
                     })}
                   </select>
-                </div>
+                </div> */}
 
                 <div className="space-y-2 col-span-full">
                   <button

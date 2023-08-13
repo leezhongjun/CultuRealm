@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import reactLogo from "../assets/react.svg";
 import viteLogo from "/vite.svg";
 import axios from "axios";
-import { ages, races, religions } from "../pages/Settings";
+// import { ages, races, religions } from "../pages/Settings";
+import { ages, races } from "../pages/Settings";
 import { Link, useNavigate } from "react-router-dom";
 import { useIsAuthenticated, useAuthHeader, useAuthUser } from "react-auth-kit";
 import {
@@ -17,7 +18,7 @@ axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 const indexes = {
   Race: [...races, "All"],
   Age: [...ages, "All"],
-  Religion: [...religions, "All"],
+  // Religion: [...religions, "All"],
 };
 
 const sortIndexes = {
