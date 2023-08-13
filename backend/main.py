@@ -66,7 +66,7 @@ class UserProfile(db.Model):
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     password = db.Column(db.String(120), nullable=False)
-
+    # religion = db.Column(db.String(80), nullable=False)
     race = db.Column(db.String(80), nullable=False)
     gender = db.Column(db.String(80), nullable=False)
     age = db.Column(db.String(16), nullable=False)
@@ -741,6 +741,16 @@ def vote_story():
                 story.upvotes -= 1
     db.session.commit()
     return {'success': True}
+
+@app.route('/completed_profile', methods=['POST'])
+@jwt_required()
+def completed_profile():
+    id = get_jwt_identity()['id']
+    user_profile = UserProfile.query.filter_by(id=id).first()
+    fields = [user_profile.race, user_profile.gender, user_profile.age]
+    completed_profile = all(field != "Unspecified" for field in fields)
+    return jsonify({'completed_profile':completed_profile})
+
 
 
 if __name__ == '__main__':

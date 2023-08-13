@@ -68,9 +68,11 @@ function App() {
   const [isShareStory, setIsShareStory] = useState(false);
   const [genStoryLoading, setGenStoryLoading] = useState(false);
   const [prevHighScore, setPrevHighScore] = useState(false);
+  const [completedProfile, setCompletedProfile] = useState(true);
 
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
+
   const handleSpeak = () => {
     if (storyText && !isSpeaking) {
       setIsSpeaking(true);
@@ -240,7 +242,29 @@ function App() {
         console.error(error);
       }
     };
+
+    const completed_profile = async () => {
+      try {
+        const response = await axios.post(
+          import.meta.env.VITE_BACKEND_ENDPOINT + "/completed_profile",
+          {
+            //
+          },
+          {
+            headers: {
+              Authorization: authHeader(),
+            },
+          })
+          console.log(response.data);
+          setCompletedProfile(response.data.completed_profile)
+      } catch (error) {
+        console.error(error);
+      }
+        
+    };
+
     fetchData();
+    completed_profile();
   }, []);
 
   function handleSuggestionClick(suggestion: String) {
@@ -325,6 +349,13 @@ function App() {
   return (
     <>
       {/* Story Landing Page */}
+
+      {/* Alert if profile not completed */}
+      <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4" role="alert">
+      <p className="font-bold">Be Warned</p>
+      <p>Something not ideal might be happening.</p>
+      </div>
+
       {currentPage === -1 && (
         <>
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
