@@ -84,21 +84,35 @@ def get_story_seed(age, gender, race):
         age = ""
     else:
         age = f"a {age} year old "
-    prompt = f"""Generate a summary of a random cultural scenario set in Singapore where the user, {age}{gender}{race}who is a Singapore citizen can interact with one or more people from different cultures. The random cultural scenario should test the user, {age}{gender}{race}who is a Singaporean citizen on his ability to interact, respect and appreciate different cultures. The summary should be less than 3 sentences. Refer to the user in the summary.
+    prompt = f"""Generate a summary of a random cultural scenario set in Singapore where the user, who is a Singapore citizen can interact with one or more people from different cultures. The random cultural scenario should test the user who is a Singaporean citizen on his ability to interact, respect and appreciate different cultures. The summary should be less than 3 sentences. Refer to the user in the summary.
 
 Format the summary as a Python list. Follow the format strictly.
-Example Format: 
-["[summary]"]
+Example Format:
+["..."]
 """
-    while True:
-        try:
-            res = ask_gpt(prompt, temp=1)
-            res = res.split("[")[-1].split("]")[0]
-            res = "[" + res + "]"
-            res = eval(res)
-            return res[0]
-        except:
-            pass
+    try:
+        res = ask_gpt(prompt, temp=1)
+        res = res.split("[")[-1].split("]")[0]
+        res = "[" + res + "]"
+        res = eval(res)
+        return res[0]
+    except:
+        pass
+
+def get_story_title(seed):
+    prompt = f"""Generate a title for a story based on the following summary.
+
+Summary:
+{seed}
+
+Follow the output format strictly.
+Example Output Format:
+Title: ..."""
+    try:
+        res = ask_gpt(prompt, temp=1)
+        return res.split("Title: ")[-1].replace('"', '').replace("'", "")
+    except:
+        pass
 
 def system_prompt(seed, name, age, race, gender):
     if gender == "Unspecified":

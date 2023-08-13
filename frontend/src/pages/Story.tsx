@@ -160,7 +160,7 @@ function App() {
       setIsSpeaking(false);
       const response = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/story_index",
-        { story_index: page, is_custom: isCustomStory },
+        { story_index: page },
         {
           headers: {
             Authorization: authHeader(),
@@ -318,6 +318,7 @@ function App() {
       }
     );
     setCustomStoryText(response.data.story_desc);
+    setCustomStoryTitle(response.data.story_title);
     setGenStoryLoading(false);
   }
 

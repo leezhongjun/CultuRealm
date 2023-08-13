@@ -114,6 +114,11 @@ class CustomStories(db.Model):
     play_count = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
 
+class UpvoteSystem(db.Model):
+    user_id = db.Column(db.String(36), nullable=False, primary_key=True)
+    story_id = db.Column(db.String(36), nullable=False, primary_key=True)
+    votes = db.Column(db.Integer, nullable=False)
+
 # Callback function to check if a JWT exists in the database blocklist
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
@@ -372,8 +377,8 @@ def get_story_desc():
     id = get_jwt_identity()['id']
     user_profile = UserProfile.query.filter_by(id=id).first()
     seed = get_story_seed(age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
-
-    return {'story_desc': seed}
+    title = get_story_title(seed)
+    return {'story_desc': seed, 'story_title': title}
 
 @app.route('/start_story', methods=['POST'])
 @jwt_required()
@@ -663,12 +668,31 @@ def get_story_state():
 @app.route('/get_stories', methods=['POST'])
 def get_stories():
     custom_stories = CustomStories.query.all()
-
     # link user_id with username
-    for story in custom_stories:
-        user = UserProfile.query.filter_by(id=story.user_id).first()
-        story.username = user.username
-    
+    for i in range(custom_stories.__len__()):
+        custom_stories[i] = custom_stories[i].__dict__
+        # print(custom_stories[i])
+        user = UserProfile.query.filter_by(id=custom_stories[i]['user_id']).first()
+        custom_stories[i]['username'] = user.username
+        custom_stories[i]['_sa_instance_state'] = None
+        custom_stories[i]['user_votes'] = 0
+    return {'stories': custom_stories}
+
+@app.route('/get_stories_proc', methods=['POST'])
+@jwt_required()
+def get_stories_proc():
+    custom_stories = CustomStories.query.all()
+    # link user_id with username
+    for i in range(custom_stories.__len__()):
+        custom_stories[i] = custom_stories[i].__dict__
+        # print(custom_stories[i])
+        user = UserProfile.query.filter_by(id=custom_stories[i]['user_id']).first()
+        custom_stories[i]['username'] = user.username
+        custom_stories[i]['_sa_instance_state'] = None
+        vote_user_story = UpvoteSystem.query.filter_by(user_id=custom_stories[i]['user_id'], story_id=custom_stories[i]['id']).first()
+        if vote_user_story is None:
+            vote_user_story = UpvoteSystem.query.filter_by(user_id=custom_stories[i]['user_id'], story_id=custom_stories[i]['id'])
+        custom_stories[i]['user_votes'] = vote_user_story.votes
     return {'stories': custom_stories}
 
 @app.route('/add_custom_story', methods=['POST'])
@@ -679,10 +703,45 @@ def add_custom_story():
     story_text = data["story_text"]
     title = data["title"]
     story_id = str(uuid.uuid4())
-    new_custom_story = CustomStories(user_id=id, story_text=story_text, title=title, id=story_id)
+    new_custom_story = CustomStories(user_id=id, desc=story_text, title=title, id=story_id)
     db.session.add(new_custom_story)
     db.session.commit()
     return {'story_id': story_id}
+
+@app.route('/vote_story', methods=['POST'])
+@jwt_required()
+def vote_story():
+    id = get_jwt_identity()['id']
+    data = request.get_json()
+    story_id = data["story_id"]
+    votes = data["votes"]
+    vote_user_story = UpvoteSystem.query.filter_by(user_id=id, story_id=story_id).first()
+    story = CustomStories.query.filter_by(id=story_id).first()
+    if vote_user_story is None:
+        if votes == 1:
+            story.upvotes += 1
+        elif votes == -1:
+            story.upvotes -= 1
+        vote_user_story = UpvoteSystem(user_id=id, story_id=story_id, votes=votes)
+        db.session.add(vote_user_story)
+    else:
+        if vote_user_story.votes == -1:
+            if votes == 1:
+                story.upvotes += 2
+            elif votes == 0:
+                story.upvotes += 1
+        elif vote_user_story.votes == 1:
+            if votes == -1:
+                story.upvotes -= 2
+            elif votes == 0:
+                story.upvotes -= 1
+        elif vote_user_story.votes == 0:
+            if votes == 1:
+                story.upvotes += 1
+            elif votes == -1:
+                story.upvotes -= 1
+    db.session.commit()
+    return {'success': True}
 
 
 if __name__ == '__main__':
