@@ -68,7 +68,6 @@ class UserProfile(db.Model):
     password = db.Column(db.String(120), nullable=False)
 
     race = db.Column(db.String(80), nullable=False)
-    religion = db.Column(db.String(80), nullable=False)
     gender = db.Column(db.String(80), nullable=False)
     age = db.Column(db.String(16), nullable=False)
     high_score = db.Column(db.Integer)
@@ -304,7 +303,7 @@ def set_user_pref():
 
         user_profile.age = data['age']
         user_profile.race = data['race']
-        user_profile.religion = data['religion']
+        # user_profile.religion = data['religion']
         user_profile.gender = data['gender']
         user_profile.image_style = data['image_style']
         user_profile.username = data['username']
@@ -537,7 +536,7 @@ def story_index():
 
     # if end index
     final = cur_story_index == settings.max_story_index
-    is_custom = data['is_custom']
+    is_custom = user_state.custom_story_id != ""
 
     # if not new index
     if cur_story_index <= user_state.story_index:

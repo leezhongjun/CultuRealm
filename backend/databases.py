@@ -14,7 +14,7 @@ class TokenBlocklist(db.Model):
 class UserProfile(db.Model):
     username = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True, nullable=False)
     race = db.Column(db.String(80), nullable=False)
-    religion = db.Column(db.String(80), nullable=False)
+    # religion = db.Column(db.String(80), nullable=False)
     gender = db.Column(db.String(80), nullable=False)
     high_score = db.Column(db.Integer)
     stories_played = db.Column(db.Integer)

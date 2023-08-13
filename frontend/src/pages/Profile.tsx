@@ -18,7 +18,7 @@ function Profile() {
   const [name, setName] = useState("");
 
   const [race, setRace] = useState("");
-  const [religion, setReligion] = useState("");
+  // const [religion, setReligion] = useState("");
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
 
@@ -43,7 +43,7 @@ function Profile() {
         setAge(jsonifiedData["age"]);
         setGender(jsonifiedData["gender"]);
         setRace(jsonifiedData["race"]);
-        setReligion(jsonifiedData["religion"]);
+        // setReligion(jsonifiedData["religion"]);
 
         setUsername(jsonifiedData["username"]);
         setName(jsonifiedData["name"]);
@@ -161,7 +161,7 @@ function Profile() {
                     disabled
                   />
                 </div>
-                <div className="col-span-6 sm:col-span-3 py-2">
+                {/* <div className="col-span-6 sm:col-span-3 py-2">
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Religion
                   </label>
@@ -171,7 +171,7 @@ function Profile() {
                     value={religion}
                     disabled
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
