@@ -299,8 +299,8 @@ def set_user_pref():
         if data['age'] != user_profile.age or data['race'] != user_profile.race or data['gender'] != user_profile.gender:
             user_state = UserState.query.filter_by(id=id).first()
             user_state.story_seeds = "[]"
-            user_state.story_index = -1
-            user_state.story_state = ""
+            # user_state.story_index = -1
+            # user_state.story_state = ""
 
         user_profile.age = data['age']
         user_profile.race = data['race']
