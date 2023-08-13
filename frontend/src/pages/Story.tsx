@@ -930,9 +930,8 @@ function App() {
             )}
             <button
               className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-              onClick={() => {
-                setCurrentPage(-1);
-                axios.post(
+              onClick={async () => {
+                await axios.post(
                   import.meta.env.VITE_BACKEND_ENDPOINT + "/reset_story_index",
                   {},
                   {
@@ -941,6 +940,7 @@ function App() {
                     },
                   }
                 );
+                setCurrentPage(-1);
               }}
             >
               New Story
