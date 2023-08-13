@@ -40,7 +40,7 @@ function Leaderboard() {
     setLeaderboardData(
       rawLeaderboardData.filter(
         (user) =>
-          user.username.includes(username) &&
+          user.username.toLowerCase().includes(username.toLowerCase()) &&
           (user[filterValue.toLowerCase()] === optionValue ||
             optionValue === "All")
       )

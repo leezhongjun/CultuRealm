@@ -112,6 +112,7 @@ class CustomStories(db.Model):
     user_id = db.Column(db.String(36), nullable=False)
     upvotes = db.Column(db.Integer, nullable=False, default=0)
     play_count = db.Column(db.Integer, nullable=False, default=0)
+    high_score = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
 
 class UpvoteSystem(db.Model):
@@ -397,16 +398,15 @@ def start_story():
     # get user data
     user_profile = UserProfile.query.filter_by(id=id).first()
 
-    is_custom = data['is_custom']
+    user_state.custom_story_id = data["story_id"]
+    is_custom = user_state.custom_story_id != ""
 
     if is_custom:
-        seed = data['seed']
-        user_state.custom_story_id = data["story_id"]
+        if user_state.custom_story_id == "temp":
+            seed = data["seed"]
+        else:
+            seed = CustomStories.query.filter_by(id=user_state.custom_story_id).first().desc
 
-        # if add to community
-        if data['is_share']:
-            title = data['title']
-            pass
     else:
         # get story seeds
         story_seeds = json.loads(user_state.story_seeds)
@@ -537,7 +537,7 @@ def story_index():
 
     # if end index
     final = cur_story_index == settings.max_story_index
-    is_custom = data['is_custom']
+    is_custom = user_state.custom_story_id != ""
 
     # if not new index
     if cur_story_index <= user_state.story_index:
@@ -552,12 +552,12 @@ def story_index():
             kwargs['final_score'] = user_state.final_score
             if is_custom:
                 # custom story previous high score
-                kwargs['prev_high_score'] = 0
+                kwargs['prev_high_score'] = user_state.old_high_score
             kwargs['new_rating'] = user_profile.rating
             kwargs['old_rating'] = user_state.old_rating
             
         # return data
-        return {'is_final':final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
+        return {'is_custom': is_custom,'is_final': final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
 
     # if new index
     # get resp
@@ -608,9 +608,13 @@ def story_index():
                 user_state.old_high_score = 0
             else:
                 # save old high score of custom story in user state
+                custom_story = CustomStories.query.filter_by(id=user_state.custom_story_id).first()
+                user_state.old_high_score = custom_story.high_score
                 # change high score in custom story
+                if final_score > custom_story.high_score:
+                    custom_story.high_score = final_score
                 # increase custom story play count
-                pass
+                custom_story.play_count += 1
 
         else:
             # rating
@@ -682,6 +686,7 @@ def get_stories():
 @jwt_required()
 def get_stories_proc():
     custom_stories = CustomStories.query.all()
+    id = get_jwt_identity()['id']
     # link user_id with username
     for i in range(custom_stories.__len__()):
         custom_stories[i] = custom_stories[i].__dict__
@@ -689,9 +694,9 @@ def get_stories_proc():
         user = UserProfile.query.filter_by(id=custom_stories[i]['user_id']).first()
         custom_stories[i]['username'] = user.username
         custom_stories[i]['_sa_instance_state'] = None
-        vote_user_story = UpvoteSystem.query.filter_by(user_id=custom_stories[i]['user_id'], story_id=custom_stories[i]['id']).first()
+        vote_user_story = UpvoteSystem.query.filter_by(user_id=id, story_id=custom_stories[i]['id']).first()
         if vote_user_story is None:
-            vote_user_story = UpvoteSystem.query.filter_by(user_id=custom_stories[i]['user_id'], story_id=custom_stories[i]['id'])
+            vote_user_story = UpvoteSystem(user_id=id, story_id=custom_stories[i]['id'], votes=0)
         custom_stories[i]['user_votes'] = vote_user_story.votes
     return {'stories': custom_stories}
 
@@ -740,6 +745,24 @@ def vote_story():
                 story.upvotes += 1
             elif votes == -1:
                 story.upvotes -= 1
+    prev = vote_user_story.votes
+    vote_user_story.votes = votes
+    db.session.commit()
+    return {'prev': prev, 'new': votes}
+
+@app.route('/delete_story', methods=['POST'])
+@jwt_required()
+def delete_story():
+    id = get_jwt_identity()['id']
+    data = request.get_json()
+    story_id = data["story_id"]
+    story = CustomStories.query.filter_by(id=story_id).first()
+    if story.user_id != id:
+        return {'success': False}
+    db.session.delete(story)
+    user_stories_votes = UpvoteSystem.query.filter_by(story_id=story_id).all()
+    for user_story_vote in user_stories_votes:
+        db.session.delete(user_story_vote)
     db.session.commit()
     return {'success': True}
 

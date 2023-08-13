@@ -91,7 +91,7 @@ Example Format:
 ["..."]
 """
     try:
-        res = ask_gpt(prompt, temp=1)
+        res = ask_gpt(prompt, temp=2)
         res = res.split("[")[-1].split("]")[0]
         res = "[" + res + "]"
         res = eval(res)

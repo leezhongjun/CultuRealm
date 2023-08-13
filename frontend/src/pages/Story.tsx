@@ -11,6 +11,7 @@ axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 import { styles } from "./Settings";
 import ProcessAchievements from "../components/Achievements";
 import HighlightedParagraph from "../components/HighlightedPara";
+import { Link } from "react-router-dom";
 
 // let config = {
 //   num: [1, 2],
@@ -90,11 +91,18 @@ function App() {
     }
   };
 
-  const handleCancel = () => {
-    setIsSpeaking(false);
-    if (synth.speaking) {
-      synth.cancel();
-    }
+  const submitNewStory = async () => {
+    const res = await axios.post(
+      import.meta.env.VITE_BACKEND_ENDPOINT + "/add_custom_story",
+      { story_text: customStoryText, title: customStoryTitle },
+      {
+        headers: {
+          Authorization: authHeader(),
+        },
+      }
+    );
+    console.log(res.data);
+    return res.data.story_id;
   };
 
   const startStoryForm = async (event) => {
@@ -109,14 +117,19 @@ function App() {
     setShowFinal(false);
     setShowResponseSubmit(true);
     try {
+      let story_id = "";
+      if (isCustomStory && isShareStory) {
+        story_id = await submitNewStory();
+      } else if (isCustomStory) {
+        story_id = "temp";
+      }
+
       const response = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/start_story",
         {
           suggestions: needSuggestions,
-          is_custom: isCustomStory,
+          story_id: story_id,
           seed: customStoryText,
-          title: customStoryTitle,
-          is_share: isShareStory,
         },
         {
           headers: {
@@ -168,6 +181,8 @@ function App() {
         }
       );
       console.log(response.data);
+
+      setIsCustomStory(response.data.is_custom);
       if (!response.data.story_starting) {
         setNeedSuggestions(response.data.has_suggestions);
         if (
@@ -194,7 +209,7 @@ function App() {
         if (response.data.is_final) {
           setShowFinal(true);
           setFinalScore(response.data.final_score);
-          if (isCustomStory) {
+          if (response.data.is_custom) {
             setPrevHighScore(response.data.prev_high_score);
           } else {
             setRating(response.data.new_rating);
@@ -367,7 +382,7 @@ function App() {
                           <input
                             id="suggestion-checkbox"
                             type="checkbox"
-                            checked={needSuggestions}
+                            defaultChecked={needSuggestions}
                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
                             onClick={() => setNeedSuggestions(!needSuggestions)}
                           />
@@ -382,7 +397,7 @@ function App() {
                           <input
                             id="custom-story-checkbox"
                             type="checkbox"
-                            checked={isCustomStory}
+                            defaultChecked={isCustomStory}
                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
                             onClick={() => setIsCustomStory(!isCustomStory)}
                           />
@@ -443,7 +458,7 @@ function App() {
                                 <input
                                   id="share-story-checkbox"
                                   type="checkbox"
-                                  checked={isShareStory}
+                                  defaultChecked={isShareStory}
                                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
                                   onClick={() => setIsShareStory(!isShareStory)}
                                 />
@@ -510,6 +525,17 @@ function App() {
               <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
                 Story
               </h1>
+              {isCustomStory && (
+                <p className="mt-2 text-gray-500 text-sm font-medium">
+                  You're playing a custom story. View more custom stories{" "}
+                  <Link
+                    to="/community-stories"
+                    className="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline"
+                  >
+                    here
+                  </Link>
+                </p>
+              )}
             </div>
             <div className="col-span-2">
               <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
@@ -703,13 +729,24 @@ function App() {
                       {finalScore}/100
                     </span>
                     <br></br>
-                    Rating:{" "}
-                    <span className="font-bold text-green-700">
-                      {rating}
-                    </span>{" "}
-                    <span className="font-semibold text-green-700">
-                      {ratingDiff}
-                    </span>
+                    {isCustomStory ? (
+                      <>
+                        Previous High Score:{" "}
+                        <span className="font-bold text-green-700">
+                          {prevHighScore}
+                        </span>{" "}
+                      </>
+                    ) : (
+                      <>
+                        Rating:{" "}
+                        <span className="font-bold text-green-700">
+                          {rating}
+                        </span>{" "}
+                        <span className="font-semibold text-green-700">
+                          {ratingDiff}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -765,7 +802,7 @@ function App() {
               </div>
             </div>
           </div>
-          <div className="absolute top-20 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
+          <div className="fixed top-20 bg-blue-200 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
             {currentPage !== 0 && (
               <button
                 className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
