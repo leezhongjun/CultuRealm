@@ -569,6 +569,7 @@ def story_index():
         return {'flagged': True, 'flagged_text': flagged_text}
 
     story_state = json.loads(user_state.story_state)
+    prev_story_text = story_state[-1]["content"]
     story_state += [{
         "role": "user",
         "content": "I " + resp + ("\n\nSTORY ENDS THIS TURN" if final else "."),
@@ -586,8 +587,8 @@ def story_index():
     keywords = get_keywords(story_text)
     
     # feedback
-    feedback, score = get_feedback_and_score(resp, story_text)
-    opp_score = 0 if score==0 else get_opportunity_score(user_profile.name, story_text)
+    feedback, score = get_feedback_and_score(resp, prev_story_text)
+    opp_score = 0 if score==0 else get_opportunity_score(user_profile.name, prev_story_text)
     user_state.opp_score += opp_score
     user_state.score += score * opp_score
     

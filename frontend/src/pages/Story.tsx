@@ -122,6 +122,7 @@ function App() {
     setSuggestion1("Loading...");
     setSuggestion2("Loading...");
     setStoryText("Loading...");
+    setResp("");
     setImgSrc(loadingIcon);
     setShowFinal(false);
     setShowResponseSubmit(true);

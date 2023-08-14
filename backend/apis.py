@@ -28,19 +28,19 @@ def ask_gpt(prompt, max_tokens=0, temp=-1):
         messages=[
             {'role': 'user', 'content': prompt},
         ],
-        allow_fallback=True,
+        allow_fallback=False,
         **kwarg
     )
-    # print(response.choices[0].message.content)
+    print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 def ask_gpt_convo(messages):
     response = openai.ChatCompletion.create(
         model='gpt-3.5-turbo',
         messages=messages,
-        allow_fallback=True
+        allow_fallback=False
     )
-    # print(response.choices[0].message.content)
+    print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 def get_story_seeds(age, gender, race):
@@ -298,7 +298,38 @@ def get_achievements_score(name, text, user_response):
     prompt = f"""Modify the JSON formatted list of achievements based on if any of the achievements were achieved in the text. 
 
 ACHIEVEMENTS:
-{achievements}
+[
+    {{
+        "name": "Helpful User",
+        "description": "User offers help to another character",
+        "is_achieved": false
+    }},
+    {{
+        "name": "Compliment Giver",
+        "description": "User gives a compliment to another character",
+        "is_achieved": false
+    }},
+    {{
+        "name": "Cultural Ambassador",
+        "description": "User shares their own culture",
+        "is_achieved": false
+    }},
+    {{
+        "name": "Cultural Explorer",
+        "description": "User asks about another character's culture",
+        "is_achieved": false
+    }},
+    {{
+        "name": "Master of Laughter",
+        "description": "User makes another character laugh",
+        "is_achieved": false
+    }},
+    {{
+        "name": "Knowledge Sharer",
+        "description": "User teaches another character something new",
+        "is_achieved": false
+    }}
+]
 
 The user is {name}.
 
@@ -311,6 +342,7 @@ User: {user_response}
         try:
             res = ask_gpt(prompt, temp=0)
             res = json.loads("[" + res.split("[")[-1].split(']')[0] + "]")
+            print(res)
             ls =[]
             for i, x in enumerate(res):
                 if x['is_achieved']:
