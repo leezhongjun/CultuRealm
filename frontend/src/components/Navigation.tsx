@@ -22,7 +22,7 @@ function classNames(...classes) {
 const navigation = [
   { name: "Play a Story", href: "/story", current: false },
   { name: "Community Stories", href: "/community-stories", current: false },
-  { name: "View Top Stories", href: "/top-stories", current: false },
+  { name: "Play a Challenge", href: "/challenge", current: false },
   { name: "Leaderboard", href: "/leaderboard", current: false },
 ];
 

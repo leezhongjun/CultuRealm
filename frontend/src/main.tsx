@@ -9,7 +9,7 @@ import Home from "./pages/Home";
 import Story from "./pages/Story";
 import Community from "./pages/Community";
 import Leaderboard from "./pages/Leaderboard";
-import TopStories from "./pages/TopStories";
+import Challenge from "./pages/Challenge";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -37,7 +37,7 @@ function Router() {
         />
         <Route path="community-stories" element={<Community />} />
         <Route path="leaderboard" element={<Leaderboard />} />
-        <Route path="top-stories" element={<TopStories />} />
+        <Route path="challenge" element={<Challenge />} />
         <Route
           path="settings"
           element={

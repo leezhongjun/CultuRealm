@@ -45,10 +45,10 @@ function App() {
                   </Link>
 
                   <Link
-                    to="/story"
+                    to="/challenge"
                     className="px-4 py-2 text-base font-medium tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                   >
-                    Play Quizzes
+                    Play Challenges
                   </Link>
                 </div>
                 {/* <div>

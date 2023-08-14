@@ -45,6 +45,8 @@ function Community() {
   const [modalDesc, setModalDesc] = useState("");
   const [currStoryId, setCurrStoryId] = useState("");
   const [startStoryLoading, setStartStoryLoading] = useState(false);
+  const [flag, setFlag] = useState(false);
+  const [flagText, setFlagText] = useState("");
 
   const isAuthenticated = useIsAuthenticated();
   const authHeader = useAuthHeader();
@@ -195,7 +197,8 @@ function Community() {
       }
     );
     console.log(res.data);
-    return res.data.story_id;
+    let text = res.data.flagged ? res.data.flagged_text : "";
+    return [res.data.story_id, res.data.flagged, text];
   };
 
   const deleteStory = async (story_id: string) => {
@@ -214,7 +217,15 @@ function Community() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    const story_id = await submitNewStory();
+    const res = await submitNewStory();
+    const story_id = res[0];
+    const flagged = res[1];
+    const flagged_text = res[2];
+    if (flagged) {
+      setFlag(true);
+      setFlagText(flagged_text);
+      return;
+    }
     getStories();
     setTitle("");
     setDescription("");
@@ -223,7 +234,15 @@ function Community() {
 
   const handleAddPlay = async (e) => {
     e.preventDefault();
-    const story_id = await submitNewStory();
+    const res = await submitNewStory();
+    const story_id = res[0];
+    const flagged = res[1];
+    const flagged_text = res[2];
+    if (flagged) {
+      setFlag(true);
+      setFlagText(flagged_text);
+      return;
+    }
     getStories();
     setCurrStoryId(story_id);
     setModalDesc(description);
@@ -253,7 +272,9 @@ function Community() {
                 </label>
                 <input
                   type="text"
-                  className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 ${
+                    flag ? "border-red-300" : ""
+                  }`}
                   value={title}
                   placeholder="Title of story"
                   onChange={(e) => {
@@ -274,7 +295,9 @@ function Community() {
                   Description
                 </label>
                 <textarea
-                  className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 ${
+                    flag ? "border-red-300" : ""
+                  }`}
                   value={description}
                   placeholder="Description of story"
                   onChange={(e) => {
@@ -291,6 +314,9 @@ function Community() {
                   }}
                   required
                 />
+                <p className={flag ? "text-pink-600 text-sm" : "hidden"}>
+                  {flagText}
+                </p>
                 <button
                   className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                   type="button"

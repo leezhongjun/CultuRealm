@@ -403,6 +403,10 @@ def start_story():
     if is_custom:
         if user_state.custom_story_id == "temp":
             seed = data["seed"]
+            flagged, cats =  moderate_input(seed)
+            if flagged:
+                flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + ", ".join(cats) + "."
+                return {'flagged': True, 'flagged_text': flagged_text}
         else:
             seed = CustomStories.query.filter_by(id=user_state.custom_story_id).first().desc
 
@@ -467,7 +471,7 @@ def start_story():
     user_state.story_index = 0
     # return data
     db.session.commit()
-    return {'image_style': user_profile.image_style,'story_text': story_text, 'user_response': "", 'achievements': new_achivements, 'keywords': keywords, **kwargs}
+    return {'flagged': False, 'image_style': user_profile.image_style,'story_text': story_text, 'user_response': "", 'achievements': new_achivements, 'keywords': keywords, **kwargs}
 
 # regen img endpoint
 @app.route('/regen_img', methods=['POST'])
@@ -707,11 +711,19 @@ def add_custom_story():
     data = request.get_json()
     story_text = data["story_text"]
     title = data["title"]
+    flagged, cats =  moderate_input(story_text)
+    if flagged:
+        flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + ", ".join(cats) + "."
+        return {'flagged': True, 'flagged_text': flagged_text}
+    flagged, cats =  moderate_input(title)
+    if flagged:
+        flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + ", ".join(cats) + "."
+        return {'flagged': True, 'flagged_text': flagged_text}
     story_id = str(uuid.uuid4())
     new_custom_story = CustomStories(user_id=id, desc=story_text, title=title, id=story_id)
     db.session.add(new_custom_story)
     db.session.commit()
-    return {'story_id': story_id}
+    return {'flagged': False, 'story_id': story_id}
 
 @app.route('/vote_story', methods=['POST'])
 @jwt_required()
