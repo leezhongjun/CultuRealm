@@ -37,7 +37,14 @@ function Router() {
         />
         <Route path="community-stories" element={<Community />} />
         <Route path="leaderboard" element={<Leaderboard />} />
-        <Route path="challenge" element={<Challenge />} />
+        <Route
+          path="challenge"
+          element={
+            <RequireAuth loginPath={"/login"}>
+              <Challenge />
+            </RequireAuth>
+          }
+        />
         <Route
           path="settings"
           element={
@@ -68,7 +75,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           authName="_auth"
           cookieDomain={window.location.hostname}
           refresh={refreshApi}
-          cookieSecure={false}
+          cookieSecure={true}
         >
           <BrowserRouter>
             <Router />

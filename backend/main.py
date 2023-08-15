@@ -627,7 +627,7 @@ def story_index():
     
 
     # achivement
-    achievements_ls = get_achievements_score(user_profile.name, story_text, "I " + resp)
+    achievements_ls = get_achievements_score(user_profile.name, prev_story_text, "I " + resp)
     achievements_dict = parse_achievements(user_profile.achievements)
     ach_d_new = {}
     for ach in achievements_ls:
@@ -792,5 +792,5 @@ def completed_profile():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, ssl_context=('server.crt', 'server.key'))
 

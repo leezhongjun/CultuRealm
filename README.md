@@ -13,6 +13,10 @@ npm run dev
 
 3. Change .example.env to .env and change the variables to your own
 
+4. Go to [`chrome://flags/#allow-insecure-localhost`](chrome://flags/#allow-insecure-localhost) and enable `Allow invalid certificates for resources loaded from localhost.`
+
+5. Comment out `<React.StrictMode>` from `main.tsx` to prevent double useEffect calls
+
 ### Frontend stack:
 
 react ts

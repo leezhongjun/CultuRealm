@@ -87,6 +87,7 @@ def get_image(prompt: str):
         if response_2_json["status"] == "DONE" and response_2_json["status"]:
             break
         time.sleep(5)
+        print(response_2_json)
     base64_image_data = response_2_json["images"][0]
 
     image_data = base64.b64decode(base64_image_data)

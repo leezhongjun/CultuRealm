@@ -63,7 +63,7 @@ Example Format:
 ["...", ... ]"""
     while True:
         try:
-            res = ask_gpt(prompt)
+            res = ask_gpt(prompt, temp=2)
             res = res.split("[")[-1].split("]")[0]
             res = "[" + res + "]"
             res = eval(res)
@@ -84,18 +84,17 @@ def get_story_seed(age, gender, race):
         age = ""
     else:
         age = f"a {age} year old "
-    prompt = f"""Generate a summary of a random cultural scenario set in Singapore where the user, who is a Singapore citizen can interact with one or more people from different cultures. The random cultural scenario should test the user who is a Singaporean citizen on his ability to interact, respect and appreciate different cultures. The summary should be less than 3 sentences. Refer to the user in the summary.
+    prompt = f"""Generate summaries of 2 different cultural scenarios set in Singapore where the user, {age}{gender}{race}who is a Singapore citizen can interact with one or more people from different cultures. Each cultural scenario should test the user, {age}{gender}{race}who is a Singaporean citizen on his ability to interact, respect and appreciate different cultures. Each summary should be less than 3 sentences. Refer to the user in the summary.
 
-Format the summary as a Python list. Follow the format strictly.
-Example Format:
-["..."]
-"""
+List the summaries as a Python list. Follow the format strictly.
+Example Format: 
+["...", ... ]"""
     try:
         res = ask_gpt(prompt, temp=2)
         res = res.split("[")[-1].split("]")[0]
         res = "[" + res + "]"
         res = eval(res)
-        return res[0]
+        return res[-1]
     except:
         pass
 
@@ -295,49 +294,34 @@ STORY CONTEXT:
     return score
 
 def get_achievements_score(name, text, user_response):
-    prompt = f"""Modify the JSON formatted list of achievements based on if any of the achievements were achieved in the text. 
+    prompt = f"""Text:
+{text}
 
-ACHIEVEMENTS:
-[
-    {{
-        "name": "Helpful User",
-        "description": "User offers help to another character",
-        "is_achieved": false
-    }},
-    {{
-        "name": "Compliment Giver",
-        "description": "User gives a compliment to another character",
-        "is_achieved": false
-    }},
-    {{
-        "name": "Cultural Ambassador",
-        "description": "User shares their own culture",
-        "is_achieved": false
-    }},
-    {{
-        "name": "Cultural Explorer",
-        "description": "User asks about another character's culture",
-        "is_achieved": false
-    }},
-    {{
-        "name": "Master of Laughter",
-        "description": "User makes another character laugh",
-        "is_achieved": false
-    }},
-    {{
-        "name": "Knowledge Sharer",
-        "description": "User teaches another character something new",
-        "is_achieved": false
-    }}
-]
+The user's name is {name}.
+    
+User Response:
+{user_response}
 
-The user is {name}.
+Questions:
+1. Did the user offer help to another character in the user response?
+2. Did the user give a compliment to another character in the user response?
+3. Did the user share their own culture in the user response?
+4. Did the user directly ask about another character's culture in the user response?
+5. Did the user make another character laugh?
 
-TEXT:
+Answer the above questions based on the TEXT and USER RESPONSE provided.  
 
-User: {user_response}
+Let's think step by step. Explain each answer step by step. 
 
-{text}"""
+Then, output it as a formatted JSON list.
+
+Example output:
+[true/false, true/false, true/false, true/false, true/false]
+{text}
+
+USER RESPONSE: 
+{user_response}
+"""
     while True:
         try:
             res = ask_gpt(prompt, temp=0)
@@ -345,7 +329,7 @@ User: {user_response}
             print(res)
             ls =[]
             for i, x in enumerate(res):
-                if x['is_achieved']:
+                if x:
                     ls.append(i)
             return ls
         except:

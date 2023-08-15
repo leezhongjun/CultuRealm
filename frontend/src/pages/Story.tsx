@@ -83,6 +83,8 @@ function App() {
         return;
       }
       const utterance = new SpeechSynthesisUtterance(storyText);
+      utterance.rate = 1;
+      utterance.pitch = 1;
       synth.speak(utterance);
     } else if (storyText && isSpeaking) {
       setIsSpeaking(false);
