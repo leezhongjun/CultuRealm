@@ -296,6 +296,13 @@ def set_user_pref():
         if UserProfile.query.filter_by(username=data['username']).first() and data['username'] != user_profile.username:
             return jsonify({'message': 'Username already exists'})
         
+        if checkEmail(data['email']) == False:
+            return jsonify({'message': 'Invalid email'})
+        if checkUsername(data['username']) == False:
+            return jsonify({'message': 'Invalid username'})
+        if checkName(data['name']) == False:
+            return jsonify({'message': 'Invalid name'})
+        
         if data['age'] != user_profile.age or data['race'] != user_profile.race or data['gender'] != user_profile.gender:
             user_state = UserState.query.filter_by(id=id).first()
             user_state.story_seeds = "[]"
@@ -639,7 +646,7 @@ def story_index():
     user_profile.achievements = format_achievements(achievements_dict)
 
     # suggestions
-    if user_state.suggestions:
+    if user_state.suggestions and not final:
         suggestions = get_suggestions(story_text)
         user_state.suggestion_1 = suggestions[0]
         user_state.suggestion_2 = suggestions[1]

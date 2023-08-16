@@ -188,7 +188,7 @@ STORY:
     while len(res) < 2:
         res = []
         try:
-            resp = ask_gpt(prompt, temp=1)
+            resp = ask_gpt(prompt, temp=2)
             for r in resp.split('\n'):
                 s = ''
                 if "Do: " in r:
@@ -313,7 +313,7 @@ Answer the above questions based on the TEXT and USER RESPONSE provided.
 
 Let's think step by step. Explain each answer step by step. 
 
-Then, output it as a formatted JSON list.
+Then, output it as a formatted JSON list without comments.
 
 Example output:
 [true/false, true/false, true/false, true/false, true/false]

@@ -897,7 +897,7 @@ function App() {
                       <>
                         Previous High Score:{" "}
                         <span className="font-bold text-green-700">
-                          {prevHighScore}
+                          {prevHighScore}/100
                         </span>{" "}
                       </>
                     ) : (

@@ -11,7 +11,7 @@ default_user_profile = {
     'rating': 1500
 }
 
-max_story_index = 5
+max_story_index = 3
 
 
 achievements = [
