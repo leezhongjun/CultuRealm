@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-3. Change .example.env to .env and change the variables to your own
+3. Change `.example.env` to `.env` and change the variables to your own
 
 4. Go to [`chrome://flags/#allow-insecure-localhost`](chrome://flags/#allow-insecure-localhost) and enable `Allow invalid certificates for resources loaded from localhost.`
 
@@ -28,7 +28,8 @@ tailwind css
 1. Install python3
 2. Install pip
 3. Install pipenv
-4. run
+4. Change `.example.env` to `.env` and change the variables to your own
+5. run
 
 ```
 cd backend
