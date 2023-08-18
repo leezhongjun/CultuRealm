@@ -156,13 +156,27 @@ def get_start_story(seed, name, age, race, gender, country="Singapore"):
     return ask_gpt_convo(messages).replace("*", ""), messages[0] # remove all asterisks
 
 
-def get_start_img_prompt(text):
+def get_start_img_prompt(text, name, age, gender, race):
+    if gender == "Unspecified":
+        gender = ""
+    else:
+        gender = gender.strip().lower() + " "
+    if race == "Unspecified":
+        race = ""
+    else:
+        race = race.strip().capitalize() + " "
+    if age == "Unspecified":
+        age = ""
+    else:
+        age = f"{age} year old "
     prompt = f"""There is an image that accompanies the text in the story. 
 
-STORY:
+Story:
 {text}
 
-An adult that just saw the image without reading the story. Describe what the adult saw in simple English, in a single sentence, and include the races, ages, and genders of the people in the description. Do not include character names. Use simple sentence structure. Start the description with "An image of ..."
+The user, which may be referred to I, you, or {name} in the story is a {age}Singaporean {race}{gender}
+
+An adult saw the image without reading the story. Describe what the adult saw in simple English and in a single sentence. Include the races, ages, and genders of the people in the description. Do not include character names. Use simple sentence structure. Start the description with "An image of ..."
 """
     img_prompt = ask_gpt(prompt)
     
@@ -224,6 +238,18 @@ def gen_img(prompt, style):
             return upload_from_data(img)
         except:
             pass
+
+def gen_image_v2(prompt, style):
+    openai.api_base=os.environ['OPENAI_API_BASE']
+    openai.api_key=os.environ['OPENAI_API_KEY']
+    response = openai.Image.create(
+        prompt= prompt + " " + styles[style],
+        n=1,  # images count
+        size="1024x1024"
+    )
+    openai.api_base=os.environ['OPENAI_API_BASE_2']
+    openai.api_key=os.environ['OPENAI_API_KEY_2']
+    return response['data'][0]['url']
 
 
 def moderate_input(user_input):

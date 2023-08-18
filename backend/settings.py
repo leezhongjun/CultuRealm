@@ -11,7 +11,9 @@ default_user_profile = {
     'rating': 1500
 }
 
-max_story_index = 3
+max_story_index = 2
+
+global_unlocked_rating = 1700
 
 countries = [
   "Random",

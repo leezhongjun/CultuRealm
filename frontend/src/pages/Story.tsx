@@ -75,6 +75,7 @@ function App() {
   const [showGlobal, setShowGlobal] = useState(false);
   const [country, setCountry] = useState("Singapore");
   const [unlockGlobal, setUnlockGlobal] = useState(false);
+  const [unlockRating, setUnlockRating] = useState(false);
 
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
@@ -266,8 +267,8 @@ function App() {
                 (response.data.new_rating - response.data.old_rating).toString()
             );
             if (
-              response.data.new_rating >= 1700 &&
-              response.data.old_rating < 1700
+              response.data.new_rating >= response.data.unlock_rating &&
+              response.data.old_rating < response.data.unlock_rating
             ) {
               setUnlockGlobal(true);
             }
@@ -324,13 +325,15 @@ function App() {
         console.log(response.data);
         setCompletedProfile(response.data.completed_profile);
         setGlobalUnlocked(response.data.global_unlocked);
+        setRating(response.data.rating);
+        setUnlockRating(response.data.unlock_rating);
       } catch (error) {
         console.error(error);
       }
     };
 
-    fetchData();
     completed_profile();
+    fetchData();
   }, []);
 
   function handleSuggestionClick(suggestion: String) {
@@ -506,12 +509,32 @@ function App() {
                 </h1>
                 <div className="max-w-3xl mx-auto">
                   <p
-                    className="text-xl text-gray-800 mb-6"
+                    className="text-xl text-gray-800 mb-8"
                     data-aos="zoom-y-out"
                     data-aos-delay="150"
                   >
                     Experience cultures with unique and interactive stories
                   </p>
+                  {!unlockGlobal && (
+                    <>
+                      <p
+                        className="text-base text-gray-800 mb-2"
+                        data-aos="zoom-y-out"
+                        data-aos-delay="150"
+                      >
+                        Current rating:{" "}
+                        <b className="text-blue-600">{rating}</b>
+                      </p>
+                      <p
+                        className="text-base text-gray-800 mb-8"
+                        data-aos="zoom-y-out"
+                        data-aos-delay="150"
+                      >
+                        Get <b className="text-green-600">{unlockRating}</b>{" "}
+                        rating to unlock Global Mode
+                      </p>
+                    </>
+                  )}
                   <div className="" data-aos="zoom-y-out" data-aos-delay="300">
                     <div>
                       <form onSubmit={startStoryForm} className="py-0">
@@ -560,7 +583,7 @@ function App() {
                             Enable Suggested Responses
                           </label>
                         </div>
-                        {!globalUnlocked && (
+                        {globalUnlocked && (
                           <div className="flex justify-center mt-4">
                             <input
                               id="global-story-checkbox"
@@ -585,7 +608,7 @@ function App() {
                                 Country
                               </label>
                               <select
-                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                                 onChange={(e) => setCountry(e.target.value)}
                                 value={country}
                               >
@@ -603,7 +626,7 @@ function App() {
                             id="custom-story-checkbox"
                             type="checkbox"
                             defaultChecked={isCustomStory}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                             onClick={() => setIsCustomStory(!isCustomStory)}
                           />
                           <label
@@ -969,11 +992,15 @@ function App() {
                         <span className="font-semibold text-green-700">
                           {ratingDiff}
                         </span>
+                        <br></br>
+                        <br></br>
                         {unlockGlobal && (
-                          <span className="font-semibold text-green-700">
-                            {"\n"}
-                            Congradulations! You have unlocked Global Mode!
-                          </span>
+                          <div className="font-semibold">
+                            <b className="font-bold text-green-700">
+                              You have unlocked Global Mode!{" "}
+                            </b>
+                            Start a new story to try it out!
+                          </div>
                         )}
                       </>
                     )}

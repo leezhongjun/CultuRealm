@@ -460,7 +460,7 @@ def start_story():
     user_state.story_state = json.dumps(story_state)
 
     # image gen 
-    img_prompt = get_start_img_prompt(story_text)
+    img_prompt = get_start_img_prompt(story_text, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
     # img_url = gen_img(img_prompt, user_profile.image_style)
 
     # call api -> story audio (do in frontend)
@@ -509,7 +509,7 @@ def regen_img():
     story_index = data['story_index']
     user_story = UserStories.query.filter_by(user_id=id, story_index=story_index).first()
     img_prompt = user_story.img_prompt
-    img_url = gen_img(img_prompt, user_profile.image_style)
+    img_url = gen_image_v2(img_prompt, user_profile.image_style)
     user_story.img_url = img_url
 
     db.session.commit()
@@ -581,7 +581,7 @@ def story_index():
             kwargs['old_rating'] = user_state.old_rating
             
         # return data
-        return {'country': user_state.country, 'is_custom': is_custom,'is_final': final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
+        return {'unlock_rating': settings.global_unlocked_rating, 'country': user_state.country, 'is_custom': is_custom,'is_final': final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
 
     # if new index
     # get resp
@@ -645,7 +645,7 @@ def story_index():
             # rating
             user_state.old_rating = user_profile.rating
             user_profile.rating = calc_new_rating(final_score, user_profile.stories_played, user_state.old_rating)
-            if user_profile.rating > 1700:
+            if user_profile.rating > settings.global_unlocked_rating:
                 user_profile.global_unlocked = True
 
     # achivement
@@ -667,7 +667,7 @@ def story_index():
         user_state.suggestion_2 = suggestions[1]
 
     # img prompt
-    img_prompt = get_start_img_prompt(story_text)
+    img_prompt = get_start_img_prompt(story_text, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
     
     # write to db
     user_state.story_index = cur_story_index
@@ -807,7 +807,7 @@ def completed_profile():
     user_profile = UserProfile.query.filter_by(id=id).first()
     fields = [user_profile.race, user_profile.gender, user_profile.age]
     completed_profile = all(field != "Unspecified" for field in fields)
-    return jsonify({'completed_profile':completed_profile, 'global_unlocked': user_profile.global_unlocked})
+    return jsonify({'rating': user_profile.rating, 'unlock_rating': settings.global_unlocked_rating, 'completed_profile':completed_profile, 'global_unlocked': user_profile.global_unlocked})
 
 
 
