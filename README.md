@@ -3,7 +3,7 @@
 ## How to run frontend
 
 1. Install npm
-2. run
+2. Run
 
 ```
 cd frontend
@@ -29,7 +29,7 @@ tailwind css
 2. Install pip
 3. Install pipenv
 4. Change `.example.env` to `.env` and change the variables to your own
-5. run
+5. Run
 
 ```
 cd backend

@@ -76,6 +76,7 @@ class UserProfile(db.Model):
     achievements = db.Column(db.String(80)) # format "achivement_id:achivement_times achivement_id:achivement_times"
     profile_pic = db.Column(db.LargeBinary)
     image_style = db.Column(db.String(16))
+    global_unlocked = db.Column(db.Boolean, default=False)
 
 class UserStories(db.Model):
     user_id = db.Column(db.String(36), nullable=False, primary_key=True)
@@ -103,6 +104,7 @@ class UserState(db.Model):
     old_rating = db.Column(db.Integer, nullable=False, default=1500)
     custom_story_id = db.Column(db.String(36), nullable=False, default="")
     old_high_score = db.Column(db.Integer, nullable=False, default=0)
+    country = db.Column(db.String(80), nullable=False, default="Singapore")
 
 class CustomStories(db.Model):
     id = db.Column(db.String(36), primary_key=True)
@@ -418,27 +420,39 @@ def start_story():
             seed = CustomStories.query.filter_by(id=user_state.custom_story_id).first().desc
 
     else:
-        # get story seeds
-        story_seeds = json.loads(user_state.story_seeds)
         
-        # create more seeds if len == 0
-        if len(story_seeds) == 0:
-            story_seeds = get_story_seeds(age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+        if data['country'] != "Singapore":
+            if data['country'] not in settings.countries:
+                return {'flagged': True, 'flagged_text': "Invalid country!"}
+            if data['country'] == "Random":
+                data['country'] = random.choice(settings.countries[1:])
+            user_state.country = data['country']
+            seed = get_story_seed(age=user_profile.age, gender=user_profile.gender, race=user_profile.race, country=user_state.country)
+            
+        else:
+            user_state.country = data['country']
 
-        # sample a seed
-        i = random.randint(0, len(story_seeds) - 1)
-        seed = story_seeds[i]
+            # get story seeds
+            story_seeds = json.loads(user_state.story_seeds)
+            
+            # create more seeds if len == 0
+            if len(story_seeds) == 0:
+                story_seeds = get_story_seeds(age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
 
-        # remove the seed from the list
-        story_seeds.pop(i)
+            # sample a seed
+            i = random.randint(0, len(story_seeds) - 1)
+            seed = story_seeds[i]
 
-        # update db with new seed list
-        user_state.story_seeds = json.dumps(story_seeds)
+            # remove the seed from the list
+            story_seeds.pop(i)
+
+            # update db with new seed list
+            user_state.story_seeds = json.dumps(story_seeds)
 
     # call api -> story text
     story_text = "END"
     while "END" in story_text:
-        story_text, system_message = get_start_story(seed=seed, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+        story_text, system_message = get_start_story(seed=seed, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race, country=user_state.country)
     story_state = [system_message, {
         "role": "assistant",
         "content": story_text,
@@ -478,7 +492,7 @@ def start_story():
     user_state.story_index = 0
     # return data
     db.session.commit()
-    return {'flagged': False, 'image_style': user_profile.image_style,'story_text': story_text, 'user_response': "", 'achievements': new_achivements, 'keywords': keywords, **kwargs}
+    return {'country': user_state.country, 'flagged': False, 'image_style': user_profile.image_style,'story_text': story_text, 'user_response': "", 'achievements': new_achivements, 'keywords': keywords, **kwargs}
 
 # regen img endpoint
 @app.route('/regen_img', methods=['POST'])
@@ -567,7 +581,7 @@ def story_index():
             kwargs['old_rating'] = user_state.old_rating
             
         # return data
-        return {'is_custom': is_custom,'is_final': final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
+        return {'country': user_state.country, 'is_custom': is_custom,'is_final': final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
 
     # if new index
     # get resp
@@ -631,7 +645,8 @@ def story_index():
             # rating
             user_state.old_rating = user_profile.rating
             user_profile.rating = calc_new_rating(final_score, user_profile.stories_played, user_state.old_rating)
-    
+            if user_profile.rating > 1700:
+                user_profile.global_unlocked = True
 
     # achivement
     achievements_ls = get_achievements_score(user_profile.name, prev_story_text, "I " + resp)
@@ -792,7 +807,7 @@ def completed_profile():
     user_profile = UserProfile.query.filter_by(id=id).first()
     fields = [user_profile.race, user_profile.gender, user_profile.age]
     completed_profile = all(field != "Unspecified" for field in fields)
-    return jsonify({'completed_profile':completed_profile})
+    return jsonify({'completed_profile':completed_profile, 'global_unlocked': user_profile.global_unlocked})
 
 
 

@@ -21,6 +21,7 @@ function Profile() {
   // const [religion, setReligion] = useState("");
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
+  const [globalUnlocked, setGlobalUnlocked] = useState(false);
 
   // const [profile_pic, setProfile_pic] = useState<File | null>(null);
   // const [errorMessage, setErrorMessage] = useState("");
@@ -52,6 +53,7 @@ function Profile() {
         setHighScore(jsonifiedData["high_score"]);
         setGamesPlayed(jsonifiedData["stories_played"]);
         setAchievements(jsonifiedData["achievements"]); // process achievements
+        setGlobalUnlocked(jsonifiedData["global_unlocked"]);
       } catch (error) {
         console.error(error);
       }
@@ -222,6 +224,17 @@ function Profile() {
                 <div className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                   {ProcessAchievements(achievements)}
                 </div>
+              </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Global mode unlocked
+                </label>
+                <input
+                  type="text"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  value={globalUnlocked ? "Yes" : "No"}
+                  disabled
+                />
               </div>
             </div>
           </div>

@@ -71,7 +71,7 @@ Example Format:
         except:
             pass
 
-def get_story_seed(age, gender, race):
+def get_story_seed(age, gender, race, country="Singapore"):
     if gender == "Unspecified":
         gender = ""
     else:
@@ -84,7 +84,7 @@ def get_story_seed(age, gender, race):
         age = ""
     else:
         age = f"a {age} year old "
-    prompt = f"""Generate summaries of 2 different cultural scenarios set in Singapore where the user, {age}{gender}{race}who is a Singapore citizen can interact with one or more people from different cultures. Each cultural scenario should test the user, {age}{gender}{race}who is a Singaporean citizen on his ability to interact, respect and appreciate different cultures. Each summary should be less than 3 sentences. Refer to the user in the summary.
+    prompt = f"""Generate summaries of 2 different cultural scenarios set in {country} where the user, {age}{gender}{race}who is a Singapore citizen can interact with one or more people from different cultures. Each cultural scenario should test the user, {age}{gender}{race}who is a Singaporean citizen on his ability to interact, respect and appreciate different cultures. Each summary should be less than 3 sentences. Refer to the user in the summary.
 
 List the summaries as a Python list. Follow the format strictly.
 Example Format: 
@@ -113,7 +113,7 @@ Title: ..."""
     except:
         pass
 
-def system_prompt(seed, name, age, race, gender):
+def system_prompt(seed, name, age, race, gender, country="Singapore"):
     if gender == "Unspecified":
         gender = ""
     else:
@@ -126,7 +126,7 @@ def system_prompt(seed, name, age, race, gender):
         age = ""
     else:
         age = f"{age} year old "
-    system = f"""You will act as a text-based RPG that will place the user, {name.capitalize()}, a {age}local {race}{gender}in a storyline that is set in Singapore and is non-fictional. The storyline will test the user's ability to interact with people from different cultures and respect different cultures. The storyline is cohesive and has characters that will persist throughout the story.
+    system = f"""You will act as a text-based RPG that will place the user, {name.capitalize()}, a {age}local {race}{gender}in a storyline that is set in {country} and is non-fictional. The storyline will test the user's ability to interact with people from different cultures and respect different cultures. The storyline is cohesive and has characters that will persist throughout the story.
 
 
 In the RPG, the user can act freely to test their cultural awareness and ability to interact with other cultures by giving open ended responses to guide the storyline.
@@ -149,9 +149,9 @@ This is the summary of the storyline for the RPG:
 Start the RPG. Start it directly by introducing the scene and context. Do not ask if the user is ready to start after the user gives the summary of the storyline. Remember to ask the user for his response."""
     return system
 
-def get_start_story(seed, name, age, race, gender):
+def get_start_story(seed, name, age, race, gender, country="Singapore"):
     messages = [
-        {"role": "system", "content": system_prompt(seed, name, age, race, gender)}
+        {"role": "system", "content": system_prompt(seed, name, age, race, gender, country)}
     ]
     return ask_gpt_convo(messages).replace("*", ""), messages[0] # remove all asterisks
 

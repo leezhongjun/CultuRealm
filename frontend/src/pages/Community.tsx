@@ -29,9 +29,6 @@ const sortIndexes = {
 function Community() {
   const [storiesData, setStoriesData] = useState([]);
   const [rawStoriesData, setRawStoriesData] = useState([]);
-  const [filterValue, setFilterValue] = useState("Race");
-  const [optionValue, setOptionValue] = useState("All");
-  const [username, setUsername] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [sortValue, setSortValue] = useState("New");
   const [title, setTitle] = useState("");
@@ -47,18 +44,19 @@ function Community() {
   const [startStoryLoading, setStartStoryLoading] = useState(false);
   const [flag, setFlag] = useState(false);
   const [flagText, setFlagText] = useState("");
+  const [country, setCountry] = useState("Singapore");
 
   const isAuthenticated = useIsAuthenticated();
   const authHeader = useAuthHeader();
   const navigate = useNavigate();
   const authUserFunc = useAuthUser();
-
+  console.log(isAuthenticated());
   const getStories = async () => {
     const res = await axios.post(
       import.meta.env.VITE_BACKEND_ENDPOINT +
-        (isAuthenticated() ? "/get_stories_proc" : "/get_stories"),
+        (isAuth ? "/get_stories_proc" : "/get_stories"),
       {},
-      isAuthenticated()
+      isAuth
         ? {
             headers: {
               Authorization: authHeader(),
@@ -108,7 +106,7 @@ function Community() {
 
   useEffect(() => {
     setIsAuth(isAuthenticated());
-    setAuthUser(authUserFunc().id);
+    isAuthenticated() ? setAuthUser(authUserFunc().id) : null;
     getStories();
   }, []);
 
@@ -143,6 +141,7 @@ function Community() {
           suggestions: needSuggestions,
           is_custom: true,
           story_id: story_id,
+          country: country,
         },
         {
           headers: {
@@ -597,7 +596,7 @@ function Community() {
                     )}
                   </button>
                 </div>
-                <div className="mt-2 flex gap-2">
+                {isAuth && (<div className="mt-2 flex gap-2">
                   <button
                     className="mt-4 h-fit text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                     onClick={() => {
@@ -617,7 +616,7 @@ function Community() {
                       Delete
                     </button>
                   )}
-                </div>
+                </div>)}
               </div>
             ))}
           </div>

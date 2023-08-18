@@ -11,6 +11,7 @@ axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 import { styles } from "./Settings";
 import ProcessAchievements from "../components/Achievements";
 import HighlightedParagraph from "../components/HighlightedPara";
+import { countries } from "./Settings";
 import { Link } from "react-router-dom";
 
 // let config = {
@@ -70,6 +71,10 @@ function App() {
   const [genStoryLoading, setGenStoryLoading] = useState(false);
   const [prevHighScore, setPrevHighScore] = useState(false);
   const [completedProfile, setCompletedProfile] = useState(true);
+  const [globalUnlocked, setGlobalUnlocked] = useState(false);
+  const [showGlobal, setShowGlobal] = useState(false);
+  const [country, setCountry] = useState("Singapore");
+  const [unlockGlobal, setUnlockGlobal] = useState(false);
 
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
@@ -151,6 +156,7 @@ function App() {
           suggestions: needSuggestions,
           story_id: story_id,
           seed: customStoryText,
+          country: country,
         },
         {
           headers: {
@@ -178,6 +184,8 @@ function App() {
       setStyle(data.image_style);
       setFeedback("");
       setResp("");
+      setUnlockGlobal(false);
+      setCountry(data.country);
       const response_img = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/regen_img",
         { image_style: data.image_style, story_index: 0 },
@@ -235,6 +243,7 @@ function App() {
         setStyle(response.data.image_style);
         setFeedback(response.data.feedback);
         setAchievements(response.data.achievements);
+        setCountry(response.data.country);
         setShowResponseSubmit(response.data.feedback === "");
         if (response.data.user_response !== "") {
           const strs = response.data.user_response.split(": ");
@@ -256,6 +265,12 @@ function App() {
                 : "") +
                 (response.data.new_rating - response.data.old_rating).toString()
             );
+            if (
+              response.data.new_rating >= 1700 &&
+              response.data.old_rating < 1700
+            ) {
+              setUnlockGlobal(true);
+            }
           }
           setNeedSuggestions(false);
         } else {
@@ -308,6 +323,7 @@ function App() {
         );
         console.log(response.data);
         setCompletedProfile(response.data.completed_profile);
+        setGlobalUnlocked(response.data.global_unlocked);
       } catch (error) {
         console.error(error);
       }
@@ -438,7 +454,7 @@ function App() {
             >
               settings
             </a>{" "}
-            to complete your profile.
+            to complete your profile for more personalised stories.
           </div>
           <button
             onClick={handleButtonClick}
@@ -529,7 +545,7 @@ function App() {
                             "Begin your story"
                           )}
                         </button>
-                        <div className="mt-1 py-4 flex justify-center">
+                        <div className="mt-5 flex justify-center">
                           <input
                             id="suggestion-checkbox"
                             type="checkbox"
@@ -544,7 +560,45 @@ function App() {
                             Enable Suggested Responses
                           </label>
                         </div>
-                        <div className="flex justify-center ">
+                        {!globalUnlocked && (
+                          <div className="flex justify-center mt-4">
+                            <input
+                              id="global-story-checkbox"
+                              type="checkbox"
+                              defaultChecked={showGlobal}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
+                              onClick={() => setShowGlobal(!showGlobal)}
+                            />
+                            <label
+                              htmlFor="global-story-checkbox"
+                              className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                            >
+                              Enable Global Mode
+                            </label>
+                          </div>
+                        )}
+                        {showGlobal && (
+                          //show countries here as a dropdown
+                          <div className="mt-2 justify-center bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                            <div className="flex flex-col">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Country
+                              </label>
+                              <select
+                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                onChange={(e) => setCountry(e.target.value)}
+                                value={country}
+                              >
+                                {countries.map((country) => (
+                                  <option key={country} value={country}>
+                                    {country}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        )}
+                        <div className="flex justify-center mt-4">
                           <input
                             id="custom-story-checkbox"
                             type="checkbox"
@@ -698,6 +752,12 @@ function App() {
                   >
                     here
                   </Link>
+                </p>
+              )}
+              {country !== "Singapore" && (
+                <p className="mt-2 text-gray-500 text-sm font-medium">
+                  You're playing in Global Mode. Current country:{" "}
+                  <b>{country}</b>
                 </p>
               )}
             </div>
@@ -909,6 +969,12 @@ function App() {
                         <span className="font-semibold text-green-700">
                           {ratingDiff}
                         </span>
+                        {unlockGlobal && (
+                          <span className="font-semibold text-green-700">
+                            {"\n"}
+                            Congradulations! You have unlocked Global Mode!
+                          </span>
+                        )}
                       </>
                     )}
                   </div>
