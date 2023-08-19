@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 import os
 import json
 
+from utils_var import cultural_historical_events, festivals
+
 from img_api import get_image, upload_from_data
 from settings import achievements, breakpoints
 import time
@@ -360,3 +362,27 @@ USER RESPONSE:
             return ls
         except:
             pass
+
+
+def get_challenge_essay(event):
+    prompt = f'''Generate a 100 word, concise, and information dense passage about the 
+    history, culture and information of {event} in Singapore.'''
+    
+    res = ask_gpt(prompt, temp=0)
+    return res
+            
+def get_challenge_mcq(essay, number):
+    prompt = f'''You are a quiz creator of highly diagnostic quizzes. You will make good low-stakes tests and diagnostics.
+
+Generate {number} multiple choice questions to test the user about Chinese New Year. The multiple choice questions should only test information from the following passage.
+
+Passage: {essay}
+
+The questions should be at a very difficult level. Return your answer entirely in the form of a JSON object. The JSON object should have a key named "questions" which is an array of the questions. Each quiz question should include the choices, the answer, and a brief explanation of why the answer is correct. Don't include anything other than the JSON. The JSON properties of each question should be "query" (which is the question), "choices", "answer", and "explanation". The choices shouldn't have any ordinal value like A, B, C, D or a number like 1, 2, 3, 4. The answer should be the 0-indexed number of the correct choice. The choices should include plausible, competitive alternate choices and should not include an "all of the above" choice.'''
+    
+    res = ask_gpt(prompt, temp=0)
+    first = res.find('{')
+    last = len(res)-1-res[::-1].find('}')
+    cropped = res[first:last+1]
+    res = json.loads(cropped)
+    return res
