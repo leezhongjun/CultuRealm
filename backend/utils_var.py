@@ -150,3 +150,5 @@ festivals = [
     "Eid al-Zinah",
     "Eid al-Zuhra"
 ]
+
+events = cultural_historical_events + festivals

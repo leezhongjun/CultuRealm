@@ -16,6 +16,8 @@ from utils import checkPassword, checkEmail, checkUsername, checkName, calc_new_
 import settings
 from apis import *
 
+from utils_var import events
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -123,17 +125,18 @@ class UpvoteSystem(db.Model):
 
 class ChallengeHistory(db.Model):
     user_id = db.Column(db.String(36), nullable=False, primary_key=True)
-    topic = db.Column(db.Integer, nullable=False)
+    event = db.Column(db.Integer, nullable=False)
     challenge_score = db.Column(db.Integer, nullable=False)
     time_taken = db.Column(db.Integer, nullable=False)
     difficulty = db.Column(db.Integer, nullable=False) #1 for easy, 2 for medium, 3 for hard
 
 class UserStateC(db.Model):
     id = db.Column(db.String(36), nullable=False, primary_key=True)
-    topic = db.Column(db.Integer, nullable=False)
-    challenge_essay = db.Column(db.String(5000), nullable=False)
-    difficulty = db.Column(db.Integer, nullable=False) #1 for easy, 2 for medium, 3 for hard
-    query = db.Column(db.String(5000), nullable=False)
+    event = db.Column(db.Integer, nullable=False, default="")
+    essay = db.Column(db.String(5000), nullable=False, default="")
+    challenge_score = db.Column(db.Integer, nullable=False, default=0)
+    difficulty = db.Column(db.Integer, nullable=False, default=1) #1 for easy, 2 for medium, 3 for hard
+    json_query = db.Column(db.String(5000), nullable=False, default="")
 
 # Callback function to check if a JWT exists in the database blocklist
 @jwt.token_in_blocklist_loader
@@ -225,7 +228,7 @@ def register():
     db.session.add(new_user_state)
 
     ### For challenge mode ###
-    new_user_state_c = UserState_C(id=new_user_profile.id, query='')
+    new_user_state_c = UserStateC(id=new_user_profile.id)
     db.session.add(new_user_state_c)
 
     db.session.commit()
@@ -836,9 +839,10 @@ def challenge_essay():
     ### Generate and store essay
     ### Store topic and difficulty
     data = request.get_json()
-    topic = data["topic"]
+    event = data["event"]
     difficulty = data["difficulty"]
-    essay = get_challenge_essay(topic)
+    essay = get_challenge_essay(event)
+    userStateC.event = event
     userStateC.essay = essay
     userStateC.difficulty = difficulty
     db.session.commit()
@@ -856,33 +860,45 @@ def challenge_mcq():
     elif difficulty == 2: num_mcqs = 3
     elif difficulty == 3: num_mcqs = 5
     ### Generate and store query
-    query = get_challenge_mcq(essay, num_mcqs)
-    userStateC.query = json.dumps(query)
-    return jsonify(query) ### let frontend process dynamically based on number of questions
+    loaded_query = get_challenge_mcq(essay, num_mcqs)
+    userStateC.json_query = json.dumps(loaded_query)
+    print(loaded_query["questions"])
+    return jsonify({"mcq":loaded_query["questions"]}) ### let frontend process dynamically based on number of questions
 
-@app.route('/challenge_mcq_submit', methods=['POST'])
+@app.route('/challenge_score_submit', methods=['POST'])
 @jwt_required()
-def challenge_mcq_submit():
+def challenge_score_submit():
     id = get_jwt_identity()['id']
     userStateC = UserStateC.query.filter_by(id=id).first()
-    query = json.loads(userStateC.query)
-    cleaned_query = query["questions"]
+    # loaded_query = json.loads(userStateC.json_query)
+    # loaded_query = loaded_query["questions"]
     data = request.get_json()
-    answers = data["answers"] #for now the answers passed from frontend are 'a string of indexes separated by commas'
-    answers = answers.split(",")
+    score = data["score"]
+    # answers = data["answers"] #for now the answers passed from frontend are 'a string of indexes separated by commas'
+    # answers = answers.split(",")
     ### Calculate score
     ### Store explanations in response
-    challenge_score = 0
-    res = {}
-    for i in range(len(cleaned_query)):
-        if answers[i] == cleaned_query[i]["answer"]:
-            challenge_score += 1
-        res[str(i)] = cleaned_query[i]["explanation"]
-    res["score"] = challenge_score
+    # challenge_score = 0
+    # res = {}
+    # for i in range(len(loaded_query)):
+    #     if answers[i] == loaded_query[i]["answer"]:
+    #         challenge_score += 1
+    #     res[str(i)] = loaded_query[i]["explanation"]
+    # res["score"] = challenge_score
     ### Update user state
-    userStateC.challenge_score = challenge_score
+    print(f"Received score: {score}")
+    userStateC.challenge_score = score
+    # store all userStateC fields in ChallengeHistory
+    challenge_history = ChallengeHistory(id=id, event=userStateC.event, essay=userStateC.essay, challenge_score=userStateC.challenge_score)
+    db.session.add(challenge_history)
     db.session.commit()
-    return jsonify(res)
+    return jsonify({'score': score})
+
+@app.route('/challenge_events', methods=['POST'])
+@jwt_required()
+def challenge_events():
+    # events imported
+    return jsonify({"events": events})
 
 
 if __name__ == '__main__':
