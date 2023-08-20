@@ -10,7 +10,6 @@ function App() {
   const [score, setScore] = useState(0); // score for mcq
   const [mcq, setMCQ] = useState([]); 
   const [choices, setChoices] = useState([-1]); // user choice
-  // const [jsondata, setJsondata] = useState([]);
   const [difficulty, setDifficulty] = useState(1); // 1: easy, 2: medium, 3: hard
   const [displayScore, setDisplayScore] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -71,34 +70,12 @@ function App() {
       )
       setMCQ(res.data.mcq);
       setChoices(Array(res.data.mcq.length).fill(-1));
-      // test
       // console.log(res.data.mcq);
-
       // console.log(mcq);
     } catch (err) {
       console.log(err);
     }
   };
-
-  // const submitScore = async () => {
-  //   // e.preventDefault();
-  //   try {
-  //     const res = await axios.post(
-  //       import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_score_submit",
-  //       {score: score},
-  //       {
-  //         headers: {
-  //           Authorization: authHeader(),
-  //         },
-  //       }
-  //     )
-  //     // test
-  //     console.log(res.data);
-  //     setSubmitted(true);
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
 
   const storeChoice = (e) => {
     let choices_temp = choices;
@@ -137,22 +114,9 @@ function App() {
     setDisplayScore(true);
   };
 
-  // const calculate_and_submit_score = (e) => {
-  //   e.preventDefault();
-  //   calculateScore();
-  //   // submitScore(e);
-  // };
-
-
-
   // execute fetchEvents() when the page is loaded
   useEffect(() => {
     fetchEvents();
-    // console.log(events);
-    // if (score !== 0) {
-    //   submitScore();
-    //   setSubmitted(true);
-    // }
   }, []);
 
   return (
@@ -217,9 +181,6 @@ function App() {
         <br></br>
 
         {/* Button that checks i^th choice against mcq[i][answer]*/}
-        {/* <form onSubmit={calculate_and_submit_score}>
-          <button type="submit">Submit Answer</button>
-        </form> */}
         <button onClick={calculateScore}>Submit</button>
         <br></br>
 

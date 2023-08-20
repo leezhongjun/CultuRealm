@@ -870,21 +870,8 @@ def challenge_mcq():
 def challenge_score_submit():
     id = get_jwt_identity()['id']
     userStateC = UserStateC.query.filter_by(id=id).first()
-    # loaded_query = json.loads(userStateC.json_query)
-    # loaded_query = loaded_query["questions"]
     data = request.get_json()
     score = data["score"]
-    # answers = data["answers"] #for now the answers passed from frontend are 'a string of indexes separated by commas'
-    # answers = answers.split(",")
-    ### Calculate score
-    ### Store explanations in response
-    # challenge_score = 0
-    # res = {}
-    # for i in range(len(loaded_query)):
-    #     if answers[i] == loaded_query[i]["answer"]:
-    #         challenge_score += 1
-    #     res[str(i)] = loaded_query[i]["explanation"]
-    # res["score"] = challenge_score
     ### Update user state
     print(f"Received score: {score}")
     userStateC.challenge_score = score
