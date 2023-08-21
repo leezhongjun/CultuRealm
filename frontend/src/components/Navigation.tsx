@@ -15,7 +15,7 @@ axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 import { useMyContext } from "../components/Context";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 
-function classNames(...classes) {
+export function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 

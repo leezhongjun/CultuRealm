@@ -515,16 +515,16 @@ function App() {
                   >
                     Experience cultures with unique and interactive stories
                   </p>
+
+                  <p
+                    className="text-base text-gray-800 mb-2"
+                    data-aos="zoom-y-out"
+                    data-aos-delay="150"
+                  >
+                    Current rating: <b className="text-blue-600">{rating}</b>
+                  </p>
                   {!unlockGlobal && (
                     <>
-                      <p
-                        className="text-base text-gray-800 mb-2"
-                        data-aos="zoom-y-out"
-                        data-aos-delay="150"
-                      >
-                        Current rating:{" "}
-                        <b className="text-blue-600">{rating}</b>
-                      </p>
                       <p
                         className="text-base text-gray-800 mb-8"
                         data-aos="zoom-y-out"
