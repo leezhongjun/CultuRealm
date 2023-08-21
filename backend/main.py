@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
+import requests
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
@@ -170,7 +171,7 @@ class UserStateC(db.Model):
     time_taken = db.Column(db.Integer, nullable=False, default=0)
     qns = db.Column(db.String(5000), nullable=False, default="")
     ans = db.Column(db.String(5000), nullable=False, default="")
-    exp = db.Column(db.Integer, nullable=False, default=0)
+    exp = db.Column(db.String(5000), nullable=False, default="")
     user_ans = db.Column(db.String(5000), nullable=False, default="")
 
 # Callback function to check if a JWT exists in the database blocklist
@@ -1003,8 +1004,8 @@ def challenge_score_submit():
     answers = data["answers"]
     userStateC.user_ans = json.dumps(answers)
 
-    ans = userStateC.ans
-    exp = userStateC.exp
+    ans = json.loads(userStateC.ans)
+    exp = json.loads(userStateC.exp)
     for i in range(len(ans)):
         if ans[i] == answers[i]:
             score += 100
@@ -1066,6 +1067,14 @@ def challenge_reset():
     db.session.commit()
     return {'message': 'Success'}
 
+@app.route('/challenge_image', methods=['POST'])
+@jwt_required()
+def get_img_challenge():
+    data = request.get_json()['event']
+    res = requests.get(f"https://api.duckduckgo.com/?q={data}&format=json&pretty=1").json()
+    # print(res["Image"])
+    return {'img': "https://duckduckgo.com" + res['Image']}
+
 
 @app.route('/challenge_index', methods=['POST'])
 @jwt_required()
@@ -1073,9 +1082,9 @@ def challenge_index():
     id = get_jwt_identity()['id']
     userStateC = UserStateC.query.filter_by(id=id).first()
     if userStateC.play_state == 2:
-        return {'play_state': userStateC.play_state, 'score': userStateC.challenge_score, 'ans':  userStateC.ans, 'exp': userStateC.exp, 'event': userStateC.event, 'difficulty': userStateC.difficulty, 'user_ans': userStateC.user_ans, 'essay': userStateC.essay, 'time_taken': userStateC.time_taken}
+        return {'play_state': userStateC.play_state, 'score': userStateC.challenge_score, 'mcq': json.loads(userStateC.qns), 'ans':  json.loads(userStateC.ans), 'exp': json.loads(userStateC.exp), 'event': userStateC.event, 'difficulty': userStateC.difficulty, 'user_ans': json.loads(userStateC.user_ans), 'essay': userStateC.essay, 'time_taken': userStateC.time_taken}
     elif userStateC.play_state == 1:
-        return {'play_state': userStateC.play_state, 'mcq': userStateC.qns, 'time_start': userStateC.time_start, 'event': userStateC.event, 'difficulty': userStateC.difficulty}
+        return {'play_state': userStateC.play_state, 'mcq': json.loads(userStateC.qns), 'time_start': userStateC.time_start, 'event': userStateC.event, 'difficulty': userStateC.difficulty}
     elif userStateC.play_state == 0:
         return {'play_state': userStateC.play_state, 'essay': userStateC.essay, 'event': userStateC.event, 'difficulty': userStateC.difficulty}
     else:

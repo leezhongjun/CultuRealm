@@ -14,6 +14,7 @@ load_dotenv()
 openai.api_base=os.environ['OPENAI_API_BASE_2']
 openai.api_key=os.environ['OPENAI_API_KEY_2']
 
+
 styles = {
     "Photorealistic": "realistic, highly detailed, art-station, trending on artstation, masterpiece, great artwork, ultra render realistic n-9, 4k, 8k, 16k, 20k",
     "Pixel": "16 bit pixel art, cinematic still, hdr, pixelated full body, character icon concept art, pixel perfect",

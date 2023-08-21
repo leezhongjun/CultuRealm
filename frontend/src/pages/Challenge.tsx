@@ -3,18 +3,33 @@ import axios from "axios";
 import { WithContext as ReactTags } from "react-tag-input";
 import { useAuthHeader } from "react-auth-kit";
 import { classNames } from "../components/Navigation";
+import loadingIcon from "../assets/loading-balls.svg";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
 import "../styles.css";
+import { FaPause, FaPlay, FaStop } from "react-icons/fa";
+import { HiSpeakerWave } from "react-icons/hi2";
 
 function App() {
-  const [events, setEvents] = useState([{ event: "", tags: [""] }]);
-  const [rawEvents, setRawEvents] = useState([{ event: "", tags: [""] }]);
+  const [events, setEvents] = useState([
+    { event: "", tags: [""], played: false, easy: 0, medium: 0, hard: 0 },
+  ]);
+  const [rawEvents, setRawEvents] = useState([
+    { event: "", tags: [""], played: false, easy: 0, medium: 0, hard: 0 },
+  ]);
   const [tags, setTags] = useState([]);
   const [allTags, setAllTags] = useState([]); // { id: "", text: "" }
   const [allTagsRaw, setAllTagsRaw] = useState([{ id: "", text: "" }]); // [
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // all, unplayed, played
+  const [timeTaken, setTimeTaken] = useState(0); // time taken for essay
+  const [timeStart, setTimeStart] = useState(0); // time taken for essay
+  const [ans, setAns] = useState([]); // user answer
+  const [exp, setExp] = useState([]); // explanation
+  const [userAns, setUserAns] = useState([]); // user answer
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [imgSrc, setImgSrc] = useState(loadingIcon); // image url
 
   const [event, setEvent] = useState(""); // user choice
   const [essay, setEssay] = useState("");
@@ -29,6 +44,35 @@ function App() {
   const [playState, setPlayState] = useState(-1); // -1: not started, 0: essay, 1: mcq, 2: score
 
   const authHeader = useAuthHeader();
+  const synth = window.speechSynthesis;
+
+  const handleSpeak = () => {
+    if (essay && !isSpeaking) {
+      setIsSpeaking(true);
+      if (isPaused) {
+        setIsPaused(false);
+        synth.resume();
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(essay);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      synth.speak(utterance);
+    } else if (essay && isSpeaking) {
+      setIsSpeaking(false);
+      if (synth.speaking) {
+        synth.pause();
+        setIsPaused(true);
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    if (synth.speaking) {
+      synth.cancel();
+      setIsSpeaking(false);
+    }
+  };
 
   const fetchEvents = async () => {
     try {
@@ -128,6 +172,81 @@ function App() {
     setDisplayScore(true);
   };
 
+  useEffect(() => {
+    setEvents(
+      rawEvents
+        .filter((event) => {
+          if (filter === "all") {
+            return true;
+          } else if (filter === "unplayed") {
+            return !event.played;
+          } else if (filter === "played") {
+            return event.played;
+          }
+        })
+        .filter((event) => {
+          return event.event.toLowerCase().includes(search.toLowerCase());
+        })
+        .filter((event) => {
+          if (tags.length === 0) {
+            return true;
+          } else {
+            return tags.every((tag) => event.tags.includes(tag.id));
+          }
+        })
+    );
+  }, [filter, search, tags]);
+
+  const KeyCodes = {
+    comma: 188,
+    enter: 13,
+  };
+
+  const delimiters = [KeyCodes.comma, KeyCodes.enter];
+
+  const handleDelete = (i: number) => {
+    setTags(tags.filter((tag, index) => index !== i));
+  };
+
+  const handleAddition = (tag) => {
+    if (allTagsRaw.includes(tag.id)) {
+      setTags([...tags, tag]);
+    }
+  };
+
+  const handleDrag = (tag, currPos: number, newPos: number) => {
+    const newTags = tags.slice();
+
+    newTags.splice(currPos, 1);
+    newTags.splice(newPos, 0, tag);
+
+    // re-render
+    setTags(newTags);
+  };
+
+  const setRandom = () => {
+    setFilter("all");
+    setSearch(rawEvents[Math.floor(Math.random() * rawEvents.length)].event);
+    setTags([]);
+  };
+
+  const getImg = async (event: string) => {
+    // use CORS
+    const res = await axios.post(
+      import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_image",
+      { event: event },
+      {
+        headers: {
+          Authorization: authHeader(),
+        },
+      }
+    );
+    console.log(res.data.img);
+    const result = res.data.img;
+    // console.log(await res.json());
+    setImgSrc(result);
+  };
+
   const getEvents = async () => {
     const res = await axios.post(
       import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_events",
@@ -161,76 +280,57 @@ function App() {
     setPlayState(res.data.play_state);
     if (res.data.play_state === -1) {
       getEvents();
+      return;
+    } else if (res.data.play_state === 0) {
+      setEssay(res.data.essay);
+    } else if (res.data.play_state === 1) {
+      setMCQ(res.data.mcq);
+      setTimeStart(res.data.time_start);
+    } else if (res.data.play_state === 2) {
+      setScore(res.data.score);
+      setMCQ(res.data.mcq);
+      setAns(res.data.ans);
+      setExp(res.data.exp);
+      setUserAns(res.data.user_ans);
+      setEssay(res.data.essay);
+      setTimeTaken(res.data.essay);
     }
+    setEvent(res.data.event);
+    setDifficulty(res.data.difficulty);
+    getImg(res.data.event);
   };
 
-  // execute fetchEvents() when the page is loaded
+  // execute getState() when the page is loaded
   useEffect(() => {
-    // fetchEvents();
     getState();
   }, []);
 
-  useEffect(() => {
-    setEvents(
-      rawEvents
-        .filter((event) => {
-          if (filter === "all") {
-            return true;
-          } else if (filter === "unplayed") {
-            return !event.played;
-          } else if (filter === "played") {
-            return event.played;
-          }
-        })
-        .filter((event) => {
-          return event.event.toLowerCase().includes(search.toLowerCase());
-        })
-        .filter((event) => {
-          if (tags.length === 0) {
-            return true;
-          } else {
-            return tags.every((tag) => event.tags.includes(tag.id));
-          }
-        })
-    );
-  }, [filter, search, tags]);
-
-  const KeyCodes = {
-    comma: 188,
-    enter: 13,
-  };
-
-  const delimiters = [KeyCodes.comma, KeyCodes.enter];
-
-  const handleDelete = (i) => {
-    setTags(tags.filter((tag, index) => index !== i));
-  };
-
-  const handleAddition = (tag) => {
-    if (allTagsRaw.includes(tag.id)) {
-      setTags([...tags, tag]);
+  const getEssay = async (difficulty: number, event: string) => {
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_essay",
+        {
+          event: event,
+          difficulty: difficulty,
+        },
+        {
+          headers: {
+            Authorization: authHeader(),
+          },
+        }
+      );
+      setEssay(res.data.essay);
+      setEvent(event);
+      setDifficulty(difficulty);
+      getImg(event);
+      setPlayState(0);
+      // console.log(essay);
+    } catch (err) {
+      console.log(err);
     }
   };
 
-  const handleDrag = (tag, currPos, newPos) => {
-    const newTags = tags.slice();
-
-    newTags.splice(currPos, 1);
-    newTags.splice(newPos, 0, tag);
-
-    // re-render
-    setTags(newTags);
-  };
-
-  const handleTagClick = (index) => {
-    console.log("The tag at index " + index + " was clicked");
-  };
-
-  const setRandom = () => {
-    setFilter("all");
-    setSearch(events[Math.floor(Math.random() * events.length)].event);
-    setTags([]);
-  };
+  const getMCQ = async () => {};
 
   return (
     <>
@@ -250,7 +350,7 @@ function App() {
                   </span>{" "}
                   Challenges
                 </h1>
-                <div className="flex mt-4">
+                <div className="flex mt-8">
                   <select
                     name="resp"
                     className="mb-2 bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
@@ -303,7 +403,9 @@ function App() {
                 <button
                   className="mt-2 mb-2 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                   type="button"
-                  onClick={setRandom}
+                  onClick={() => {
+                    setRandom();
+                  }}
                 >
                   Pick Random
                 </button>
@@ -315,7 +417,6 @@ function App() {
                     handleDelete={handleDelete}
                     handleAddition={handleAddition}
                     handleDrag={handleDrag}
-                    handleTagClick={handleTagClick}
                     inputFieldPosition="top"
                     minQueryLength={1}
                     placeholder="Enter tags..."
@@ -324,7 +425,7 @@ function App() {
                 </div>
                 <div className="">
                   {/* event list here */}
-                  {events.map((item, index) => (
+                  {events.map((item) => (
                     <div
                       key={item.event}
                       id={item.event}
@@ -364,13 +465,22 @@ function App() {
                           </p>
                         </div>
                         <div className="flex justify-end">
-                          <button className="m-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
+                          <button
+                            className="m-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+                            onClick={() => getEssay(1, item.event)}
+                          >
                             Play Easy
                           </button>
-                          <button className="m-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
+                          <button
+                            className="m-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+                            onClick={() => getEssay(2, item.event)}
+                          >
                             Play Medium
                           </button>
-                          <button className="m-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
+                          <button
+                            className="m-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+                            onClick={() => getEssay(3, item.event)}
+                          >
                             Play Hard
                           </button>
                         </div>
@@ -380,6 +490,95 @@ function App() {
                 </div>
               </div>
             </div>
+          </div>
+        </>
+      )}
+      {playState !== -1 && (
+        <>
+          <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
+            <div className="px-2 mb-4 col-span-full xl:mb-2">
+              <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
+                Challenge
+              </h1>
+            </div>
+            <div className="col-span-2">
+              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <h3 className="mb-4 text-xl font-semibold dark:text-white ">
+                  Text
+                </h3>
+                <div className="mb-4">
+                  <p>{essay}</p>
+                </div>
+                <div className="flex gap-4">
+                  <button
+                    className="font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                    onClick={handleSpeak}
+                  >
+                    {isSpeaking ? (
+                      <FaPause />
+                    ) : isPaused ? (
+                      <FaPlay />
+                    ) : (
+                      <HiSpeakerWave />
+                    )}
+                  </button>
+                  {isSpeaking && (
+                    <button
+                      className="font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                      onClick={handleCancel}
+                    >
+                      <FaStop />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="col-span-1">
+              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <h3 className="mb-4 text-xl font-semibold dark:text-white">
+                  Image
+                </h3>
+                <div className="py-2">
+                  <img
+                    className="mb-4 rounded-lg w-1024 h-1024 sm:mb-0 xl:mb-4 2xl:mb-0"
+                    src={imgSrc}
+                    alt="Loading icon"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className={`fixed top-20 bg-blue-200 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800`}
+          >
+            <button
+              className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+              onClick={async () => {
+                await axios.post(
+                  import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_reset",
+                  {},
+                  {
+                    headers: {
+                      Authorization: authHeader(),
+                    },
+                  }
+                );
+                setPlayState(-1);
+              }}
+            >
+              New Challenge
+            </button>
+            {playState === 0 && (
+              <button
+                className="text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                onClick={() => {
+                  getMCQ();
+                  setPlayState(1);
+                }}
+              >
+                Start
+              </button>
+            )}
           </div>
         </>
       )}
