@@ -970,7 +970,7 @@ def challenge_mcq():
     loaded_query = get_challenge_mcq(
         essay, settings.num_mcqs[difficulty], event)
     print(loaded_query["questions"])
-    mcq = [{"query": k["answer"], "choices": k["choices"]}
+    mcq = [{"query": k["query"], "choices": k["choices"]}
            for k in loaded_query["questions"]]
     userStateC.qns = json.dumps(mcq)
     ans = [k["answer"] for k in loaded_query["questions"]]
@@ -1067,13 +1067,12 @@ def challenge_reset():
     db.session.commit()
     return {'message': 'Success'}
 
+
 @app.route('/challenge_image', methods=['POST'])
 @jwt_required()
 def get_img_challenge():
-    data = request.get_json()['event']
-    res = requests.get(f"https://api.duckduckgo.com/?q={data}&format=json&pretty=1").json()
-    # print(res["Image"])
-    return {'img': "https://duckduckgo.com" + res['Image']}
+    event = request.get_json()['event']
+    return {'img': get_search_img(event)}
 
 
 @app.route('/challenge_index', methods=['POST'])

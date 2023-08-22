@@ -99,6 +99,7 @@ function Community() {
         },
       }
     );
+    console.log(response.data);
     setDescription(response.data.story_desc);
     setTitle(response.data.story_title);
     setGenStoryLoading(false);
@@ -571,7 +572,8 @@ function Community() {
                   </a>
                 </p>
                 <p className="text-gray-500 font-medium">
-                  Created at: <b>{item.created_at}</b>
+                  Created at:{" "}
+                  <b>{new Date(item.created_at).toLocaleString("en-GB")}</b>
                 </p>
                 <p className="text-gray-500 font-medium">
                   Times played: <b>{item.play_count}</b>
@@ -596,27 +598,29 @@ function Community() {
                     )}
                   </button>
                 </div>
-                {isAuth && (<div className="mt-2 flex gap-2">
-                  <button
-                    className="mt-4 h-fit text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                    onClick={() => {
-                      setCurrStoryId(item.id);
-                      setModalDesc(item.desc);
-                      setModalTitle(item.title);
-                      setShowModal(true);
-                    }}
-                  >
-                    Play
-                  </button>
-                  {item.user_id === authUser && (
+                {isAuth && (
+                  <div className="mt-2 flex gap-2">
                     <button
-                      className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                      onClick={() => deleteStory(item.id)}
+                      className="mt-4 h-fit text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                      onClick={() => {
+                        setCurrStoryId(item.id);
+                        setModalDesc(item.desc);
+                        setModalTitle(item.title);
+                        setShowModal(true);
+                      }}
                     >
-                      Delete
+                      Play
                     </button>
-                  )}
-                </div>)}
+                    {item.user_id === authUser && (
+                      <button
+                        className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                        onClick={() => deleteStory(item.id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

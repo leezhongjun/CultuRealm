@@ -10,6 +10,9 @@ import "../styles.css";
 import { FaPause, FaPlay, FaStop } from "react-icons/fa";
 import { HiSpeakerWave } from "react-icons/hi2";
 
+const difficulties = ["", "Easy", "Medium", "Hard"];
+const timings = [0, 30, 90, 150];
+
 function App() {
   const [events, setEvents] = useState([
     { event: "", tags: [""], played: false, easy: 0, medium: 0, hard: 0 },
@@ -30,11 +33,12 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [imgSrc, setImgSrc] = useState(loadingIcon); // image url
+  const [seconds, setSeconds] = useState(0);
 
   const [event, setEvent] = useState(""); // user choice
-  const [essay, setEssay] = useState("");
+  const [essay, setEssay] = useState("Loading...");
   const [score, setScore] = useState(0); // score for mcq
-  const [mcq, setMCQ] = useState([]);
+  const [mcq, setMCQ] = useState([{ query: "", choices: [""] }]);
   const [choices, setChoices] = useState([-1]); // user choice
   const [difficulty, setDifficulty] = useState(1); // 1: easy, 2: medium, 3: hard
   const [displayScore, setDisplayScore] = useState(false);
@@ -286,6 +290,13 @@ function App() {
     } else if (res.data.play_state === 1) {
       setMCQ(res.data.mcq);
       setTimeStart(res.data.time_start);
+      const date = new Date();
+      setSeconds(
+        timings[difficulty] -
+          Math.floor(date.getTime() / 1000) +
+          res.data.time_start
+      );
+      // setSeconds(Math.floor(Date.now() / 1000) - res.data.time_start);
     } else if (res.data.play_state === 2) {
       setScore(res.data.score);
       setMCQ(res.data.mcq);
@@ -306,6 +317,11 @@ function App() {
   }, []);
 
   const getEssay = async (difficulty: number, event: string) => {
+    setPlayState(0);
+    setEvent(event);
+    setDifficulty(difficulty);
+    setEssay("Loading...");
+    setImgSrc(loadingIcon);
     try {
       const res = await axios.post(
         import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_essay",
@@ -320,18 +336,44 @@ function App() {
         }
       );
       setEssay(res.data.essay);
-      setEvent(event);
-      setDifficulty(difficulty);
       getImg(event);
-      setPlayState(0);
       // console.log(essay);
     } catch (err) {
       console.log(err);
     }
   };
 
-  const getMCQ = async () => {};
+  const getMCQ = async () => {
+    setPlayState(1);
+    const res = await axios.post(
+      import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_mcq",
+      {},
+      {
+        headers: {
+          Authorization: authHeader(),
+        },
+      }
+    );
+    setMCQ(res.data.mcq);
+    setTimeStart(res.data.time_start);
+  };
 
+  //increase seconds by 1 every second
+  // call getMCQ() when seconds reaches 0
+  useEffect(() => {
+    if (playState === 1) {
+      const interval = setInterval(() => {
+        setSeconds(seconds - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [seconds, playState]);
+
+  useEffect(() => {
+    if (seconds === 0) {
+      // submit mcq
+    }
+  }, [seconds]);
   return (
     <>
       {playState === -1 && (
@@ -453,20 +495,20 @@ function App() {
                           </p>
                           <p className="m-2 font-normal text-left text-gray-700 dark:text-gray-400">
                             Scores:{" "}
-                            <span className="font-semibold">
+                            <span className="font-semibold text-green-600">
                               Easy: <b className="font-bold">{item.easy}</b>{" "}
                             </span>
-                            <span className="font-semibold">
+                            <span className="font-semibold text-blue-600">
                               Medium: <b className="font-bold">{item.medium}</b>{" "}
                             </span>
-                            <span className="font-semibold">
+                            <span className="font-semibold text-red-600">
                               Hard: <b className="font-bold">{item.hard}</b>{" "}
                             </span>{" "}
                           </p>
                         </div>
                         <div className="flex justify-end">
                           <button
-                            className="m-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+                            className="m-2 bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg"
                             onClick={() => getEssay(1, item.event)}
                           >
                             Play Easy
@@ -478,7 +520,7 @@ function App() {
                             Play Medium
                           </button>
                           <button
-                            className="m-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+                            className="m-2 bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg"
                             onClick={() => getEssay(3, item.event)}
                           >
                             Play Hard
@@ -496,43 +538,99 @@ function App() {
       {playState !== -1 && (
         <>
           <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
-            <div className="px-2 mb-4 col-span-full xl:mb-2">
+            <div className="mt-12 px-2 mb-4 col-span-full xl:mb-2">
               <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
                 Challenge
               </h1>
             </div>
+
             <div className="col-span-2">
               <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <h3 className="mb-4 text-xl font-semibold dark:text-white ">
-                  Text
+                  {event}
                 </h3>
-                <div className="mb-4">
-                  <p>{essay}</p>
-                </div>
-                <div className="flex gap-4">
-                  <button
-                    className="font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                    onClick={handleSpeak}
+                <p>
+                  Difficulty:{" "}
+                  <b
+                    className={
+                      difficulty === 1
+                        ? "text-green-600"
+                        : difficulty === 2
+                        ? "text-blue-600"
+                        : "text-red-600"
+                    }
                   >
-                    {isSpeaking ? (
-                      <FaPause />
-                    ) : isPaused ? (
-                      <FaPlay />
-                    ) : (
-                      <HiSpeakerWave />
-                    )}
-                  </button>
-                  {isSpeaking && (
-                    <button
-                      className="font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                      onClick={handleCancel}
-                    >
-                      <FaStop />
-                    </button>
-                  )}
-                </div>
+                    {difficulties[difficulty]}
+                  </b>
+                </p>
+                {playState === 0 && (
+                  <p className="font-bold text-gray-600">
+                    Check out the text below and hit the start button to kick
+                    off the challenge!
+                  </p>
+                )}
+                {playState !== 1 && (
+                  <>
+                    <div className="mb-4 mt-4">
+                      <p>{essay}</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <button
+                        className="font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                        onClick={handleSpeak}
+                      >
+                        {isSpeaking ? (
+                          <FaPause />
+                        ) : isPaused ? (
+                          <FaPlay />
+                        ) : (
+                          <HiSpeakerWave />
+                        )}
+                      </button>
+                      {isSpeaking && (
+                        <button
+                          className="font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                          onClick={handleCancel}
+                        >
+                          <FaStop />
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+                {playState === 1 && (
+                  <>
+                    <div className="z-40 fixed top-20 bg-blue-200 left-5 bg-blue-50 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
+                      <p className="text-sm px-3 py-2 tracking-wide">
+                        Seconds left:{" "}
+                        <span className="font-semibold text-blue-600">
+                          {seconds}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="flex gap-4">
+                      {mcq.map((item, index) => {
+                        return (
+                          <div
+                            key={item.query}
+                            className="font-medium px-3 py-2 tracking-wide text-gray-800 transition-colors duration-200 transform rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                          >
+                            <span className="font-normal text-gray-600">
+                              {index + 1}.{" "}
+                            </span>
+                            {item.query}
+                            {item.choices.map((choice) => {
+                              return <div key={choice}>{choice}</div>;
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
+
             <div className="col-span-1">
               <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <h3 className="mb-4 text-xl font-semibold dark:text-white">
@@ -548,9 +646,7 @@ function App() {
               </div>
             </div>
           </div>
-          <div
-            className={`fixed top-20 bg-blue-200 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800`}
-          >
+          <div className="fixed top-20 bg-blue-50 right-5 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
             <button
               className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
               onClick={async () => {
@@ -564,6 +660,7 @@ function App() {
                   }
                 );
                 setPlayState(-1);
+                getEvents();
               }}
             >
               New Challenge

@@ -2,6 +2,7 @@ import openai
 from dotenv import load_dotenv
 import os
 import json
+from duckduckgo_search import DDGS
 
 from utils_var import cultural_historical_events, festivals
 
@@ -11,8 +12,8 @@ import time
 
 load_dotenv()
 
-openai.api_base=os.environ['OPENAI_API_BASE_2']
-openai.api_key=os.environ['OPENAI_API_KEY_2']
+openai.api_base = os.environ['OPENAI_API_BASE_2']
+openai.api_key = os.environ['OPENAI_API_KEY_2']
 
 
 styles = {
@@ -21,6 +22,7 @@ styles = {
     "Cartoon": "cartoon, intricate, sharp focus, illustration, highly detailed, digital painting, concept art, matte, art by wlop and artgerm and ivan shishkin and andrey shishkin, masterpiece",
     "Anime": "anime, digital art, trending on artstation, pixiv, hyperdetailed, 8k realistic, symmetrical, high coherence, depth of field, very coherent artwork"
 }
+
 
 def ask_gpt(prompt, max_tokens=0, temp=-1):
     kwarg = {"max_tokens": max_tokens} if max_tokens else {}
@@ -37,6 +39,7 @@ def ask_gpt(prompt, max_tokens=0, temp=-1):
     print(response.choices[0].message.content)
     return response.choices[0].message.content
 
+
 def ask_gpt_convo(messages):
     response = openai.ChatCompletion.create(
         model='gpt-3.5-turbo',
@@ -45,6 +48,7 @@ def ask_gpt_convo(messages):
     )
     print(response.choices[0].message.content)
     return response.choices[0].message.content
+
 
 def get_story_seeds(age, gender, race):
     if gender == "Unspecified":
@@ -74,6 +78,7 @@ Example Format:
         except:
             pass
 
+
 def get_story_seed(age, gender, race, country="Singapore"):
     if gender == "Unspecified":
         gender = ""
@@ -101,6 +106,7 @@ Example Format:
     except:
         pass
 
+
 def get_story_title(seed):
     prompt = f"""Generate a title for a story based on the following summary.
 
@@ -115,6 +121,7 @@ Title: ..."""
         return res.split("Title: ")[-1].replace('"', '').replace("'", "")
     except:
         pass
+
 
 def system_prompt(seed, name, age, race, gender, country="Singapore"):
     if gender == "Unspecified":
@@ -152,11 +159,14 @@ This is the summary of the storyline for the RPG:
 Start the RPG. Start it directly by introducing the scene and context. Do not ask if the user is ready to start after the user gives the summary of the storyline. Remember to ask the user for his response."""
     return system
 
+
 def get_start_story(seed, name, age, race, gender, country="Singapore"):
     messages = [
-        {"role": "system", "content": system_prompt(seed, name, age, race, gender, country)}
+        {"role": "system", "content": system_prompt(
+            seed, name, age, race, gender, country)}
     ]
-    return ask_gpt_convo(messages).replace("*", ""), messages[0] # remove all asterisks
+    # remove all asterisks
+    return ask_gpt_convo(messages).replace("*", ""), messages[0]
 
 
 def get_start_img_prompt(text, name, age, gender, race):
@@ -182,8 +192,9 @@ The user, which may be referred to I, you, or {name} in the story is a {age}Sing
 An adult saw the image without reading the story. Describe what the adult saw in simple English and in a single sentence. Include the races, ages, and genders of the people in the description. Do not include character names. Use simple sentence structure. Start the description with "An image of ..."
 """
     img_prompt = ask_gpt(prompt)
-    
+
     return img_prompt
+
 
 def get_suggestions(text):
     prompt = f"""Generate 2 possible user responses for this story. Follow the format specified.
@@ -200,7 +211,7 @@ Option 2: Say: [user speech in response]
 STORY:
 {text}
 """
-    
+
     res = []
     while len(res) < 2:
         res = []
@@ -216,8 +227,9 @@ STORY:
                     res.append(s)
         except:
             pass
-    
+
     return res
+
 
 def get_keywords(text):
     prompt = f"""Extract only very specific and important cultures, religions, cultural and religious from the following text. There might be none. Return it as a Python list.
@@ -233,6 +245,7 @@ Text:
     res = "[" + res.split('[')[-1].split(']')[0] + "]"
     return eval(res)
 
+
 def gen_img(prompt, style):
     while True:
         try:
@@ -242,27 +255,28 @@ def gen_img(prompt, style):
         except:
             pass
 
+
 def gen_image_v2(prompt, style):
-    openai.api_base=os.environ['OPENAI_API_BASE']
-    openai.api_key=os.environ['OPENAI_API_KEY']
+    openai.api_base = os.environ['OPENAI_API_BASE']
+    openai.api_key = os.environ['OPENAI_API_KEY']
     response = openai.Image.create(
-        prompt= prompt + " " + styles[style],
+        prompt=prompt + " " + styles[style],
         n=1,  # images count
         size="1024x1024"
     )
-    openai.api_base=os.environ['OPENAI_API_BASE_2']
-    openai.api_key=os.environ['OPENAI_API_KEY_2']
+    openai.api_base = os.environ['OPENAI_API_BASE_2']
+    openai.api_key = os.environ['OPENAI_API_KEY_2']
     return response['data'][0]['url']
 
 
 def moderate_input(user_input):
-    openai.api_base=os.environ['OPENAI_API_BASE']
-    openai.api_key=os.environ['OPENAI_API_KEY']
+    openai.api_base = os.environ['OPENAI_API_BASE']
+    openai.api_key = os.environ['OPENAI_API_KEY']
     response = openai.Moderation.create(
         input=user_input
     )
-    openai.api_base=os.environ['OPENAI_API_BASE_2']
-    openai.api_key=os.environ['OPENAI_API_KEY_2']
+    openai.api_base = os.environ['OPENAI_API_BASE_2']
+    openai.api_key = os.environ['OPENAI_API_KEY_2']
     cat = []
     for k in response['results'][0]['categories'].keys():
         if response['results'][0]['categories'][k]:
@@ -300,6 +314,7 @@ USER RESPONSE:
         score = 0
     return explanation, score
 
+
 def get_opportunity_score(name, text):
     prompt = f'''Rate the quality and quantity of opportunities given to demonstrate their ability to respect and appreciate other cultures to the user, {name}, during the following STORY CONTEXT on a scale of 1 to 100.
 
@@ -321,6 +336,7 @@ STORY CONTEXT:
     except:
         score = 90
     return score
+
 
 def get_achievements_score(name, text, user_response):
     prompt = f"""Text:
@@ -356,7 +372,7 @@ USER RESPONSE:
             res = ask_gpt(prompt, temp=0)
             res = json.loads("[" + res.split("[")[-1].split(']')[0] + "]")
             print(res)
-            ls =[]
+            ls = []
             for i, x in enumerate(res):
                 if x:
                     ls.append(i)
@@ -368,10 +384,11 @@ USER RESPONSE:
 def get_challenge_essay(event, length):
     prompt = f'''Generate a {length} word, concise, and information dense passage about the 
     history, culture and information of {event} in Singapore.'''
-    
+
     res = ask_gpt(prompt, temp=1)
     return res
-            
+
+
 def get_challenge_mcq(essay, number, event):
     prompt = f'''You are a quiz creator of highly diagnostic quizzes. You will make good low-stakes tests and diagnostics.
 
@@ -380,10 +397,17 @@ Generate {number} multiple choice questions to test the user about {event}. The 
 Passage: {essay}
 
 The questions should be at a very difficult level. Return your answer entirely in the form of a JSON object. The JSON object should have a key named "questions" which is an array of the questions. Each quiz question should include the choices, the answer, and a brief explanation of why the answer is correct. Don't include anything other than the JSON. The JSON properties of each question should be "query" (which is the question), "choices", "answer", and "explanation". The choices shouldn't have any ordinal value like A, B, C, D or a number like 1, 2, 3, 4. The answer should be the 0-indexed number of the correct choice. The choices should include plausible, competitive alternate choices and should not include an "all of the above" choice.'''
-    
+
     res = ask_gpt(prompt, temp=1)
     first = res.find('{')
     last = len(res)-1-res[::-1].find('}')
     cropped = res[first:last+1]
     res = json.loads(cropped)
     return res
+
+
+def get_search_img(prompt):
+    with DDGS() as ddgs:
+        ddgs_images_gen = ddgs.images(prompt)
+        res = next(ddgs_images_gen)
+        return res['image']
