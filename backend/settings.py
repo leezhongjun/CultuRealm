@@ -212,12 +212,14 @@ all_events = cultural_events + historical_events
 
 all_event_names = [event['event'] for event in all_events]
 
-num_mcqs = [0, 1, 3, 5]
+num_mcqs = [0, 1, 2, 3]
 
-len_essay = [0, 100, 300, 600]
+len_essay = [0, 100, 150, 250]
 
-time_limits = [0, 30, 90, 150]
+time_limits = [0, 30, 45, 60] # update this in frontend manually
 
 epsilon = 5 # ping offset
 
 leeway = 3 # reading time offset
+
+challenge_play_req = [0, 1, 3] # number of plays required to unlock challenge difficulties, update this in frontend manually

@@ -155,7 +155,7 @@ class ChallengeHistory(db.Model):
     challenge_score = db.Column(db.Integer, nullable=False)
     time_taken = db.Column(db.Integer, nullable=False)
     # 1 for easy, 2 for medium, 3 for hard
-    difficulty = db.Column(db.Integer, nullable=False)
+    difficulty = db.Column(db.Integer, nullable=False, primary_key=True)
 
 
 class UserStateC(db.Model):
@@ -420,8 +420,8 @@ def get_user_pref():
 
 @app.route('/get_user_pref_public', methods=['POST'])
 def get_user_pref_by_id():
-    data = request.get_json()
-    user_profile = UserProfile.query.filter_by(id=data['id']).first()
+    id = request.get_json()['id']
+    user_profile = UserProfile.query.filter_by(id=id).first()
     if not user_profile:
         return {'message': 'User profile not found'}
     res = {}
@@ -432,6 +432,17 @@ def get_user_pref_by_id():
     res['email'] = None  # remove email
     res['image_style'] = None  # remove image style
     res['profile_pic'] = None
+    res['challenges_played'] = f"{db.session.query(func.count(ChallengeHistory.event.distinct())).filter(ChallengeHistory.user_id == id).scalar()}/{len(settings.all_event_names)}"
+    res['easy_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 1).scalar()
+    res['medium_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 2).scalar()
+    res['hard_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 3).scalar()
+
+    if not res['easy_high_score']:
+        res['easy_high_score'] = 0
+    if not res['medium_high_score']:
+        res['medium_high_score'] = 0
+    if not res['hard_high_score']:
+        res['hard_high_score'] = 0
 
     return res
 
@@ -498,6 +509,7 @@ def start_story():
         if user_state.custom_story_id == "temp":
             seed = data["seed"]
             flagged, cats = moderate_input(seed)
+            if not flagged: flagged, cats = moderate_summary(seed)
             if flagged:
                 flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
                     ", ".join(cats) + "."
@@ -691,6 +703,7 @@ def story_index():
 
     # response moderation
     flagged, cats = moderate_input(resp)
+    if not flagged: flagged, cats = moderate_response(resp)
     if flagged:
         flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
             ", ".join(cats) + "."
@@ -852,6 +865,7 @@ def add_custom_story():
     story_text = data["story_text"]
     title = data["title"]
     flagged, cats = moderate_input(story_text)
+    if not flagged: flagged, cats = moderate_summary(story_text)
     if flagged:
         flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
             ", ".join(cats) + "."
@@ -946,9 +960,12 @@ def challenge_essay():
     data = request.get_json()
     event = data["event"]
     if event not in settings.all_event_names:
-        return {'error': 'Invalid event'}
+        return {'message': 'Invalid event'}
     difficulty = data["difficulty"]
+    if settings.challenge_play_req[difficulty] > db.session.query(func.count(ChallengeHistory.event.distinct())).filter(ChallengeHistory.user_id == id).scalar():
+        return {'message': 'Not enough plays'}
     essay = get_challenge_essay(event, settings.len_essay[difficulty])
+    # essay = """Chinese New Year in Singapore is a vibrant celebration that intertwines history and culture. Rooted in Chinese traditions, it marks the lunar new year's arrival with elaborate festivities. The festival arrived with early Chinese immigrants and evolved into a blend of traditions, encompassing vibrant parades, intricate lion and dragon dances, and exuberant firework displays. Houses are adorned with red decorations symbolizing luck and prosperity. Families reunite over feasts, featuring symbolic dishes like dumplings and fish. Mandarin oranges exchanged for good fortune. The Chingay Parade, a highlight, showcases Singapore's multicultural essence. Chinese New Year encapsulates Singapore's rich heritage while forging bonds among its diverse population."""
     userStateC.event = event
     userStateC.essay = essay
     userStateC.difficulty = difficulty
@@ -962,14 +979,43 @@ def challenge_essay():
 def challenge_mcq():
     id = get_jwt_identity()['id']
     userStateC = UserStateC.query.filter_by(id=id).first()
+    if userStateC.play_state != 0:
+        return {'message': 'Invalid play state'}
     essay = userStateC.essay
     difficulty = userStateC.difficulty
     event = userStateC.event
     # Generate number of mcqs based on difficulty
     # Generate and store query
+
     loaded_query = get_challenge_mcq(
         essay, settings.num_mcqs[difficulty], event)
-    print(loaded_query["questions"])
+#     loaded_query = {
+#   "questions": [
+#     {
+#       "query": "What is the significance of the Mandarin oranges exchanged during Chinese New Year?",
+#       "choices": [
+#         "They represent unity among families.",
+#         "They symbolize the arrival of spring.",
+#         "They are offerings to ancestral spirits.",
+#         "They ensure a bountiful harvest."
+#       ],
+#       "answer": 0,
+#       "explanation": "The Mandarin oranges exchanged during Chinese New Year symbolize unity among families. The tradition of exchanging oranges represents the wish for prosperity and togetherness among loved ones during the festive season."
+#     },
+#     {
+#       "query": "What do lanterns and bustling markets symbolize in Chinatown during Chinese New Year?",
+#       "choices": [
+#         "Unity in diversity",
+#         "Modern flair",
+#         "Renewal and fortune"
+#       ],
+#       "answer": 2,
+#       "explanation": "Lanterns and bustling markets in Chinatown during Chinese New Year symbolize renewal and fortune, adding to the cherished tradition, making it the correct choice."
+#     }
+  
+#   ]
+# }
+    # print(loaded_query["questions"])
     mcq = [{"query": k["query"], "choices": k["choices"]}
            for k in loaded_query["questions"]]
     userStateC.qns = json.dumps(mcq)
@@ -977,7 +1023,7 @@ def challenge_mcq():
     userStateC.ans = json.dumps(ans)
     exp = [k["explanation"] for k in loaded_query["questions"]]
     userStateC.exp = json.dumps(exp)
-    print(mcq)
+    # print(mcq)
     time_start = int(time.time())
     print(time_start)
     userStateC.time_start = time_start
@@ -993,6 +1039,8 @@ def challenge_score_submit():
     time_end = int(time.time())
     id = get_jwt_identity()['id']
     userStateC = UserStateC.query.filter_by(id=id).first()
+    if userStateC.play_state != 1:
+        return {'message': 'Invalid play state'}
     time_diff = time_end - userStateC.time_start
     time_diff = max(time_diff-(settings.leeway *
                     settings.num_mcqs[userStateC.difficulty]), 1)
@@ -1002,28 +1050,42 @@ def challenge_score_submit():
 
     data = request.get_json()
     answers = data["answers"]
+    print(answers)
+    print(type(answers))
     userStateC.user_ans = json.dumps(answers)
 
     ans = json.loads(userStateC.ans)
+    print(ans)
     exp = json.loads(userStateC.exp)
+    score = 0
     for i in range(len(ans)):
         if ans[i] == answers[i]:
             score += 100
 
     # kahoot formula
-    score = (
-        1 - ((time_diff / (settings.time_limits[userStateC.difficulty]+settings.epsilon)) / 2)) * score
+    score = int((
+        1 - ((time_diff / (settings.time_limits[userStateC.difficulty]+settings.epsilon)) / 2)) * score)
     # Update user state
     print(f"Received score: {score}")
     userStateC.challenge_score = score
     userStateC.play_state = 2
     userStateC.time_taken = time_diff
     # store all userStateC fields in ChallengeHistory
-    challenge_history = ChallengeHistory(user_id=id, event=userStateC.event, essay=userStateC.essay, challenge_score=userStateC.challenge_score,
-                                         time_taken=time_diff, difficulty=userStateC.difficulty, qns=userStateC.qns, ans=userStateC.ans, exp=userStateC.exp)
-    db.session.add(challenge_history)
+
+    # get existing challenge history with userid and event and difficulty
+    challenge_history = ChallengeHistory.query.filter_by(user_id=id, event=userStateC.event,
+                                                         difficulty=userStateC.difficulty).first()
+    if challenge_history:
+        # update challenge history
+        if userStateC.challenge_score > challenge_history.challenge_score:
+            challenge_history.challenge_score = max(challenge_history.challenge_score, userStateC.challenge_score)
+            challenge_history.time_taken = time_diff
+    else:
+        challenge_history = ChallengeHistory(user_id=id, event=userStateC.event, challenge_score=userStateC.challenge_score,
+                                         time_taken=time_diff, difficulty=userStateC.difficulty)
+        db.session.add(challenge_history)
     db.session.commit()
-    return jsonify({'message': 'Success', 'score': score, 'ans': ans, 'exp': exp})
+    return jsonify({'message': 'Success', 'score': score, 'ans': ans, 'exp': exp, 'time_taken': time_diff})
 
 
 @app.route('/challenge_events', methods=['POST'])
@@ -1055,7 +1117,9 @@ def challenge_events():
         events[i]["easy"] = event_scores[event][1]
         events[i]["medium"] = event_scores[event][2]
         events[i]["hard"] = event_scores[event][3]
-    return jsonify({"events": events, "tags": settings.tags})
+
+        
+    return jsonify({"events": events, "tags": settings.tags, "total_plays": db.session.query(func.count(ChallengeHistory.event.distinct())).filter(ChallengeHistory.user_id == id).scalar()})
 
 
 @app.route('/challenge_reset', methods=['POST'])
@@ -1071,6 +1135,7 @@ def challenge_reset():
 @app.route('/challenge_image', methods=['POST'])
 @jwt_required()
 def get_img_challenge():
+    # return {'img': 'https://www.tripsavvy.com/thmb/M3yPlueS_BGGAPmAviQuBCIY8y8=/3133x2089/filters:fill(auto,1)/GettyImages-640271304-5c27a02646e0fb000153222b.jpg'}
     event = request.get_json()['event']
     return {'img': get_search_img(event)}
 

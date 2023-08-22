@@ -22,6 +22,10 @@ function Profile() {
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
   const [globalUnlocked, setGlobalUnlocked] = useState(false);
+  const [challengesPlayed, setChallengesPlayed] = useState(0);
+  const [easyHighScore, setEasyHighScore] = useState(0);
+  const [mediumHighScore, setMediumHighScore] = useState(0);
+  const [hardHighScore, setHardHighScore] = useState(0);
 
   // const [profile_pic, setProfile_pic] = useState<File | null>(null);
   // const [errorMessage, setErrorMessage] = useState("");
@@ -54,6 +58,10 @@ function Profile() {
         setGamesPlayed(jsonifiedData["stories_played"]);
         setAchievements(jsonifiedData["achievements"]); // process achievements
         setGlobalUnlocked(jsonifiedData["global_unlocked"]);
+        setChallengesPlayed(jsonifiedData["challenges_played"]);
+        setHardHighScore(jsonifiedData["hard_high_score"]);
+        setMediumHighScore(jsonifiedData["medium_high_score"]);
+        setEasyHighScore(jsonifiedData["easy_high_score"]);
       } catch (error) {
         console.error(error);
       }
@@ -181,7 +189,7 @@ function Profile() {
         <div className="col-span-2">
           <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
             <h3 className="mb-4 text-xl font-semibold dark:text-white">
-              Statistics
+              Story
             </h3>
             <div className="grid grid-cols-6 gap-6">
               <div className="col-span-6 sm:col-span-3">
@@ -233,6 +241,58 @@ function Profile() {
                   type="text"
                   className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   value={globalUnlocked ? "Yes" : "No"}
+                  disabled
+                />
+              </div>
+            </div>
+          </div>
+          <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+            <h3 className="mb-4 text-xl font-semibold dark:text-white">
+              Challenge
+            </h3>
+
+            <div className="grid grid-cols-6 gap-6">
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Unique challenges played
+                </label>
+                <input
+                  type="text"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  value={challengesPlayed}
+                  disabled
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Easy mode high score
+                </label>
+                <input
+                  type="text"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  value={easyHighScore}
+                  disabled
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Medium mode high score
+                </label>
+                <input
+                  type="text"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  value={mediumHighScore}
+                  disabled
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Hard mode high score
+                </label>
+                <input
+                  type="text"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  value={hardHighScore}
                   disabled
                 />
               </div>

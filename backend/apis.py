@@ -31,6 +31,7 @@ def ask_gpt(prompt, max_tokens=0, temp=-1):
     response = openai.ChatCompletion.create(
         model='gpt-3.5-turbo',
         messages=[
+            {'role': 'system', 'content': 'You are a helpful chatbot.'},
             {'role': 'user', 'content': prompt},
         ],
         allow_fallback=False,
@@ -48,6 +49,24 @@ def ask_gpt_convo(messages):
     )
     print(response.choices[0].message.content)
     return response.choices[0].message.content
+
+
+def moderate_response(response):
+    msg = f'''Is the following a user response:
+"""
+User {response.replace('"', '').replace("'", "")}
+"""'''
+    system = "You are a content moderator that can only respond with True or False. Do not provide an explanation."
+    return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}]).lower(), ["Not a user response"]
+
+def moderate_summary(response):
+    msg = f'''Is the following a summary of a scenario:
+"""
+{response.replace('"', '').replace("'", "")}
+"""'''
+    system = "You are a content moderator that can only respond with True or False. Do not provide an explanation."
+    return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}]).lower(), ["Not a story description"]
+
 
 
 def get_story_seeds(age, gender, race):

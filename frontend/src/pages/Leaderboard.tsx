@@ -114,24 +114,31 @@ function Leaderboard() {
               }}
             />
           </div>
+          <p className="text-sm text-gray-600 font-medium">
+            Click row to view user profile
+          </p>
         </div>
-        <div className="relative overflow-x-auto col-span-full">
-          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-sm text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <div className="relative overflow-x-auto col-span-full rounded-lg border border-blue-300">
+          <table className="border w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead className="text-sm text-gray-700 bg-blue-100">
               <tr>
                 {["Ranking", "Username", "Rating", "Race", "Age"].map(
                   (header, index) => (
-                    <th scope="col" key={index} className="border px-1 py-2">
+                    <th
+                      scope="col"
+                      key={index}
+                      className="border border-blue-300 px-1 py-2"
+                    >
                       {header}
                     </th>
                   )
                 )}
               </tr>
             </thead>
-            <tbody className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <tbody className="bg-white">
               {leaderboardData.map((item, index) => (
                 <tr
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
+                  className="border bg-white hover:bg-blue-50 cursor-pointer rounded-lg"
                   key={index}
                   onClick={() => {
                     window.open(`/profile/${item.id}`, "_blank");
@@ -139,18 +146,22 @@ function Leaderboard() {
                 >
                   <th
                     scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                    className="border-b px-6 py-4 font-bold text-red-600 whitespace-nowrap dark:text-white border-blue-300"
                   >
                     {index + 1}
                   </th>
-                  <td className="border px-4 py-2 text-black font-bold">
+                  <td className="border px-4 py-2 text-green-600 font-bold border-blue-300">
                     {item.username}
                   </td>
-                  <td className="border px-4 py-2 text-black font-bold">
+                  <td className="border px-4 py-2 text-blue-600 font-bold border-blue-300">
                     {item.rating}
                   </td>
-                  <td className="border px-4 py-2">{item.race}</td>
-                  <td className="border px-4 py-2">{item.age}</td>
+                  <td className="border px-4 py-2 border-blue-300">
+                    {item.race}
+                  </td>
+                  <td className="border-b px-4 py-2 border-blue-300">
+                    {item.age}
+                  </td>
                 </tr>
               ))}
             </tbody>
