@@ -111,7 +111,7 @@ function App() {
   const submitNewStory = async () => {
     const res = await axios.post(
       import.meta.env.VITE_BACKEND_ENDPOINT + "/add_custom_story",
-      { story_text: customStoryText, title: customStoryTitle },
+      { tags: [], story_text: customStoryText, title: customStoryTitle },
       {
         headers: {
           Authorization: authHeader(),

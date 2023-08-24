@@ -206,7 +206,11 @@ historical_events = [
     }
 ]
 
-tags = [{"id": x, "text": x} for x in ['Marathi', 'Conservation', 'Peranakan', 'Bengali', 'Unitarian Universalist', 'Christian', 'Cambodian', 'UNESCO', 'Korean', 'Jewish', 'WWII', 'Tibetan', 'Buddhist', 'Occupation', 'Legislation', 'Historical', 'Khmer', 'Immigration', 'Independence', 'Parade', 'Laotian', 'Indian', 'Nepali', 'Thai', 'Jain', 'British', 'Spanish', 'Language', 'Islamic', 'Hindu', 'Sri Lankan', 'Architecture', 'Harvest', 'Tamil', 'Chinese', 'Japanese', 'Dayak', 'Arts', 'Malay', 'Amma', 'Sikh', 'Punjabi', 'Balinese']]
+raw_tags = ['Marathi', 'Conservation', 'Peranakan', 'Bengali', 'Unitarian Universalist', 'Christian', 'Cambodian', 'UNESCO', 'Korean', 'Jewish', 'WWII', 'Tibetan', 'Buddhist', 'Occupation', 'Legislation', 'Historical', 'Khmer', 'Immigration', 'Independence', 'Parade', 'Laotian', 'Indian', 'Nepali', 'Thai', 'Jain', 'British', 'Spanish', 'Language', 'Islamic', 'Hindu', 'Sri Lankan', 'Architecture', 'Harvest', 'Tamil', 'Chinese', 'Japanese', 'Dayak', 'Arts', 'Malay', 'Amma', 'Sikh', 'Punjabi', 'Balinese']
+
+tags = [{"id": x, "text": x} for x in raw_tags]
+
+
 
 all_events = cultural_events + historical_events
 

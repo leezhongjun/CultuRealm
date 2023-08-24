@@ -141,6 +141,7 @@ class CustomStories(db.Model):
     high_score = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime, nullable=False,
                            default=datetime.datetime.utcnow)
+    tags = db.Column(db.String(80), nullable=False, default="")
 
 
 class UpvoteSystem(db.Model):
@@ -433,9 +434,12 @@ def get_user_pref_by_id():
     res['image_style'] = None  # remove image style
     res['profile_pic'] = None
     res['challenges_played'] = f"{db.session.query(func.count(ChallengeHistory.event.distinct())).filter(ChallengeHistory.user_id == id).scalar()}/{len(settings.all_event_names)}"
-    res['easy_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 1).scalar()
-    res['medium_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 2).scalar()
-    res['hard_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 3).scalar()
+    res['easy_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(
+        ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 1).scalar()
+    res['medium_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(
+        ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 2).scalar()
+    res['hard_high_score'] = db.session.query(func.max(ChallengeHistory.challenge_score)).filter(
+        ChallengeHistory.user_id == id, ChallengeHistory.difficulty == 3).scalar()
 
     if not res['easy_high_score']:
         res['easy_high_score'] = 0
@@ -509,7 +513,8 @@ def start_story():
         if user_state.custom_story_id == "temp":
             seed = data["seed"]
             flagged, cats = moderate_input(seed)
-            if not flagged: flagged, cats = moderate_summary(seed)
+            if not flagged:
+                flagged, cats = moderate_summary(seed)
             if flagged:
                 flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
                     ", ".join(cats) + "."
@@ -703,7 +708,8 @@ def story_index():
 
     # response moderation
     flagged, cats = moderate_input(resp)
-    if not flagged: flagged, cats = moderate_response(resp)
+    if not flagged:
+        flagged, cats = moderate_response(resp)
     if flagged:
         flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
             ", ".join(cats) + "."
@@ -832,7 +838,7 @@ def get_stories():
         custom_stories[i]['username'] = user.username
         custom_stories[i]['_sa_instance_state'] = None
         custom_stories[i]['user_votes'] = 0
-    return {'stories': custom_stories}
+    return {'stories': custom_stories, 'tags': settings.tags}
 
 
 @app.route('/get_stories_proc', methods=['POST'])
@@ -854,7 +860,7 @@ def get_stories_proc():
             vote_user_story = UpvoteSystem(
                 user_id=id, story_id=custom_stories[i]['id'], votes=0)
         custom_stories[i]['user_votes'] = vote_user_story.votes
-    return {'stories': custom_stories}
+    return {'stories': custom_stories, 'tags': settings.tags}
 
 
 @app.route('/add_custom_story', methods=['POST'])
@@ -864,8 +870,14 @@ def add_custom_story():
     data = request.get_json()
     story_text = data["story_text"]
     title = data["title"]
+    tags = data["tags"]
+    for tag in tags:
+        if tag['text'] not in settings.raw_tags:
+            print(tag)
+            return {'flagged': True, 'flagged_text': 'Invalid tag!'}
     flagged, cats = moderate_input(story_text)
-    if not flagged: flagged, cats = moderate_summary(story_text)
+    if not flagged:
+        flagged, cats = moderate_summary(story_text)
     if flagged:
         flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
             ", ".join(cats) + "."
@@ -877,7 +889,7 @@ def add_custom_story():
         return {'flagged': True, 'flagged_text': flagged_text}
     story_id = str(uuid.uuid4())
     new_custom_story = CustomStories(
-        user_id=id, desc=story_text, title=title, id=story_id)
+        user_id=id, tags=json.dumps(tags), desc=story_text, title=title, id=story_id)
     db.session.add(new_custom_story)
     db.session.commit()
     return {'flagged': False, 'story_id': story_id}
@@ -1012,7 +1024,7 @@ def challenge_mcq():
 #       "answer": 2,
 #       "explanation": "Lanterns and bustling markets in Chinatown during Chinese New Year symbolize renewal and fortune, adding to the cherished tradition, making it the correct choice."
 #     }
-  
+
 #   ]
 # }
     # print(loaded_query["questions"])
@@ -1078,11 +1090,12 @@ def challenge_score_submit():
     if challenge_history:
         # update challenge history
         if userStateC.challenge_score > challenge_history.challenge_score:
-            challenge_history.challenge_score = max(challenge_history.challenge_score, userStateC.challenge_score)
+            challenge_history.challenge_score = max(
+                challenge_history.challenge_score, userStateC.challenge_score)
             challenge_history.time_taken = time_diff
     else:
         challenge_history = ChallengeHistory(user_id=id, event=userStateC.event, challenge_score=userStateC.challenge_score,
-                                         time_taken=time_diff, difficulty=userStateC.difficulty)
+                                             time_taken=time_diff, difficulty=userStateC.difficulty)
         db.session.add(challenge_history)
     db.session.commit()
     return jsonify({'message': 'Success', 'score': score, 'ans': ans, 'exp': exp, 'time_taken': time_diff})
@@ -1118,7 +1131,6 @@ def challenge_events():
         events[i]["medium"] = event_scores[event][2]
         events[i]["hard"] = event_scores[event][3]
 
-        
     return jsonify({"events": events, "tags": settings.tags, "total_plays": db.session.query(func.count(ChallengeHistory.event.distinct())).filter(ChallengeHistory.user_id == id).scalar()})
 
 

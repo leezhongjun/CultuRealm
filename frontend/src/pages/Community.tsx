@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import reactLogo from "../assets/react.svg";
 import viteLogo from "/vite.svg";
+import { WithContext as ReactTags } from "react-tag-input";
 import axios from "axios";
 // import { ages, races, religions } from "../pages/Settings";
 import { ages, races } from "../pages/Settings";
@@ -46,6 +47,10 @@ function Community() {
   const [flagText, setFlagText] = useState("");
   const [country, setCountry] = useState("Singapore");
   const [addLoading, setAddLoading] = useState(false);
+  const [tags, setTags] = useState([]);
+  const [allTags, setAllTags] = useState([]);
+  const [allTagsRaw, setAllTagsRaw] = useState([]);
+  const [newStoryTags, setNewStoryTags] = useState([]);
 
   const isAuthenticated = useIsAuthenticated();
   const authHeader = useAuthHeader();
@@ -67,6 +72,10 @@ function Community() {
     );
     console.log(res.data);
     setRawStoriesData(res.data.stories);
+    setAllTags(res.data.tags);
+    setAllTagsRaw(
+      res.data.tags.map((tag: { id: string; text: string }) => tag.id)
+    );
     setStoriesData(
       res.data.stories
         .sort(
@@ -87,6 +96,53 @@ function Community() {
             item.desc.toLowerCase().includes(searchValue.toLowerCase())
         )
     );
+  };
+
+  const KeyCodes = {
+    comma: 188,
+    enter: 13,
+  };
+
+  const delimiters = [KeyCodes.comma, KeyCodes.enter];
+
+  const handleDelete = (i: number) => {
+    setTags(tags.filter((tag, index) => index !== i));
+  };
+
+  const handleAddition = (tag) => {
+    if (allTagsRaw.includes(tag.id)) {
+      setTags([...tags, tag]);
+    }
+  };
+
+  const handleDrag = (tag, currPos: number, newPos: number) => {
+    const newTags = tags.slice();
+
+    newTags.splice(currPos, 1);
+    newTags.splice(newPos, 0, tag);
+
+    // re-render
+    setTags(newTags);
+  };
+
+  const handleDeleteNew = (i: number) => {
+    setNewStoryTags(newStoryTags.filter((tag, index) => index !== i));
+  };
+
+  const handleAdditionNew = (tag) => {
+    if (allTagsRaw.includes(tag.id)) {
+      setNewStoryTags([...newStoryTags, tag]);
+    }
+  };
+
+  const handleDragNew = (tag, currPos: number, newPos: number) => {
+    const newTags = newStoryTags.slice();
+
+    newTags.splice(currPos, 1);
+    newTags.splice(newPos, 0, tag);
+
+    // re-render
+    setNewStoryTags(newTags);
   };
 
   async function suggestCustomStory() {
@@ -132,8 +188,13 @@ function Community() {
             item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
             item.desc.toLowerCase().includes(searchValue.toLowerCase())
         )
+        .filter(
+          (event) =>
+            tags.every((tag) => JSON.parse(event.tags).includes(tag.id)) ||
+            tags.length === 0
+        )
     );
-  }, [searchValue, sortValue]);
+  }, [searchValue, sortValue, tags]);
 
   const startStory = async (needSuggestions: boolean, story_id: string) => {
     try {
@@ -190,7 +251,7 @@ function Community() {
   const submitNewStory = async () => {
     const res = await axios.post(
       import.meta.env.VITE_BACKEND_ENDPOINT + "/add_custom_story",
-      { story_text: description, title: title },
+      { tags: newStoryTags, story_text: description, title: title },
       {
         headers: {
           Authorization: authHeader(),
@@ -268,7 +329,7 @@ function Community() {
             <h3 className="mb-4 text-xl font-semibold dark:text-white ">
               New Custom Story
             </h3>
-            <div className="gap-4">
+            <div className="gap-4 z-50">
               <form>
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                   Title
@@ -317,11 +378,28 @@ function Community() {
                   }}
                   required
                 />
+                <div className="z-50 mt-4">
+                  <label className="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
+                    Tags
+                  </label>
+                  <ReactTags
+                    tags={newStoryTags}
+                    suggestions={allTags}
+                    delimiters={delimiters}
+                    handleDelete={handleDeleteNew}
+                    handleAddition={handleAdditionNew}
+                    handleDrag={handleDragNew}
+                    inputFieldPosition="inline"
+                    minQueryLength={1}
+                    placeholder="Enter Tags..."
+                    autocomplete
+                  />
+                </div>
                 <p className={flag ? "text-pink-600 text-sm" : "hidden"}>
                   {flagText}
                 </p>
                 <button
-                  className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                  className="z-0 mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                   type="button"
                   onClick={suggestCustomStory}
                   disabled={genStoryLoading}
@@ -351,16 +429,16 @@ function Community() {
                     "Generate a Random Story"
                   )}
                 </button>
-                <div className="flex gap-4">
+                <div className="z-0 flex gap-4">
                   <button
-                    className="mt-4 h-fit text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                    className="mt-4 text-sm font-medium px-3 py-2 tracking-wide text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                     type="submit"
                     onClick={handleAddPlay}
                   >
                     Add and Play
                   </button>
                   <button
-                    className="mt-4 h-fit text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                    className="mt-4 text-sm font-medium px-3 py-2 tracking-wide text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                     type="submit"
                     onClick={async (e) => {
                       const story_id = await handleAdd(e);
@@ -414,7 +492,7 @@ function Community() {
         )}
         {showModal && (
           <>
-            <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+            <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-20 outline-none focus:outline-none">
               <div className="relative w-auto my-6 mx-auto max-w-3xl">
                 {/*content*/}
                 <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
@@ -526,7 +604,6 @@ function Community() {
                 </div>
               </div>
             </div>
-            <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
           </>
         )}
         <div className="col-span-full">
@@ -573,6 +650,23 @@ function Community() {
               }}
             />
           </div>
+          <label className="block text-sm font-medium text-gray-900 dark:text-white">
+            Search
+          </label>
+        </div>
+        <div className="z-50 flex justify-normal mb-6">
+          <ReactTags
+            tags={tags}
+            suggestions={allTags}
+            delimiters={delimiters}
+            handleDelete={handleDelete}
+            handleAddition={handleAddition}
+            handleDrag={handleDrag}
+            inputFieldPosition="top"
+            minQueryLength={1}
+            placeholder="Enter Tags..."
+            autocomplete
+          />
         </div>
         <div className="relative overflow-x-auto col-span-full">
           <div className="mb-24 items-center grid grid-cols-1 2xl:grid-cols-5 justify-center gap-4 justify-items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -580,7 +674,7 @@ function Community() {
               <div
                 key={item.id}
                 id={item.id}
-                className="col-span-1 block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                className="col-span-1 max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
               >
                 <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                   {item.title}
@@ -607,6 +701,16 @@ function Community() {
                 </p>
                 <p className="text-gray-500 font-medium">
                   High score: <b>{item.high_score}/100</b>
+                </p>
+                <p className="m-2 font-normal text-left text-gray-700 dark:text-gray-400">
+                  {JSON.parse(item.tags).map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300"
+                    >
+                      {tag.text}
+                    </span>
+                  ))}
                 </p>
                 <div className="mt-2 flex gap-2">
                   <button
@@ -640,7 +744,7 @@ function Community() {
                     </button>
                     {item.user_id === authUser && (
                       <button
-                        className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                        className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-50 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                         onClick={() => deleteStory(item.id)}
                       >
                         Delete

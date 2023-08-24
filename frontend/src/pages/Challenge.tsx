@@ -76,104 +76,6 @@ function App() {
     }
   };
 
-  const fetchEvents = async () => {
-    try {
-      const res = await axios.post(
-        import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_events",
-        {},
-        {
-          headers: {
-            Authorization: authHeader(),
-          },
-        }
-      );
-      console.log(res.data);
-      // setEvents(res.data.even  ts);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const fetchEssay = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(
-        import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_essay",
-        {
-          event: event,
-          difficulty: difficulty,
-        },
-        {
-          headers: {
-            Authorization: authHeader(),
-          },
-        }
-      );
-      setEssay(res.data.essay);
-      // console.log(essay);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const fetchMCQ = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(
-        import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_mcq",
-        {},
-        {
-          headers: {
-            Authorization: authHeader(),
-          },
-        }
-      );
-      setMCQ(res.data.mcq);
-      setChoices(Array(res.data.mcq.length).fill(-1));
-      // console.log(res.data.mcq);
-      // console.log(mcq);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const storeChoice = (e) => {
-    let choices_temp = choices;
-    choices_temp[parseInt(e.target.name)] = parseInt(e.target.value);
-    // console.log(choices_temp);
-    setChoices(choices_temp);
-    // console.log(choices);
-  };
-
-  const calculateScore = () => {
-    let score_temp = 0;
-    let choices_temp = choices;
-    for (let i = 0; i < mcq.length; i++) {
-      if (mcq[i].answer === choices[i]) {
-        score_temp++;
-        choices_temp[i] = 100; // correct
-      }
-    }
-    try {
-      axios.post(
-        import.meta.env.VITE_BACKEND_ENDPOINT + "/challenge_score_submit",
-        { score: score_temp },
-        {
-          headers: {
-            Authorization: authHeader(),
-          },
-        }
-      );
-      // test
-      setSubmitted(true);
-    } catch (err) {
-      console.log(err);
-    }
-    setScore(score_temp);
-    setChoices(choices_temp);
-    setDisplayScore(true);
-  };
-
   useEffect(() => {
     setEvents(
       rawEvents
@@ -474,7 +376,7 @@ function App() {
                 >
                   Unique stories played:{" "}
                   <b className="text-blue-600">
-                    {totalPlays}/{events.length}
+                    {totalPlays}/{rawEvents.length}
                   </b>
                 </p>
                 {totalPlays < 1 && (
