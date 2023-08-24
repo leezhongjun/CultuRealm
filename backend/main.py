@@ -525,45 +525,45 @@ async def start_story():
                 seed = CustomStories.query.filter_by(
                     id=user_state.custom_story_id).first().desc
 
-        # else:
+        else:
 
-        #     if data['country'] != "Singapore":
-        #         if data['country'] not in settings.countries:
-        #             return {'flagged': True, 'flagged_text': "Invalid country!"}
-        #         if data['country'] == "Random":
-        #             data['country'] = random.choice(settings.countries[1:])
-        #         user_state.country = data['country']
-        #         seed = get_story_seed(age=user_profile.age, gender=user_profile.gender,
-        #                               race=user_profile.race, country=user_state.country)
+            if data['country'] != "Singapore":
+                if data['country'] not in settings.countries:
+                    return {'flagged': True, 'flagged_text': "Invalid country!"}
+                if data['country'] == "Random":
+                    data['country'] = random.choice(settings.countries[1:])
+                user_state.country = data['country']
+                seed = get_story_seed(age=user_profile.age, gender=user_profile.gender,
+                                      race=user_profile.race, country=user_state.country)
 
-        #     else:
-        #         user_state.country = data['country']
+            else:
+                user_state.country = data['country']
 
-        #         # get story seeds
-        #         story_seeds = json.loads(user_state.story_seeds)
+                # get story seeds
+                story_seeds = json.loads(user_state.story_seeds)
 
-        #         # create more seeds if len == 0
-        #         if len(story_seeds) == 0:
-        #             story_seeds = get_story_seeds(
-        #                 age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+                # create more seeds if len == 0
+                if len(story_seeds) == 0:
+                    story_seeds = get_story_seeds(
+                        age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
 
-        #         # sample a seed
-        #         i = random.randint(0, len(story_seeds) - 1)
-        #         seed = story_seeds[i]
+                # sample a seed
+                i = random.randint(0, len(story_seeds) - 1)
+                seed = story_seeds[i]
 
-        #         # remove the seed from the list
-        #         story_seeds.pop(i)
+                # remove the seed from the list
+                story_seeds.pop(i)
 
-        #         # update db with new seed list
-        #         user_state.story_seeds = json.dumps(story_seeds)
+                # update db with new seed list
+                user_state.story_seeds = json.dumps(story_seeds)
 
-        if data['country'] not in settings.countries:
-            return {'flagged': True, 'flagged_text': "Invalid country!"}
-        if data['country'] == "Random":
-            data['country'] = random.choice(settings.countries[1:])
-        user_state.country = data['country']
-        seed = get_story_seed(age=user_profile.age, gender=user_profile.gender,
-                                race=user_profile.race, country=user_state.country)
+        # if data['country'] not in settings.countries:
+        #     return {'flagged': True, 'flagged_text': "Invalid country!"}
+        # if data['country'] == "Random":
+        #     data['country'] = random.choice(settings.countries[1:])
+        # user_state.country = data['country']
+        # seed = get_story_seed(age=user_profile.age, gender=user_profile.gender,
+        #                         race=user_profile.race, country=user_state.country)
 
         # call api -> story text
         story_text = "END"
