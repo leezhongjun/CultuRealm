@@ -41,8 +41,38 @@ def ask_gpt(prompt, max_tokens=0, temp=-1):
     return response.choices[0].message.content
 
 
-def ask_gpt_convo(messages):
+def ask_gpt_convo(messages, max_tokens=0, temp=-1):
+    kwarg = {"max_tokens": max_tokens} if max_tokens else {}
+    if temp >= 0:
+        kwarg["temperature"] = temp
     response = openai.ChatCompletion.create(
+        model='gpt-3.5-turbo',
+        messages=messages,
+        allow_fallback=False,
+        **kwarg
+    )
+    print(response.choices[0].message.content)
+    return response.choices[0].message.content
+
+async def a_ask_gpt(prompt, max_tokens=0, temp=-1):
+    kwarg = {"max_tokens": max_tokens} if max_tokens else {}
+    if temp >= 0:
+        kwarg["temperature"] = temp
+    response = await openai.ChatCompletion.acreate(
+        model='gpt-3.5-turbo',
+        messages=[
+            {'role': 'system', 'content': 'You are a helpful chatbot.'},
+            {'role': 'user', 'content': prompt},
+        ],
+        allow_fallback=False,
+        **kwarg
+    )
+    print(response.choices[0].message.content)
+    return response.choices[0].message.content
+
+
+async def a_ask_gpt_convo(messages):
+    response = await openai.ChatCompletion.acreate(
         model='gpt-3.5-turbo',
         messages=messages,
         allow_fallback=False
@@ -52,20 +82,21 @@ def ask_gpt_convo(messages):
 
 
 def moderate_response(response):
-    msg = f'''Is the following a user response:
+    msg = f'''Is the following text enclosed within triple quotes a user response:
 """
-User {response.replace('"', '').replace("'", "")}
+User {response.replace('"'*3, '').replace("'"*3, "")}
 """'''
-    system = "You are a content moderator that can only respond with True or False. Do not provide an explanation."
-    return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}]).lower(), ["Not a user response"]
+    system = "You are a helpful content moderator that can only correctly answer the questions given with True or False. Do not provide an explanation."
+    print(msg)
+    return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}], temp=0).lower(), ["Not a user response"]
 
 def moderate_summary(response):
-    msg = f'''Is the following a summary of a scenario:
+    msg = f'''Is the following text enclosed within triple quotes a summary of a scenario:
 """
-{response.replace('"', '').replace("'", "")}
+{response.replace('"'*3, '').replace("'"*3, "")}
 """'''
-    system = "You are a content moderator that can only respond with True or False. Do not provide an explanation."
-    return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}]).lower(), ["Not a story description"]
+    system = "You are a helpful content moderator that can only correctly answer the questions given with True or False. Do not provide an explanation."
+    return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}], temp=0).lower(), ["Not a story description"]
 
 
 
@@ -188,7 +219,7 @@ def get_start_story(seed, name, age, race, gender, country="Singapore"):
     return ask_gpt_convo(messages).replace("*", ""), messages[0]
 
 
-def get_start_img_prompt(text, name, age, gender, race):
+async def get_start_img_prompt(text, name, age, gender, race):
     if gender == "Unspecified":
         gender = ""
     else:
@@ -206,16 +237,31 @@ def get_start_img_prompt(text, name, age, gender, race):
 Story:
 {text}
 
-The user, which may be referred to I, you, or {name} in the story is a {age}Singaporean {race}{gender}
+The user, which may be referred to I, you, or {name} in the story is a {age}Singaporean {race}{gender}.
 
-An adult saw the image without reading the story. Describe what the adult saw in simple English and in a single sentence. Include the races, ages, and genders of the people in the description. Do not include character names. Use simple sentence structure. Start the description with "An image of ..."
-"""
-    img_prompt = ask_gpt(prompt)
+An adult saw the image without reading the story. 
 
-    return img_prompt
+Generate a description of what the adult saw.
+In the description:
+1. Use a single sentence.
+2. Use simple English.
+3. Use simple sentence structure. 
+4. Start the description with "An image of ...".
+5. Do not include character names. 
+6. Describe the races, ages, and genders of the people in the image.
+7. State the physical setting of the image.
+
+Example of a good output:
+An image of a 5 year old Korean male and a 10 year old Caucasian female talking in a hawker center in Singapore.
+
+Example of a bad output:
+An image of 2 children talking and having a good time."""
+    img_prompt = await a_ask_gpt(prompt)
+
+    return img_prompt.strip('.')
 
 
-def get_suggestions(text):
+async def get_suggestions(text):
     prompt = f"""Generate 2 possible user responses for this story. Follow the format specified.
 
 Example output 1:
@@ -235,7 +281,7 @@ STORY:
     while len(res) < 2:
         res = []
         try:
-            resp = ask_gpt(prompt, temp=2)
+            resp = await a_ask_gpt(prompt, temp=2)
             for r in resp.split('\n'):
                 s = ''
                 if "Do: " in r:
@@ -250,7 +296,7 @@ STORY:
     return res
 
 
-def get_keywords(text):
+async def get_keywords(text):
     prompt = f"""Extract only very specific and important cultures, religions, cultural and religious from the following text. There might be none. Return it as a Python list.
 
 Follow this format for the output: ["...", "..."]
@@ -258,7 +304,7 @@ Follow this format for the output: ["...", "..."]
 Text:
 {text}
 """
-    res = ask_gpt(prompt, temp=0)
+    res = await a_ask_gpt(prompt, temp=0)
     if "[" not in res:
         return []
     res = "[" + res.split('[')[-1].split(']')[0] + "]"
@@ -303,7 +349,7 @@ def moderate_input(user_input):
     return response['results'][0]['flagged'], cat
 
 
-def get_feedback_and_score(user_response, text):
+async def get_feedback_and_score(user_response, text):
     prompt = f"""Evaluate the following USER RESPONSE to the STORY CONTEXT based on how well the user respected and appreciated other cultures if the scenario gives the user a chance to do so. Let's think step by step. Then, rate the response on a scale of 1 to 100 based on the same basis.
 
 Example output:
@@ -321,7 +367,7 @@ USER RESPONSE:
     explanation = ''
     while score == '' or explanation == '':
         try:
-            res = ask_gpt(prompt, temp=0)
+            res = await a_ask_gpt(prompt, temp=0)
             reses = res.split("EXPLANATION: ")[-1].split("SCORE: ")
             score = reses[-1].split("/100")[0]
             explanation = reses[0].strip()
@@ -334,7 +380,7 @@ USER RESPONSE:
     return explanation, score
 
 
-def get_opportunity_score(name, text):
+async def get_opportunity_score(name, text):
     prompt = f'''Rate the quality and quantity of opportunities given to demonstrate their ability to respect and appreciate other cultures to the user, {name}, during the following STORY CONTEXT on a scale of 1 to 100.
 
 Example output:
@@ -346,7 +392,7 @@ STORY CONTEXT:
     score = ''
     while score == '':
         try:
-            res = ask_gpt(prompt, temp=0, max_tokens=10)
+            res = await a_ask_gpt(prompt, temp=0, max_tokens=10)
             score = res.split("SCORE: ")[-1].split("/100")[0]
         except:
             pass
@@ -357,7 +403,7 @@ STORY CONTEXT:
     return score
 
 
-def get_achievements_score(name, text, user_response):
+async def get_achievements_score(name, text, user_response):
     prompt = f"""Text:
 {text}
 
@@ -368,8 +414,8 @@ User Response:
 
 Questions:
 1. Did the user offer help to another character in the user response?
-2. Did the user give a compliment to another character in the user response?
-3. Did the user share their own culture in the user response?
+2. Did the user give a compliment to another human character in the user response?
+3. Did the user directly share their own culture in the user response?
 4. Did the user directly ask about another character's culture in the user response?
 5. Did the user make another character laugh?
 
@@ -388,7 +434,7 @@ USER RESPONSE:
 """
     while True:
         try:
-            res = ask_gpt(prompt, temp=0)
+            res = await a_ask_gpt(prompt, temp=0)
             res = json.loads("[" + res.split("[")[-1].split(']')[0] + "]")
             print(res)
             ls = []

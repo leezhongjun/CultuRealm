@@ -1,4 +1,4 @@
-Flask
+Flask[async]
 flask_jwt_extended
 flask_sqlalchemy
 Werkzeug

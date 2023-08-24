@@ -15,6 +15,7 @@ import uuid
 import json
 import random
 from collections import defaultdict
+import asyncio
 
 from utils import checkPassword, checkEmail, checkUsername, checkName, calc_new_rating, parse_achievements, format_achievements
 import settings
@@ -491,122 +492,148 @@ def get_story_desc():
 
 @app.route('/start_story', methods=['POST'])
 @jwt_required()
-def start_story():
+async def start_story():
     id = get_jwt_identity()['id']
     data = request.get_json()
     # clear previous story
     # remove old story from db
     # delete all entries in UserStories db with user id
-    UserStories.query.filter_by(user_id=id).delete()
+    with app.app_context():
+        UserStories.query.filter_by(user_id=id).delete()
 
-    # get user state
-    user_state = UserState.query.filter_by(id=id).first()
+        # get user state
+        user_state = UserState.query.filter_by(id=id).first()
 
-    # create new story
-    # get user data
-    user_profile = UserProfile.query.filter_by(id=id).first()
+        # create new story
+        # get user data
+        user_profile = UserProfile.query.filter_by(id=id).first()
 
-    user_state.custom_story_id = data["story_id"]
-    is_custom = user_state.custom_story_id != ""
+        user_state.custom_story_id = data["story_id"]
+        is_custom = user_state.custom_story_id != ""
 
-    if is_custom:
-        if user_state.custom_story_id == "temp":
-            seed = data["seed"]
-            flagged, cats = moderate_input(seed)
-            if not flagged:
-                flagged, cats = moderate_summary(seed)
-            if flagged:
-                flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
-                    ", ".join(cats) + "."
-                return {'flagged': True, 'flagged_text': flagged_text}
+        if is_custom:
+            if user_state.custom_story_id == "temp":
+                seed = data["seed"]
+                flagged, cats = moderate_input(seed)
+                if not flagged:
+                    flagged, cats = moderate_summary(seed)
+                if flagged:
+                    flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
+                        ", ".join(cats) + "."
+                    return {'flagged': True, 'flagged_text': flagged_text}
+            else:
+                seed = CustomStories.query.filter_by(
+                    id=user_state.custom_story_id).first().desc
+
+        # else:
+
+        #     if data['country'] != "Singapore":
+        #         if data['country'] not in settings.countries:
+        #             return {'flagged': True, 'flagged_text': "Invalid country!"}
+        #         if data['country'] == "Random":
+        #             data['country'] = random.choice(settings.countries[1:])
+        #         user_state.country = data['country']
+        #         seed = get_story_seed(age=user_profile.age, gender=user_profile.gender,
+        #                               race=user_profile.race, country=user_state.country)
+
+        #     else:
+        #         user_state.country = data['country']
+
+        #         # get story seeds
+        #         story_seeds = json.loads(user_state.story_seeds)
+
+        #         # create more seeds if len == 0
+        #         if len(story_seeds) == 0:
+        #             story_seeds = get_story_seeds(
+        #                 age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+
+        #         # sample a seed
+        #         i = random.randint(0, len(story_seeds) - 1)
+        #         seed = story_seeds[i]
+
+        #         # remove the seed from the list
+        #         story_seeds.pop(i)
+
+        #         # update db with new seed list
+        #         user_state.story_seeds = json.dumps(story_seeds)
+
+        if data['country'] not in settings.countries:
+            return {'flagged': True, 'flagged_text': "Invalid country!"}
+        if data['country'] == "Random":
+            data['country'] = random.choice(settings.countries[1:])
+        user_state.country = data['country']
+        seed = get_story_seed(age=user_profile.age, gender=user_profile.gender,
+                                race=user_profile.race, country=user_state.country)
+
+        # call api -> story text
+        story_text = "END"
+        while "END" in story_text:
+            story_text, system_message = get_start_story(
+                seed=seed, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race, country=user_state.country)
+        story_state = [system_message, {
+            "role": "assistant",
+            "content": story_text,
+        }]
+        user_state.story_state = json.dumps(story_state)
+
+        # image gen
+        async def img_thread():
+            img_prompt = await get_start_img_prompt(story_text, name=user_profile.name,
+                                            age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+            # img_url = gen_img(img_prompt, user_profile.image_style)
+            return img_prompt
+
+        # suggestions
+        async def suggestion_thread():
+            kwargs = {}
+            if data["suggestions"]:
+                # user_state.suggestions = True
+                # call api -> suggestions
+                suggestions = await get_suggestions(story_text)
+                suggestions = [suggestion.replace('*', '')
+                            for suggestion in suggestions]
+                # user_state.suggestion_1 = suggestions[0]
+                # user_state.suggestion_2 = suggestions[1]
+                kwargs["suggestion_1"] = suggestions[0]
+                kwargs["suggestion_2"] = suggestions[1]
+            # else:
+                # user_state.suggestions = False
+            return kwargs
+
+        # if achivement call api -> achivement
+        new_achivements = ""
+
+        # keywords
+        async def keyword_thread():
+            # get keyword list
+            keywords = await get_keywords(story_text)
+            return keywords
+
+        tasks = []
+        for f in (img_thread, suggestion_thread, keyword_thread):
+            task = asyncio.create_task(f())
+            tasks.append(task)
+        res = await asyncio.gather(*tasks)
+
+        if data["suggestions"]:
+            user_state.suggestions = True
+            user_state.suggestion_1 = res[1]["suggestion_1"]
+            user_state.suggestion_2 = res[1]["suggestion_2"]
         else:
-            seed = CustomStories.query.filter_by(
-                id=user_state.custom_story_id).first().desc
+            user_state.suggestions = False
 
-    else:
-
-        if data['country'] != "Singapore":
-            if data['country'] not in settings.countries:
-                return {'flagged': True, 'flagged_text': "Invalid country!"}
-            if data['country'] == "Random":
-                data['country'] = random.choice(settings.countries[1:])
-            user_state.country = data['country']
-            seed = get_story_seed(age=user_profile.age, gender=user_profile.gender,
-                                  race=user_profile.race, country=user_state.country)
-
-        else:
-            user_state.country = data['country']
-
-            # get story seeds
-            story_seeds = json.loads(user_state.story_seeds)
-
-            # create more seeds if len == 0
-            if len(story_seeds) == 0:
-                story_seeds = get_story_seeds(
-                    age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
-
-            # sample a seed
-            i = random.randint(0, len(story_seeds) - 1)
-            seed = story_seeds[i]
-
-            # remove the seed from the list
-            story_seeds.pop(i)
-
-            # update db with new seed list
-            user_state.story_seeds = json.dumps(story_seeds)
-
-    # call api -> story text
-    story_text = "END"
-    while "END" in story_text:
-        story_text, system_message = get_start_story(
-            seed=seed, name=user_profile.name, age=user_profile.age, gender=user_profile.gender, race=user_profile.race, country=user_state.country)
-    story_state = [system_message, {
-        "role": "assistant",
-        "content": story_text,
-    }]
-    user_state.story_state = json.dumps(story_state)
-
-    # image gen
-    img_prompt = get_start_img_prompt(story_text, name=user_profile.name,
-                                      age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
-    # img_url = gen_img(img_prompt, user_profile.image_style)
-
-    # call api -> story audio (do in frontend)
-
-    # update suggestions in UserState
-    kwargs = {}
-    if data["suggestions"]:
-        user_state.suggestions = True
-        # call api -> suggestions
-        suggestions = get_suggestions(story_text)
-        suggestions = [suggestion.replace('*', '')
-                       for suggestion in suggestions]
-        user_state.suggestion_1 = suggestions[0]
-        user_state.suggestion_2 = suggestions[1]
-        kwargs["suggestion_1"] = suggestions[0]
-        kwargs["suggestion_2"] = suggestions[1]
-    else:
-        user_state.suggestions = False
-    # if achivement call api -> achivement
-    new_achivements = ""
-
-    # get keyword list
-    keywords = get_keywords(story_text)
-
-    # write to db
-    # make new entry in UserStories db
-    user_story = UserStories(user_id=id, story_index=0, story_text=story_text, user_response="", img_url="",
-                             img_prompt=img_prompt, achievements=new_achivements, keywords=json.dumps(keywords), feedback="")
-    db.session.add(user_story)
-    # set story index to 0 in db
-    user_state.story_index = 0
-    # return data
-    db.session.commit()
-    return {'country': user_state.country, 'flagged': False, 'image_style': user_profile.image_style, 'story_text': story_text, 'user_response': "", 'achievements': new_achivements, 'keywords': keywords, **kwargs}
+        # write to db
+        # make new entry in UserStories db
+        user_story = UserStories(user_id=id, story_index=0, story_text=story_text, user_response="", img_url="",
+                                    img_prompt=res[0], achievements=new_achivements, keywords=json.dumps(res[2]), feedback="")
+        db.session.add(user_story)
+        # set story index to 0 in db
+        user_state.story_index = 0
+        # return data
+        db.session.commit()
+        return {'country': user_state.country, 'flagged': False, 'image_style': user_profile.image_style, 'story_text': story_text, 'user_response': "", 'achievements': new_achivements, 'keywords': res[2], **res[1]}
 
 # regen img endpoint
-
-
 @app.route('/regen_img', methods=['POST'])
 @jwt_required()
 def regen_img():
@@ -629,8 +656,6 @@ def regen_img():
     return {'image_url': img_url}
 
 # reset story index endpoint
-
-
 @app.route('/reset_story_index', methods=['POST'])
 @jwt_required()
 def reset_story_index():
@@ -665,153 +690,184 @@ def regen_suggestions():
 
 @app.route('/story_index', methods=['POST'])
 @jwt_required()
-def story_index():
+async def story_index():
     id = get_jwt_identity()['id']
     data = request.get_json()
-    user_state = UserState.query.filter_by(id=id).first()
+    with app.app_context():
+        user_state = UserState.query.filter_by(id=id).first()
 
-    # story is starting
-    if user_state.story_index < 0:
-        return {'story_starting': True}
+        # story is starting
+        if user_state.story_index < 0:
+            return {'story_starting': True}
 
-    user_profile = UserProfile.query.filter_by(id=id).first()
-    cur_story_index = data['story_index']
+        user_profile = UserProfile.query.filter_by(id=id).first()
+        cur_story_index = data['story_index']
 
-    # if end index
-    final = cur_story_index == settings.max_story_index
-    is_custom = user_state.custom_story_id != ""
+        # if end index
+        final = cur_story_index == settings.max_story_index
+        is_custom = user_state.custom_story_id != ""
 
-    # if not new index
-    if cur_story_index <= user_state.story_index:
-        # query db
-        user_story = UserStories.query.filter_by(
-            user_id=id, story_index=cur_story_index).first()
-        kwargs = {}
-        if user_state.suggestions and cur_story_index == user_state.story_index and not final:
-            kwargs['suggestion_1'] = user_state.suggestion_1
-            kwargs['suggestion_2'] = user_state.suggestion_2
+        # if not new index
+        if cur_story_index <= user_state.story_index:
+            # query db
+            user_story = UserStories.query.filter_by(
+                user_id=id, story_index=cur_story_index).first()
+            kwargs = {}
+            if user_state.suggestions and cur_story_index == user_state.story_index and not final:
+                kwargs['suggestion_1'] = user_state.suggestion_1
+                kwargs['suggestion_2'] = user_state.suggestion_2
+
+            if final:
+                kwargs['final_score'] = user_state.final_score
+                if is_custom:
+                    # custom story previous high score
+                    kwargs['prev_high_score'] = user_state.old_high_score
+                kwargs['new_rating'] = user_profile.rating
+                kwargs['old_rating'] = user_state.old_rating
+
+            # return data
+            return {'unlock_rating': settings.global_unlocked_rating, 'country': user_state.country, 'is_custom': is_custom, 'is_final': final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
+
+        # if new index
+        # get resp
+        resp = data["user_response"]  # resp here is "do: ..."
+
+        # response moderation
+        flagged, cats = moderate_input(resp)
+        if not flagged:
+            flagged, cats = moderate_response(resp)
+        if flagged:
+            flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
+                ", ".join(cats) + "."
+            return {'flagged': True, 'flagged_text': flagged_text}
+
+        story_state = json.loads(user_state.story_state)
+        prev_story_text = story_state[-1]["content"]
+        story_state += [{
+            "role": "user",
+            "content": "I " + resp + ("\n\nSTORY ENDS THIS TURN" if final else "."),
+        }]
+        story_text = "SOMERANDOMSTRING" if final else "END"
+        while (final and "SOMERANDOMSTRING" in story_text) or (not final and "END" in story_text):
+            story_text = ask_gpt_convo(story_state).replace("*", "")
+        story_state += [{
+            "role": "assistant",
+            "content": story_text,
+        }]
+        user_state.story_state = json.dumps(story_state)
+
+        async def keyword_thread():
+            # keywords
+            keywords = await get_keywords(story_text)
+            return keywords
+
+        # feedback
+        async def feedback_thread():
+            feedback, score = await get_feedback_and_score(resp, prev_story_text)
+            opp_score = 0 if score == 0 else await get_opportunity_score(
+                user_profile.name, prev_story_text)
+            return feedback, score, opp_score
+
+        # achivement
+        async def achievement_thread():
+            achievements_ls = await get_achievements_score(
+                user_profile.name, prev_story_text, "I " + resp)
+            achievements_dict = parse_achievements(user_profile.achievements)
+            ach_d_new = {}
+            for ach in achievements_ls:
+                if ach not in achievements_dict.keys():
+                    achievements_dict[ach] = 0
+                achievements_dict[ach] += 1
+                ach_d_new[ach] = achievements_dict[ach]
+            new_achievements = format_achievements(ach_d_new)
+            return new_achievements, achievements_dict
+
+        # suggestions
+        async def suggestion_thread():
+            if user_state.suggestions and not final:
+                suggestions = await get_suggestions(story_text)
+                return suggestions
+            
+        # img prompt
+        async def img_thread():
+            img_prompt = await get_start_img_prompt(story_text, name=user_profile.name,
+                                            age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+            return img_prompt
+
+        tasks = []
+        for f in (img_thread, suggestion_thread, keyword_thread, feedback_thread, achievement_thread):
+            task = asyncio.create_task(f())
+            tasks.append(task)
+        res = await asyncio.gather(*tasks)
+
+        new_achievements, achievements_dict = res[4]
+        feedback, score, opp_score = res[3]
+        keywords = res[2]
+        suggestions = res[1]
+        img_prompt = res[0]
+
+        
+        user_state.opp_score += opp_score
+        user_state.score += score * opp_score
 
         if final:
-            kwargs['final_score'] = user_state.final_score
+            # final score updating
+            final_score = int(user_state.score *
+                            (100 / user_state.opp_score) / 100)
+            user_state.final_score = final_score
+            user_profile.stories_played += 1
+
+            # just update user high score, regardless of custom or not
+            if final_score > user_profile.high_score:
+                user_profile.high_score = final_score
+
             if is_custom:
-                # custom story previous high score
-                kwargs['prev_high_score'] = user_state.old_high_score
-            kwargs['new_rating'] = user_profile.rating
-            kwargs['old_rating'] = user_state.old_rating
+                # save old high score to user state
+                if user_state.custom_story_id == "temp":
+                    user_state.old_high_score = 0
+                else:
+                    # save old high score of custom story in user state
+                    custom_story = CustomStories.query.filter_by(
+                        id=user_state.custom_story_id).first()
+                    user_state.old_high_score = custom_story.high_score
+                    # change high score in custom story
+                    if final_score > custom_story.high_score:
+                        custom_story.high_score = final_score
+                    # increase custom story play count
+                    custom_story.play_count += 1
+
+            else:
+                # rating
+                user_state.old_rating = user_profile.rating
+                user_profile.rating = calc_new_rating(
+                    final_score, user_profile.stories_played, user_state.old_rating)
+                if user_profile.rating > settings.global_unlocked_rating:
+                    user_profile.global_unlocked = True
+        
+
+
+        user_profile.achievements = format_achievements(achievements_dict)
+        
+        if user_state.suggestions and not final:
+            user_state.suggestion_1 = suggestions[0]
+            user_state.suggestion_2 = suggestions[1]
+
+
+        # write to db
+        user_state.story_index = cur_story_index
+        prev_user_story = UserStories.query.filter_by(
+            user_id=id, story_index=cur_story_index-1).first()
+        prev_user_story.user_response = resp
+        prev_user_story.feedback = feedback
+        prev_user_story.achievements = new_achievements
+
+        new_user_story = UserStories(user_id=id, story_index=cur_story_index, story_text=story_text, img_prompt=img_prompt,
+                                    img_url="", user_response="", feedback="", achievements="", keywords=json.dumps(keywords))
+        db.session.add(new_user_story)
+        db.session.commit()
 
         # return data
-        return {'unlock_rating': settings.global_unlocked_rating, 'country': user_state.country, 'is_custom': is_custom, 'is_final': final, 'has_suggestions': user_state.suggestions, 'story_starting': False, 'story_text': user_story.story_text, 'image_url': user_story.img_url, 'user_response': user_story.user_response, 'achievements': user_story.achievements, 'image_style': user_profile.image_style, 'keywords': json.loads(user_story.keywords), 'feedback': user_story.feedback, **kwargs}
-
-    # if new index
-    # get resp
-    resp = data["user_response"]  # resp here is "do: ..."
-
-    # response moderation
-    flagged, cats = moderate_input(resp)
-    if not flagged:
-        flagged, cats = moderate_response(resp)
-    if flagged:
-        flagged_text = "Inappropriate content in your response. Please try again. Flags detected: " + \
-            ", ".join(cats) + "."
-        return {'flagged': True, 'flagged_text': flagged_text}
-
-    story_state = json.loads(user_state.story_state)
-    prev_story_text = story_state[-1]["content"]
-    story_state += [{
-        "role": "user",
-        "content": "I " + resp + ("\n\nSTORY ENDS THIS TURN" if final else "."),
-    }]
-    story_text = "SOMERANDOMSTRING" if final else "END"
-    while (final and "SOMERANDOMSTRING" in story_text) or (not final and "END" in story_text):
-        story_text = ask_gpt_convo(story_state).replace("*", "")
-    story_state += [{
-        "role": "assistant",
-        "content": story_text,
-    }]
-    user_state.story_state = json.dumps(story_state)
-
-    # keywords
-    keywords = get_keywords(story_text)
-
-    # feedback
-    feedback, score = get_feedback_and_score(resp, prev_story_text)
-    opp_score = 0 if score == 0 else get_opportunity_score(
-        user_profile.name, prev_story_text)
-    user_state.opp_score += opp_score
-    user_state.score += score * opp_score
-
-    if final:
-        # final score updating
-        final_score = int(user_state.score *
-                          (100 / user_state.opp_score) / 100)
-        user_state.final_score = final_score
-        user_profile.stories_played += 1
-
-        # just update user high score, regardless of custom or not
-        if final_score > user_profile.high_score:
-            user_profile.high_score = final_score
-
-        if is_custom:
-            # save old high score to user state
-            if user_state.custom_story_id == "temp":
-                user_state.old_high_score = 0
-            else:
-                # save old high score of custom story in user state
-                custom_story = CustomStories.query.filter_by(
-                    id=user_state.custom_story_id).first()
-                user_state.old_high_score = custom_story.high_score
-                # change high score in custom story
-                if final_score > custom_story.high_score:
-                    custom_story.high_score = final_score
-                # increase custom story play count
-                custom_story.play_count += 1
-
-        else:
-            # rating
-            user_state.old_rating = user_profile.rating
-            user_profile.rating = calc_new_rating(
-                final_score, user_profile.stories_played, user_state.old_rating)
-            if user_profile.rating > settings.global_unlocked_rating:
-                user_profile.global_unlocked = True
-
-    # achivement
-    achievements_ls = get_achievements_score(
-        user_profile.name, prev_story_text, "I " + resp)
-    achievements_dict = parse_achievements(user_profile.achievements)
-    ach_d_new = {}
-    for ach in achievements_ls:
-        if ach not in achievements_dict.keys():
-            achievements_dict[ach] = 0
-        achievements_dict[ach] += 1
-        ach_d_new[ach] = achievements_dict[ach]
-    new_achievements = format_achievements(ach_d_new)
-    user_profile.achievements = format_achievements(achievements_dict)
-
-    # suggestions
-    if user_state.suggestions and not final:
-        suggestions = get_suggestions(story_text)
-        user_state.suggestion_1 = suggestions[0]
-        user_state.suggestion_2 = suggestions[1]
-
-    # img prompt
-    img_prompt = get_start_img_prompt(story_text, name=user_profile.name,
-                                      age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
-
-    # write to db
-    user_state.story_index = cur_story_index
-    prev_user_story = UserStories.query.filter_by(
-        user_id=id, story_index=cur_story_index-1).first()
-    prev_user_story.user_response = resp
-    prev_user_story.feedback = feedback
-    prev_user_story.achievements = new_achievements
-
-    new_user_story = UserStories(user_id=id, story_index=cur_story_index, story_text=story_text, img_prompt=img_prompt,
-                                 img_url="", user_response="", feedback="", achievements="", keywords=json.dumps(keywords))
-    db.session.add(new_user_story)
-    db.session.commit()
-
-    # return data
-    return {'flagged': False, 'achievements': new_achievements, 'feedback': feedback}
+        return {'flagged': False, 'achievements': new_achievements, 'feedback': feedback}
 
 
 @app.route('/get_state', methods=['POST'])
