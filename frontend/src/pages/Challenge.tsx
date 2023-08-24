@@ -386,7 +386,9 @@ function App() {
                     data-aos-delay="150"
                   >
                     Play <b className="text-green-600">{1 - totalPlays} </b>
-                    more unique stories to unlock{" "}
+                    {`more unique ${
+                      1 - totalPlays > 1 ? `stories` : `story`
+                    } to unlock `}{" "}
                     <b className="text-blue-600">Medium</b> difficulty
                   </p>
                 )}
@@ -397,7 +399,9 @@ function App() {
                     data-aos-delay="150"
                   >
                     Play <b className="text-green-600">{3 - totalPlays} </b>
-                    more unique stories to unlock{" "}
+                    {`more unique ${
+                      3 - totalPlays > 1 ? `stories` : `story`
+                    } to unlock `}{" "}
                     <b className="text-red-600">Hard</b> difficulty
                   </p>
                 )}
@@ -469,9 +473,10 @@ function App() {
                     handleAddition={handleAddition}
                     handleDrag={handleDrag}
                     inputFieldPosition="top"
-                    minQueryLength={1}
+                    minQueryLength={0}
                     placeholder="Enter Tags..."
                     autocomplete
+                    autofocus={false}
                   />
                 </div>
                 <div className="">

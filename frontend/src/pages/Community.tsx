@@ -190,8 +190,9 @@ function Community() {
         )
         .filter(
           (event) =>
-            tags.every((tag) => JSON.parse(event.tags).includes(tag.id)) ||
-            tags.length === 0
+            tags.every((tag) =>
+              JSON.parse(event.tags).some((e) => e.id === tag.id)
+            ) || tags.length === 0
         )
     );
   }, [searchValue, sortValue, tags]);
@@ -324,7 +325,7 @@ function Community() {
         {isAuth && showCustom && (
           <div
             id="create-new"
-            className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800"
+            className="z-50 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800"
           >
             <h3 className="mb-4 text-xl font-semibold dark:text-white ">
               New Custom Story
@@ -382,18 +383,21 @@ function Community() {
                   <label className="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
                     Tags
                   </label>
-                  <ReactTags
-                    tags={newStoryTags}
-                    suggestions={allTags}
-                    delimiters={delimiters}
-                    handleDelete={handleDeleteNew}
-                    handleAddition={handleAdditionNew}
-                    handleDrag={handleDragNew}
-                    inputFieldPosition="inline"
-                    minQueryLength={1}
-                    placeholder="Enter Tags..."
-                    autocomplete
-                  />
+                  <div className="z-50">
+                    <ReactTags
+                      tags={newStoryTags}
+                      suggestions={allTags}
+                      delimiters={delimiters}
+                      handleDelete={handleDeleteNew}
+                      handleAddition={handleAdditionNew}
+                      handleDrag={handleDragNew}
+                      inputFieldPosition="inline"
+                      minQueryLength={0}
+                      placeholder="Enter Tags..."
+                      autocomplete
+                      autofocus={false}
+                    />
+                  </div>
                 </div>
                 <p className={flag ? "text-pink-600 text-sm" : "hidden"}>
                   {flagText}
@@ -606,8 +610,8 @@ function Community() {
             </div>
           </>
         )}
-        <div className="col-span-full">
-          <div className="mb-4">
+        <div className="col-span-full mb-0">
+          <div className="mb-0">
             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Sort by
             </label>
@@ -633,7 +637,7 @@ function Community() {
             </label>
             <input
               type="text"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
               defaultValue={searchValue}
               placeholder="Enter a keyword"
               onChange={(e) => {
@@ -650,23 +654,26 @@ function Community() {
               }}
             />
           </div>
-          <label className="block text-sm font-medium text-gray-900 dark:text-white">
-            Search
-          </label>
         </div>
-        <div className="z-50 flex justify-normal mb-6">
-          <ReactTags
-            tags={tags}
-            suggestions={allTags}
-            delimiters={delimiters}
-            handleDelete={handleDelete}
-            handleAddition={handleAddition}
-            handleDrag={handleDrag}
-            inputFieldPosition="top"
-            minQueryLength={1}
-            placeholder="Enter Tags..."
-            autocomplete
-          />
+        <div className="z-40">
+          <label className="mb-0 p-0 block text-sm font-medium text-gray-900 dark:text-white">
+            Tags
+          </label>
+          <div className="z-40 flex justify-normal mb-6 mt-0">
+            <ReactTags
+              tags={tags}
+              suggestions={allTags}
+              delimiters={delimiters}
+              handleDelete={handleDelete}
+              handleAddition={handleAddition}
+              handleDrag={handleDrag}
+              inputFieldPosition="inline"
+              minQueryLength={0}
+              placeholder="Enter Tags..."
+              autocomplete
+              autofocus={false}
+            />
+          </div>
         </div>
         <div className="relative overflow-x-auto col-span-full">
           <div className="mb-24 items-center grid grid-cols-1 2xl:grid-cols-5 justify-center gap-4 justify-items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
