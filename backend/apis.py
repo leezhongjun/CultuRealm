@@ -3,10 +3,11 @@ from dotenv import load_dotenv
 import os
 import json
 from duckduckgo_search import DDGS
+import pyscord_storage
 
 from utils_var import cultural_historical_events, festivals
 
-from img_api import get_image, upload_from_data
+from img_api import get_image, upload_from_data, ImageGenerator
 from settings import achievements, breakpoints
 import time
 
@@ -22,6 +23,7 @@ styles = {
     "Cartoon": "cartoon, intricate, sharp focus, illustration, highly detailed, digital painting, concept art, matte, art by wlop and artgerm and ivan shishkin and andrey shishkin, masterpiece",
     "Anime": "anime, digital art, trending on artstation, pixiv, hyperdetailed, 8k realistic, symmetrical, high coherence, depth of field, very coherent artwork"
 }
+
 
 
 def ask_gpt(prompt, max_tokens=0, temp=-1):
@@ -218,8 +220,26 @@ def get_start_story(seed, name, age, race, gender, country="Singapore"):
     # remove all asterisks
     return ask_gpt_convo(messages).replace("*", ""), messages[0]
 
+async def get_characters(text):
+    prompt = f'''Return a formatted JSON list of characters and their race, age and gender in the following story. If the age, gender or race is not explicitly mentioned, try to infer the age, gender or race.
 
-async def get_start_img_prompt(text, name, age, gender, race):
+STORY:
+{text}
+
+Example output:
+[{{"character": "John, "age": 5, "race" : "Chinese"}} ,
+{{"character": "Mary", "age": 10", "race": "Indian"}}]'''
+    res = await a_ask_gpt(prompt, temp=0)
+    if "[" not in res:
+        return []
+    try:
+        res = "[" + res.split('[')[-1].split(']')[0] + "]"
+        return eval(res)
+    except:
+        return []
+
+
+async def get_start_img_prompt(text, name, age, gender, race, prev_text="", prev_img_prompt=""):
     if gender == "Unspecified":
         gender = ""
     else:
@@ -232,30 +252,50 @@ async def get_start_img_prompt(text, name, age, gender, race):
         age = ""
     else:
         age = f"{age} year old "
-    prompt = f"""There is an image that accompanies the text in the story. 
+    if len(prev_text) > 0:
+        prefix = f"""There is a previous panel with an image and text in a story. 
 
-Story:
+Previous panel text:
+{prev_text}
+
+Previous panel image description:
+{prev_img_prompt}
+
+
+"""
+    else:
+        prefix = ""
+    prompt = f"""{prefix}There is a current panel with an image and text in the same story. 
+
+Current panel text:
 {text}
 
-The user, which may be referred to I, you, or {name} in the story is a {age}Singaporean {race}{gender}.
 
-An adult saw the image without reading the story. 
+The user, who might be referred to as I, you, or {name} in the text is a {age}Singaporean {race}{gender}.
+
+An adult saw the image in the current panel without reading the story. 
 
 Generate a description of what the adult saw.
 In the description:
 1. Use a single sentence.
 2. Use simple English.
-3. Use simple sentence structure. 
-4. Start the description with "An image of ...".
-5. Do not include character names. 
-6. Describe the races, ages, and genders of the people in the image.
-7. State the physical setting of the image.
+3. Use simple sentence structure.
+4. Be direct.
+5. Start the description with "An image of ...".
+6. Do not include character names. 
+7. Describe the races of all characters in the image.
+8. Describe the ages of all characters in the image.
+9 Describe the genders of all characters in the image.
+10. State the physical setting of the image.
+{"11. Be about the current panel of the story." if len(prefix) > 0 else ""}
 
 Example of a good output:
 An image of a 5 year old Korean male and a 10 year old Caucasian female talking in a hawker center in Singapore.
 
 Example of a bad output:
-An image of 2 children talking and having a good time."""
+An image of 2 children talking excitedly.
+"""
+    print(prompt)
     img_prompt = await a_ask_gpt(prompt)
 
     return img_prompt.strip('.')
@@ -325,13 +365,24 @@ def gen_image_v2(prompt, style):
     openai.api_base = os.environ['OPENAI_API_BASE']
     openai.api_key = os.environ['OPENAI_API_KEY']
     response = openai.Image.create(
-        prompt=prompt + " " + styles[style],
+        prompt=prompt + styles[style],
         n=1,  # images count
         size="1024x1024"
     )
+    result = pyscord_storage.upload_from_url("culturealm.png",response['data'][0]['url'])
     openai.api_base = os.environ['OPENAI_API_BASE_2']
     openai.api_key = os.environ['OPENAI_API_KEY_2']
-    return response['data'][0]['url']
+    return result['data']['url']
+
+def gen_image_v3(prompt, style, img=""):
+    client = ImageGenerator()
+    is_photo = style == "Photorealistic"
+    images = client.gen_image(
+        prompt=prompt + styles[style],
+        image=img,
+        negative_prompt=f"(deformed iris, deformed pupils, semi-realistic" + (", cgi, 3d, render, sketch, cartoon, drawing, anime), " if is_photo else "), ") + "text, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, BadDream" + (", UnrealisticDream" if is_photo else ""),
+        )
+    return images['images'][0]
 
 
 def moderate_input(user_input):

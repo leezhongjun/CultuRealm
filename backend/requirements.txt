@@ -9,3 +9,4 @@ python-dotenv
 openai
 pyopenssl
 duckduckgo_search
+pyscord_storage

@@ -648,8 +648,16 @@ def regen_img():
     story_index = data['story_index']
     user_story = UserStories.query.filter_by(
         user_id=id, story_index=story_index).first()
-    img_prompt = user_story.img_prompt
-    img_url = gen_image_v2(img_prompt, user_profile.image_style)
+    if story_index > 0:
+        prev_user_story = UserStories.query.filter_by(
+            user_id=id, story_index=story_index-1).first()
+        if prev_user_story.img_url:
+            img = prev_user_story.img_url
+        else:
+            img = ""
+    else:
+        img = ""
+    img_url = gen_image_v3(user_story.img_prompt, user_profile.image_style, img)
     user_story.img_url = img_url
 
     db.session.commit()
@@ -764,9 +772,12 @@ async def story_index():
         # feedback
         async def feedback_thread():
             feedback, score = await get_feedback_and_score(resp, prev_story_text)
-            opp_score = 0 if score == 0 else await get_opportunity_score(
+            return feedback, score
+        
+        async def opp_score_thread():
+            opp_score = await get_opportunity_score(
                 user_profile.name, prev_story_text)
-            return feedback, score, opp_score
+            return opp_score
 
         # achivement
         async def achievement_thread():
@@ -788,20 +799,24 @@ async def story_index():
                 suggestions = await get_suggestions(story_text)
                 return suggestions
             
+        prev_user_story = UserStories.query.filter_by(
+            user_id=id, story_index=cur_story_index-1).first()
+            
         # img prompt
         async def img_thread():
             img_prompt = await get_start_img_prompt(story_text, name=user_profile.name,
-                                            age=user_profile.age, gender=user_profile.gender, race=user_profile.race)
+                                            age=user_profile.age, gender=user_profile.gender, race=user_profile.race, prev_text=prev_user_story.story_text, prev_img_prompt=prev_user_story.img_prompt)
             return img_prompt
 
         tasks = []
-        for f in (img_thread, suggestion_thread, keyword_thread, feedback_thread, achievement_thread):
+        for f in (img_thread, suggestion_thread, keyword_thread, feedback_thread, opp_score_thread, achievement_thread):
             task = asyncio.create_task(f())
             tasks.append(task)
         res = await asyncio.gather(*tasks)
 
-        new_achievements, achievements_dict = res[4]
-        feedback, score, opp_score = res[3]
+        new_achievements, achievements_dict = res[5]
+        opp_score = res[4]
+        feedback, score = res[3]
         keywords = res[2]
         suggestions = res[1]
         img_prompt = res[0]
@@ -855,8 +870,6 @@ async def story_index():
 
         # write to db
         user_state.story_index = cur_story_index
-        prev_user_story = UserStories.query.filter_by(
-            user_id=id, story_index=cur_story_index-1).first()
         prev_user_story.user_response = resp
         prev_user_story.feedback = feedback
         prev_user_story.achievements = new_achievements
