@@ -45,7 +45,7 @@ function App() {
   const [playState, setPlayState] = useState(-1); // -1: not started, 0: essay, 1: mcq, 2: score
   const [totalPlays, setTotalPlays] = useState(0); // total plays
 
-  const { reward, isAnimating } = useReward("rewardId", "confetti");
+  const { reward } = useReward("rewardId", "confetti");
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
 
@@ -110,7 +110,7 @@ function App() {
   const delimiters = [KeyCodes.comma, KeyCodes.enter];
 
   const handleDelete = (i: number) => {
-    setTags(tags.filter((tag, index) => index !== i));
+    setTags(tags.filter((_tag, index) => index !== i));
   };
 
   const handleAddition = (tag: { id: string; text: string }) => {

@@ -12,7 +12,9 @@ const MyContext = createContext<MyContextType>({
 
 export const useMyContext = () => useContext(MyContext);
 
-const MyContextProvider: React.FC = ({ children }) => {
+const MyContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
+  children,
+}) => {
   const [contextValue, setContextValue] = useState<boolean>(false);
 
   return (

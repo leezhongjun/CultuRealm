@@ -72,10 +72,6 @@ export default function NewPassword() {
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
     useState(false);
 
-  const checkIsUsernameValid = (username: string) => {
-    return /^(?=.*[A-Za-z0-9]).{1,80}$/.test(username);
-  };
-
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
     setPasswordMatch(event.target.value === confirmPassword);

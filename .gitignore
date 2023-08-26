@@ -36,5 +36,6 @@ backend/database.db
 backend/.env
 backend/__pycache__/
 backend/env/
+backend/dist
 
 temp.ipynb

@@ -1,6 +1,6 @@
-import { Fragment, useState, useContext, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   useIsAuthenticated,
@@ -15,7 +15,7 @@ axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 import { useMyContext } from "../components/Context";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 
-export function classNames(...classes) {
+export function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
@@ -27,7 +27,7 @@ const navigation = [
 ];
 
 export default function Navigation() {
-  const [isRender, renderSettingContainer] = useState(false);
+  const [, renderSettingContainer] = useState(false);
   const [imgSrc, setImgSrc] = useState(defaultProfilePic);
 
   const isAuthenticated = useIsAuthenticated();
@@ -124,7 +124,7 @@ export default function Navigation() {
                         <Link
                           to={item.href}
                           key={item.name}
-                          onClick={renderSettingContainer}
+                          onClick={() => renderSettingContainer(true)}
                           className={classNames(
                             window.location.pathname === item.href
                               ? "bg-blue-300 text-gray-900"
@@ -166,8 +166,8 @@ export default function Navigation() {
                             <Menu.Item>
                               {({ active }) => (
                                 <Link
-                                  to={`/profile/${authUser()["id"]}`}
-                                  onClick={renderSettingContainer}
+                                  to={`/profile/${authUser()?.id}`}
+                                  onClick={() => renderSettingContainer(true)}
                                   className={classNames(
                                     active ? "bg-gray-100" : "",
                                     "block px-4 py-2 text-sm text-gray-700"
@@ -181,7 +181,9 @@ export default function Navigation() {
                               {({ active }) => (
                                 <Link
                                   to="/settings"
-                                  onClick={renderSettingContainer}
+                                  onClick={() => {
+                                    renderSettingContainer(true);
+                                  }}
                                   className={classNames(
                                     active ? "bg-gray-100" : "",
                                     "block px-4 py-2 text-sm text-gray-700"
@@ -194,6 +196,7 @@ export default function Navigation() {
                             <Menu.Item>
                               {({ active }) => (
                                 <Link
+                                  to="/login"
                                   onClick={() => {
                                     renderSettingContainer(true);
                                     signOutFunc();
@@ -215,14 +218,14 @@ export default function Navigation() {
                     <>
                       <Link
                         to="/login"
-                        onClick={renderSettingContainer}
+                        onClick={() => renderSettingContainer(true)}
                         className="text-gray-600 hover:bg-blue-200 hover:text-gray-700 px-2 py-2 rounded-md text-sm font-medium"
                       >
                         Login
                       </Link>
                       <Link
                         to="/sign-up"
-                        onClick={renderSettingContainer}
+                        onClick={() => renderSettingContainer(true)}
                         className="text-gray-600 hover:bg-blue-200 hover:text-gray-700 px-1.5 py-2 rounded-md text-sm font-medium"
                       >
                         Sign up
@@ -240,7 +243,7 @@ export default function Navigation() {
                     key={item.name}
                     as={Link}
                     to={item.href}
-                    onClick={renderSettingContainer}
+                    onClick={() => renderSettingContainer(true)}
                     className={classNames(
                       window.location.pathname === item.href
                         ? "bg-blue-300 text-gray-900"

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, url_for, Response
+from flask import Flask, request, jsonify, url_for, Response, render_template, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 from sqlalchemy import func
@@ -14,6 +14,9 @@ import json
 import random
 from collections import defaultdict
 import asyncio
+import mimetypes
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 from utils import checkPassword, checkEmail, checkUsername, checkName, calc_new_rating, parse_achievements, format_achievements
 import settings
@@ -21,8 +24,20 @@ from apis import *
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./dist', template_folder='./dist', static_url_path='/')
+
 CORS(app)
+
+# Serve React App
+@app.route('/')
+def serve():
+    return render_template('index.html')
+    
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('index.html')
+
+
 def prefix_route(route_function, prefix='', mask='{0}{1}'):
   '''
     Defines a new route function with a prefix.

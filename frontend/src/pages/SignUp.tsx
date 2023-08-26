@@ -92,7 +92,7 @@ export default function SignUp() {
   };
 
   const location = useLocation();
-  const [alertRender, setAlertRender] = useState(true);
+  const [alertRender, _setAlertRender] = useState(true);
   let alertDiv;
   if (location.state) {
     alertDiv = (

@@ -9,17 +9,6 @@ const HighlightedParagraph: React.FC<HighlightedParagraphProps> = ({
   paragraph,
   phrases,
 }) => {
-  const highlightedPhrases = phrases.map((phrase, index) => (
-    <a
-      key={index}
-      href={`https://you.com/search?q=What+is%3A+${phrase}&fromSearchBar=true&tbm=youchat`}
-      target="_blank"
-      className="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline"
-    >
-      {phrase}
-    </a>
-  ));
-
   const regex = new RegExp(`\\b(${phrases.join("|")})\\b`, "gi");
   const replacedParagraph = paragraph.replace(regex, (match) => {
     const matchingPhrase = phrases.find((phrase) =>

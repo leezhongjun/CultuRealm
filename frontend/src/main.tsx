@@ -1,4 +1,4 @@
-import React, { useContext, createContext, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -21,7 +21,6 @@ import MyContextProvider from "./components/Context";
 
 import { AuthProvider, RequireAuth } from "react-auth-kit";
 import NotFound from "./pages/NotFound";
-
 function Router() {
   return (
     <Routes>

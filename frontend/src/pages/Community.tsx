@@ -63,7 +63,7 @@ function Community() {
   const [startStoryLoading, setStartStoryLoading] = useState(false);
   const [flag, setFlag] = useState(false);
   const [flagText, setFlagText] = useState("");
-  const [country, setCountry] = useState("Singapore");
+  const [country, _setCountry] = useState("Singapore");
   const [addLoading, setAddLoading] = useState(false);
   const [tags, setTags] = useState<{ id: string; text: string }[]>([]);
   const [allTags, setAllTags] = useState<{ id: string; text: string }[]>([]);
@@ -192,7 +192,7 @@ function Community() {
   const delimiters = [KeyCodes.comma, KeyCodes.enter];
 
   const handleDelete = (i: number) => {
-    setTags(tags.filter((tag, index) => index !== i));
+    setTags(tags.filter((_tag, index) => index !== i));
   };
 
   const handleAddition = (tag: { id: string; text: string }) => {
@@ -216,7 +216,7 @@ function Community() {
   };
 
   const handleDeleteNew = (i: number) => {
-    setNewStoryTags(newStoryTags.filter((tag, index) => index !== i));
+    setNewStoryTags(newStoryTags.filter((_tag, index) => index !== i));
   };
 
   const handleAdditionNew = (tag: { id: string; text: string }) => {
@@ -787,7 +787,7 @@ function Community() {
                   high_score: number;
                   user_votes: number;
                 },
-                index
+                _index
               ) => (
                 <div
                   key={item.id}

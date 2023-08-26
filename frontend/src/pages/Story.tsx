@@ -77,8 +77,11 @@ function App() {
   const [unlockGlobal, setUnlockGlobal] = useState(false);
   const [unlockRating, setUnlockRating] = useState(false);
 
-  const { reward, isAnimating } = useReward("rewardId", "confetti");
-  const { reward: customReward, isAnimating: customRewardAnimating } =
+  const { reward, isAnimating: _isAnimating } = useReward(
+    "rewardId",
+    "confetti"
+  );
+  const { reward: customReward, isAnimating: _customRewardAnimating } =
     useReward("customRewardId", "balloons");
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
