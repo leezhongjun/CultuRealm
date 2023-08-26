@@ -226,4 +226,4 @@ epsilon = 5 # ping offset
 
 leeway = 3 # reading time offset
 
-challenge_play_req = [0, 1, 3] # number of plays required to unlock challenge difficulties, update this in frontend manually
+challenge_play_req = [0, 0, 1, 3] # number of plays required to unlock challenge difficulties, update this in frontend manually

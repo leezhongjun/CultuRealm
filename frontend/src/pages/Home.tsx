@@ -39,14 +39,14 @@ function App() {
                 <div className="flex items-center space-x-4 mb-4 justify-center">
                   <Link
                     to="/story"
-                    className="px-4 py-2 text-base font-medium tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                    className="px-4 py-2 text-base font-medium tracking-wide text-white transition-colors duration-200 transform bg-purple-500 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-blue-600"
                   >
                     Play Stories
                   </Link>
 
                   <Link
                     to="/challenge"
-                    className="px-4 py-2 text-base font-medium tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                    className="px-4 py-2 text-base font-medium tracking-wide text-white transition-colors duration-200 transform bg-yellow-500 rounded-md hover:bg-yellow-600 focus:outline-none focus:bg-blue-600"
                   >
                     Play Challenges
                   </Link>

@@ -3,8 +3,8 @@ import { useAuthHeader } from "react-auth-kit";
 import loadingIcon from "../assets/loading-balls.svg";
 import ParticlesBg from "particles-bg";
 import { HiSpeakerWave } from "react-icons/hi2";
-import { AiFillPauseCircle } from "react-icons/ai";
 import { FaStop, FaPause, FaPlay } from "react-icons/fa";
+import { useReward } from "react-rewards";
 import axios from "axios";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
@@ -77,6 +77,9 @@ function App() {
   const [unlockGlobal, setUnlockGlobal] = useState(false);
   const [unlockRating, setUnlockRating] = useState(false);
 
+  const { reward, isAnimating } = useReward("rewardId", "confetti");
+  const { reward: customReward, isAnimating: customRewardAnimating } =
+    useReward("customRewardId", "balloons");
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
 
@@ -416,18 +419,35 @@ function App() {
     setGenStoryLoading(false);
   }
 
-  const handleButtonClick = async (event) => {
+  const handleButtonClick = async () => {
     const alertElement = document.getElementById("alert");
     if (alertElement) {
       alertElement.style.transition = "opacity 0.5s ease";
       alertElement.style.opacity = "0";
 
       setTimeout(() => {
-        alertElement.style.display = "none";
-        setCompletedProfile(true);
+        alertElement.style.display = "hidden";
       }, 500);
     }
   };
+
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+  useEffect(() => {
+    async function animateReward() {
+      await delay(600);
+      reward();
+    }
+    animateReward();
+  }, [currentPage, achievements]);
+
+  useEffect(() => {
+    async function animateReward() {
+      await delay(500);
+      customReward();
+    }
+    if (isCustomStory) animateReward();
+  }, [isCustomStory]);
 
   return (
     <>
@@ -503,7 +523,9 @@ function App() {
                   </span>{" "}
                   {isCustomStory && (
                     <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-yellow-400">
-                      Custom{" "}
+                      Cus
+                      <span id="customRewardId" />
+                      tom{" "}
                     </span>
                   )}
                   Stories
@@ -963,7 +985,10 @@ function App() {
                   <h3 className="mb-4 text-xl font-semibold dark:text-white">
                     Achievements
                   </h3>
-                  <div>{ProcessAchievements(achievements)}</div>
+                  <div>
+                    {ProcessAchievements(achievements)}
+                    <span id="rewardId" />
+                  </div>
                 </div>
               )}
               {showFinal && (
@@ -974,6 +999,7 @@ function App() {
                   <div className="font-bold">
                     Score:{" "}
                     <span className="font-bold text-green-700">
+                      <span id="rewardId" />
                       {finalScore}/100
                     </span>
                     <br></br>

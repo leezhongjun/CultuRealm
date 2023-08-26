@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
 import { WithContext as ReactTags } from "react-tag-input";
 import { useAuthHeader } from "react-auth-kit";
 import { classNames } from "../components/Navigation";
 import loadingIcon from "../assets/loading-balls.svg";
+import { useReward } from "react-rewards";
+import axios from "axios";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
 import "../styles.css";
@@ -45,6 +46,7 @@ function App() {
   const [playState, setPlayState] = useState(-1); // -1: not started, 0: essay, 1: mcq, 2: score
   const [totalPlays, setTotalPlays] = useState(0); // total plays
 
+  const { reward, isAnimating } = useReward("rewardId", "confetti");
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
 
@@ -350,6 +352,19 @@ function App() {
       submitMCQ();
     }
   }, [userAns]);
+
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  useEffect(() => {
+    async function animateReward() {
+      await delay(500);
+      reward();
+    }
+    if (playState === 2) {
+      animateReward();
+    }
+  }, [playState]);
 
   return (
     <>
@@ -710,6 +725,7 @@ function App() {
                           Score:{" "}
                           <span className="font-extrabold text-blue-600">
                             {score}
+                            <span id="rewardId" />
                           </span>
                         </p>
                         <p className="mt-6 text-xl font-bold">
@@ -833,7 +849,7 @@ function App() {
               </div>
             </div>
           </div>
-          <div className="fixed top-20 bg-blue-50 right-5 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
+          <div className="fixed top-20 bg-white right-5 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
             <button
               className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
               onClick={resetState}
