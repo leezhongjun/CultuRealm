@@ -4,7 +4,6 @@ from flask_jwt_extended import JWTManager, create_access_token, create_refresh_t
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
-from flask_mail import Mail, Message
 import datetime
 import os
 from dotenv import load_dotenv
@@ -14,6 +13,7 @@ import json
 import random
 from collections import defaultdict
 import asyncio
+from smtp2go.core import Smtp2goClient
 import mimetypes
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
@@ -57,8 +57,8 @@ FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///' + os.path.join(basedir, 'database.db')
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+# app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///' + os.path.join(basedir, 'database.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 
 expires_dict = {
     'Access token': datetime.timedelta(minutes=15),
@@ -84,7 +84,6 @@ app.config['MAIL_USE_SSL'] = False
 
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
-mail = Mail(app)
 
 
 class TokenBlocklist(db.Model):
@@ -184,7 +183,7 @@ class ChallengeHistory(db.Model):
 
 class UserStateC(db.Model):
     id = db.Column(db.String(36), nullable=False, primary_key=True)
-    event = db.Column(db.Integer, nullable=False, default="")
+    event = db.Column(db.String(5000), nullable=False, default="")
     essay = db.Column(db.String(5000), nullable=False, default="")
     challenge_score = db.Column(db.Integer, nullable=False, default=0)
     # 1 for easy, 2 for medium, 3 for hard
@@ -232,8 +231,8 @@ def reset_password():
     except:
         return jsonify({'message': 'Invalid token'})
 
-    if not data['new_password']:
-        return jsonify({'message': 'Valid token'})
+    if 'new_password' not in data:
+        return jsonify({'message': 'Token is valid'})
 
     hashed_password = generate_password_hash(
         data['new_password'], method='sha256')
@@ -251,15 +250,25 @@ def reset_password_request():
             username=data['emailUsername']).first()
         if not user:
             return jsonify({'message': 'Email/username not found'})
-    token = get_reset_token(user.email)
-    msg = Message('CultuRealm - Password Reset Request',
-                  sender=app.config['MAIL_USERNAME'],
-                  recipients=[user.email])
-    msg.body = f'''To reset your password, visit the following link:
-{FRONTEND_URL + '/reset-new-password?token=' + token}
+        else:
+            email = user.email
+    else:
+        email = email.email
+    client = Smtp2goClient()
+    token = get_reset_token(email)
+    text = f'''To reset your password, visit the following link that expires in 1 hour:
+{request.base_url.strip('/api/reset_password_request') + '/reset-new-password?token=' + token}
 If you did not make this request then simply ignore this email and no changes will be made.
 '''
-    mail.send(msg)
+    payload = {
+        'sender': app.config['MAIL_USERNAME'],
+        'recipients': [email],
+        'subject': 'CultuRealm - Password Reset Request',
+        'text': text}
+    response = client.send(**payload)
+    if not response.success:
+        print(response.errors)
+        return jsonify({'message': 'Email not sent'})
     return jsonify({'message': 'Password reset link sent to your email'})
 
 
