@@ -33,14 +33,13 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [imgSrc, setImgSrc] = useState(loadingIcon); // image url
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(999);
   const [isLoading, setIsLoading] = useState(false);
 
   const [event, setEvent] = useState(""); // user choice
   const [essay, setEssay] = useState("Loading...");
   const [score, setScore] = useState(0); // score for mcq
   const [mcq, setMCQ] = useState([{ query: "", choices: [""] }]);
-  const [choices, setChoices] = useState([-1]); // user choice
   const [difficulty, setDifficulty] = useState(1); // 1: easy, 2: medium, 3: hard
 
   const [playState, setPlayState] = useState(-1); // -1: not started, 0: essay, 1: mcq, 2: score
@@ -194,7 +193,7 @@ function App() {
     } else if (res.data.play_state === 1) {
       setMCQ(res.data.mcq);
       // setTimeStart(res.data.time_start);
-      setUserAns(Array(-1).fill(res.data.mcq.length));
+      setUserAns(Array(res.data.mcq.length).fill(-1));
       const date = new Date();
       setSeconds(
         timings[difficulty] -
@@ -598,7 +597,7 @@ function App() {
                               )}
                             </button>
                           )}
-                          {totalPlays >= 1 && (
+                          {totalPlays >= 3 && (
                             <button
                               className="m-2 bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg"
                               onClick={() => getEssay(3, item.event)}
@@ -707,14 +706,14 @@ function App() {
                   <>
                     <div className="z-40 fixed top-20 bg-blue-200 left-5 bg-blue-50 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
                       {playState === 1 && (
-                        <p className="text-sm px-3 py-2 tracking-wide">
+                        <p className="text-semibold px-3 py-2 tracking-wide">
                           Seconds left:{" "}
                           <span
-                            className={`font-semibold${
+                            className={`font-bold ${
                               seconds <= 10 ? `text-red-600` : `text-blue-600`
                             }`}
                           >
-                            {seconds}
+                            {seconds < 500 ? seconds : "Loading..."}
                           </span>
                         </p>
                       )}
