@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useContext } from "react";
-import axios from "axios";
-import { useAuthHeader } from "react-auth-kit";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import ProcessAchievements from "../components/Achievements";
+import axios from "axios";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
-
-import { useMyContext } from "../components/Context";
 
 function Profile() {
   const [highScore, setHighScore] = useState(0);

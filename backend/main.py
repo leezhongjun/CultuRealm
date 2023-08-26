@@ -1,14 +1,12 @@
 from flask import Flask, request, jsonify, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
-import requests
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 import datetime
 import os
-import json
 from dotenv import load_dotenv
 from flask_cors import CORS
 import uuid
@@ -20,8 +18,6 @@ import asyncio
 from utils import checkPassword, checkEmail, checkUsername, checkName, calc_new_rating, parse_achievements, format_achievements
 import settings
 from apis import *
-
-from utils_var import events
 
 load_dotenv()
 

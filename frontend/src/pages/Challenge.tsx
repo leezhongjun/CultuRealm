@@ -21,9 +21,9 @@ function App() {
   const [rawEvents, setRawEvents] = useState([
     { event: "", tags: [""], played: false, easy: 0, medium: 0, hard: 0 },
   ]);
-  const [tags, setTags] = useState<string[]>([]);
-  const [allTags, setAllTags] = useState<string[]>([]); // { id: "", text: "" }
-  const [allTagsRaw, setAllTagsRaw] = useState([{ id: "", text: "" }]); // [
+  const [tags, setTags] = useState<{ id: string; text: string }[]>([]);
+  const [allTags, setAllTags] = useState<{ id: string; text: string }[]>([]); // { id: "", text: "" }
+  const [allTagsRaw, setAllTagsRaw] = useState<string[]>([]); // [
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // all, unplayed, played
   const [timeTaken, setTimeTaken] = useState(0); // time taken for essay
@@ -113,13 +113,18 @@ function App() {
     setTags(tags.filter((tag, index) => index !== i));
   };
 
-  const handleAddition = (tag) => {
+  const handleAddition = (tag: { id: string; text: string }) => {
+    console.log(allTags);
     if (allTagsRaw.includes(tag.id)) {
       setTags([...tags, tag]);
     }
   };
 
-  const handleDrag = (tag, currPos: number, newPos: number) => {
+  const handleDrag = (
+    tag: { id: string; text: string },
+    currPos: number,
+    newPos: number
+  ) => {
     const newTags = tags.slice();
 
     newTags.splice(currPos, 1);
@@ -424,7 +429,7 @@ function App() {
                     name="resp"
                     className="mb-2 bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     onChange={(e) => {
-                      setFilter(e.target.value);
+                      setFilter(e.currentTarget.value);
                     }}
                     value={filter}
                   >
@@ -465,7 +470,7 @@ function App() {
                       className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                       placeholder="Search Culture and History..."
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      onChange={(e) => setSearch(e.currentTarget.value)}
                     ></input>
                   </div>
                 </div>

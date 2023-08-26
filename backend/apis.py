@@ -5,8 +5,6 @@ import json
 from duckduckgo_search import DDGS
 import pyscord_storage
 
-from utils_var import cultural_historical_events, festivals
-
 from img_api import get_image, upload_from_data, ImageGenerator
 from settings import achievements, breakpoints
 import time
@@ -93,7 +91,7 @@ User {response.replace('"'*3, '').replace("'"*3, "")}
     return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}], temp=0).lower(), ["Not a user response"]
 
 def moderate_summary(response):
-    msg = f'''Is the following text enclosed within triple quotes a summary of a scenario:
+    msg = f'''Is the following text enclosed within triple quotes a summary of a scenario that can be used in a story:
 """
 {response.replace('"'*3, '').replace("'"*3, "")}
 """'''

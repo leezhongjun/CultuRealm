@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
-import reactLogo from "../assets/react.svg";
-import viteLogo from "/vite.svg";
 import axios from "axios";
-// import { ages, races, religions } from "../pages/Settings";
 import { ages, races } from "../pages/Settings";
-import { Link } from "react-router-dom";
 
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
@@ -15,10 +11,28 @@ const indexes = {
 };
 
 function Leaderboard() {
-  const [leaderboardData, setLeaderboardData] = useState([]);
-  const [rawLeaderboardData, setRawLeaderboardData] = useState([]);
-  const [filterValue, setFilterValue] = useState("Race");
-  const [optionValue, setOptionValue] = useState("All");
+  const [leaderboardData, setLeaderboardData] = useState<
+    {
+      id: string;
+      age: string;
+      name: string;
+      race: string;
+      rating: number;
+      username: string;
+    }[]
+  >([]);
+  const [rawLeaderboardData, setRawLeaderboardData] = useState<
+    {
+      id: string;
+      age: string;
+      name: string;
+      race: string;
+      rating: number;
+      username: string;
+    }[]
+  >([]);
+  const [filterValue, setFilterValue] = useState<"Race" | "Age">("Race");
+  const [optionValue, setOptionValue] = useState<string>("All");
   const [username, setUsername] = useState("");
 
   const getLeaderboard = async () => {
@@ -38,11 +52,20 @@ function Leaderboard() {
   }, []);
 
   useEffect(() => {
+    console.log(rawLeaderboardData);
     setLeaderboardData(
       rawLeaderboardData.filter(
-        (user) =>
+        (user: {
+          id: string;
+          age: string;
+          name: string;
+          race: string;
+          rating: number;
+          username: string;
+        }) =>
           user.username.toLowerCase().includes(username.toLowerCase()) &&
-          (user[filterValue.toLowerCase()] === optionValue ||
+          ((filterValue === "Race" && user.race === optionValue) ||
+            (filterValue === "Age" && user.age === optionValue) ||
             optionValue === "All")
       )
     );
@@ -66,7 +89,11 @@ function Leaderboard() {
                 className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 value={filterValue}
                 onChange={(e) => {
-                  setFilterValue(e.target.value);
+                  if (
+                    e.currentTarget.value === "Race" ||
+                    e.currentTarget.value === "Age"
+                  )
+                    setFilterValue(e.currentTarget.value);
                   setOptionValue("All");
                 }}
               >
@@ -81,7 +108,7 @@ function Leaderboard() {
               <select
                 className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 value={optionValue}
-                onChange={(e) => setOptionValue(e.target.value)}
+                onChange={(e) => setOptionValue(e.currentTarget.value)}
               >
                 {indexes[filterValue].map((optionValue) => {
                   return (
@@ -101,16 +128,16 @@ function Leaderboard() {
               defaultValue={username}
               placeholder="Enter username"
               onChange={(e) => {
-                setUsername(e.target.value);
+                setUsername(e.currentTarget.value);
               }}
               onBlur={(e) => {
-                setUsername(e.target.value);
+                setUsername(e.currentTarget.value);
               }}
               onInput={(e) => {
-                setUsername(e.target.value);
+                setUsername(e.currentTarget.value);
               }}
               onFocus={(e) => {
-                setUsername(e.target.value);
+                setUsername(e.currentTarget.value);
               }}
             />
           </div>

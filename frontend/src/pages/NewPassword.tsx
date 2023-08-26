@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useIsAuthenticated } from "react-auth-kit";
 import { useState, useEffect } from "react";
 import axios from "axios";

@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
-import reactLogo from "../assets/react.svg";
-import viteLogo from "/vite.svg";
 import { WithContext as ReactTags } from "react-tag-input";
 import axios from "axios";
-// import { ages, races, religions } from "../pages/Settings";
-import { ages, races } from "../pages/Settings";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useIsAuthenticated, useAuthHeader, useAuthUser } from "react-auth-kit";
 import {
   BiUpvote,
@@ -16,20 +12,42 @@ import {
 
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
-const indexes = {
-  Race: [...races, "All"],
-  Age: [...ages, "All"],
-  // Religion: [...religions, "All"],
-};
-
 const sortIndexes = {
   Upvotes: "Upvotes",
   New: "New",
 };
 
 function Community() {
-  const [storiesData, setStoriesData] = useState([]);
-  const [rawStoriesData, setRawStoriesData] = useState([]);
+  const [storiesData, setStoriesData] = useState<
+    {
+      created_at: string;
+      desc: string;
+      id: string;
+      tags: string;
+      title: string;
+      upvotes: number;
+      user_id: string;
+      username: string;
+      play_count: number;
+      user_votes: number;
+      high_score: number;
+    }[]
+  >([]);
+  const [rawStoriesData, setRawStoriesData] = useState<
+    {
+      created_at: string;
+      desc: string;
+      id: string;
+      tags: string;
+      title: string;
+      upvotes: number;
+      user_id: string;
+      username: string;
+      play_count: number;
+      user_votes: number;
+      high_score: number;
+    }[]
+  >([]);
   const [searchValue, setSearchValue] = useState("");
   const [sortValue, setSortValue] = useState("New");
   const [title, setTitle] = useState("");
@@ -47,10 +65,12 @@ function Community() {
   const [flagText, setFlagText] = useState("");
   const [country, setCountry] = useState("Singapore");
   const [addLoading, setAddLoading] = useState(false);
-  const [tags, setTags] = useState([]);
-  const [allTags, setAllTags] = useState([]);
-  const [allTagsRaw, setAllTagsRaw] = useState([]);
-  const [newStoryTags, setNewStoryTags] = useState([]);
+  const [tags, setTags] = useState<{ id: string; text: string }[]>([]);
+  const [allTags, setAllTags] = useState<{ id: string; text: string }[]>([]);
+  const [allTagsRaw, setAllTagsRaw] = useState<string[]>([]);
+  const [newStoryTags, setNewStoryTags] = useState<
+    { id: string; text: string }[]
+  >([]);
 
   const isAuthenticated = useIsAuthenticated();
   const authHeader = useAuthHeader();
@@ -60,9 +80,9 @@ function Community() {
   const getStories = async () => {
     const res = await axios.post(
       import.meta.env.VITE_BACKEND_ENDPOINT +
-        (isAuth ? "/get_stories_proc" : "/get_stories"),
+        (isAuthenticated() ? "/get_stories_proc" : "/get_stories"),
       {},
-      isAuth
+      isAuthenticated()
         ? {
             headers: {
               Authorization: authHeader(),
@@ -80,18 +100,84 @@ function Community() {
       res.data.stories
         .sort(
           sortValue === "Upvotes"
-            ? function (a, b) {
+            ? function (
+                a: {
+                  created_at: string;
+                  desc: string;
+                  id: string;
+                  tags: string;
+                  title: string;
+                  upvotes: number;
+                  user_id: string;
+                  username: string;
+                  play_count: number;
+                  user_votes: number;
+                  high_score: number;
+                },
+                b: {
+                  created_at: string;
+                  desc: string;
+                  id: string;
+                  tags: string;
+                  title: string;
+                  upvotes: number;
+                  user_id: string;
+                  username: string;
+                  play_count: number;
+                  user_votes: number;
+                  high_score: number;
+                }
+              ) {
                 return b.upvotes - a.upvotes;
               }
-            : function (a, b) {
+            : function (
+                a: {
+                  created_at: string;
+                  desc: string;
+                  id: string;
+                  tags: string;
+                  title: string;
+                  upvotes: number;
+                  user_id: string;
+                  username: string;
+                  play_count: number;
+                  user_votes: number;
+                  high_score: number;
+                },
+                b: {
+                  created_at: string;
+                  desc: string;
+                  id: string;
+                  tags: string;
+                  title: string;
+                  upvotes: number;
+                  user_id: string;
+                  username: string;
+                  play_count: number;
+                  user_votes: number;
+                  high_score: number;
+                }
+              ) {
                 var keyA = new Date(a.created_at),
                   keyB = new Date(b.created_at);
                 // Compare the 2 dates
-                return keyB - keyA;
+                return keyB.getTime() - keyA.getTime();
               }
         )
         .filter(
-          (item) =>
+          (item: {
+            created_at: string;
+            desc: string;
+            id: string;
+            tags: string;
+            title: string;
+            upvotes: number;
+            user_id: string;
+            username: string;
+            play_count: number;
+            user_votes: number;
+            high_score: number;
+          }) =>
             item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
             item.desc.toLowerCase().includes(searchValue.toLowerCase())
         )
@@ -109,13 +195,17 @@ function Community() {
     setTags(tags.filter((tag, index) => index !== i));
   };
 
-  const handleAddition = (tag) => {
+  const handleAddition = (tag: { id: string; text: string }) => {
     if (allTagsRaw.includes(tag.id)) {
       setTags([...tags, tag]);
     }
   };
 
-  const handleDrag = (tag, currPos: number, newPos: number) => {
+  const handleDrag = (
+    tag: { id: string; text: string },
+    currPos: number,
+    newPos: number
+  ) => {
     const newTags = tags.slice();
 
     newTags.splice(currPos, 1);
@@ -129,13 +219,17 @@ function Community() {
     setNewStoryTags(newStoryTags.filter((tag, index) => index !== i));
   };
 
-  const handleAdditionNew = (tag) => {
+  const handleAdditionNew = (tag: { id: string; text: string }) => {
     if (allTagsRaw.includes(tag.id)) {
       setNewStoryTags([...newStoryTags, tag]);
     }
   };
 
-  const handleDragNew = (tag, currPos: number, newPos: number) => {
+  const handleDragNew = (
+    tag: { id: string; text: string },
+    currPos: number,
+    newPos: number
+  ) => {
     const newTags = newStoryTags.slice();
 
     newTags.splice(currPos, 1);
@@ -164,11 +258,12 @@ function Community() {
 
   useEffect(() => {
     setIsAuth(isAuthenticated());
-    isAuthenticated() ? setAuthUser(authUserFunc().id) : null;
+    isAuthenticated() ? setAuthUser(authUserFunc()?.id) : null;
     getStories();
   }, []);
 
   useEffect(() => {
+    console.log(rawStoriesData);
     setStoriesData(
       [...rawStoriesData]
         .sort(
@@ -180,7 +275,7 @@ function Community() {
                 var keyA = new Date(a.created_at),
                   keyB = new Date(b.created_at);
                 // Compare the 2 dates
-                return keyB - keyA;
+                return keyB.getTime() - keyA.getTime();
               }
         )
         .filter(
@@ -191,7 +286,9 @@ function Community() {
         .filter(
           (event) =>
             tags.every((tag) =>
-              JSON.parse(event.tags).some((e) => e.id === tag.id)
+              JSON.parse(event.tags).some(
+                (e: { id: string; text: string }) => e.id === tag.id
+              )
             ) || tags.length === 0
         )
     );
@@ -278,8 +375,7 @@ function Community() {
     getStories();
   };
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
+  const handleAdd = async () => {
     setAddLoading(true);
     const res = await submitNewStory();
     const story_id = res[0];
@@ -297,8 +393,7 @@ function Community() {
     return story_id;
   };
 
-  const handleAddPlay = async (e) => {
-    e.preventDefault();
+  const handleAddPlay = async () => {
     const res = await submitNewStory();
     const story_id = res[0];
     const flagged = res[1];
@@ -343,16 +438,16 @@ function Community() {
                   value={title}
                   placeholder="Title of story"
                   onChange={(e) => {
-                    setTitle(e.target.value);
+                    setTitle(e.currentTarget.value);
                   }}
                   onBlur={(e) => {
-                    setTitle(e.target.value);
+                    setTitle(e.currentTarget.value);
                   }}
                   onInput={(e) => {
-                    setTitle(e.target.value);
+                    setTitle(e.currentTarget.value);
                   }}
                   onFocus={(e) => {
-                    setTitle(e.target.value);
+                    setTitle(e.currentTarget.value);
                   }}
                   required
                 />
@@ -366,16 +461,16 @@ function Community() {
                   value={description}
                   placeholder="Description of story"
                   onChange={(e) => {
-                    setDescription(e.target.value);
+                    setDescription(e.currentTarget.value);
                   }}
                   onBlur={(e) => {
-                    setDescription(e.target.value);
+                    setDescription(e.currentTarget.value);
                   }}
                   onInput={(e) => {
-                    setDescription(e.target.value);
+                    setDescription(e.currentTarget.value);
                   }}
                   onFocus={(e) => {
-                    setDescription(e.target.value);
+                    setDescription(e.currentTarget.value);
                   }}
                   required
                 />
@@ -436,16 +531,16 @@ function Community() {
                 <div className="z-0 flex gap-4">
                   <button
                     className="mt-4 text-sm font-medium px-3 py-2 tracking-wide text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                    type="submit"
-                    onClick={handleAddPlay}
+                    type="button"
+                    onClick={() => handleAddPlay()}
                   >
                     Add and Play
                   </button>
                   <button
                     className="mt-4 text-sm font-medium px-3 py-2 tracking-wide text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                    type="submit"
-                    onClick={async (e) => {
-                      const story_id = await handleAdd(e);
+                    type="button"
+                    onClick={async () => {
+                      const story_id = await handleAdd();
                       console.log(story_id);
                       console.log(document.getElementById(story_id));
                       const element = document.getElementById(story_id);
@@ -620,7 +715,7 @@ function Community() {
                 className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 value={sortValue}
                 onChange={(e) => {
-                  setSortValue(e.target.value);
+                  setSortValue(e.currentTarget.value);
                 }}
               >
                 {Object.keys(sortIndexes).map((sortValue) => {
@@ -641,16 +736,16 @@ function Community() {
               defaultValue={searchValue}
               placeholder="Enter a keyword"
               onChange={(e) => {
-                setSearchValue(e.target.value);
+                setSearchValue(e.currentTarget.value);
               }}
               onBlur={(e) => {
-                setSearchValue(e.target.value);
+                setSearchValue(e.currentTarget.value);
               }}
               onInput={(e) => {
-                setSearchValue(e.target.value);
+                setSearchValue(e.currentTarget.value);
               }}
               onFocus={(e) => {
-                setSearchValue(e.target.value);
+                setSearchValue(e.currentTarget.value);
               }}
             />
           </div>
@@ -677,90 +772,109 @@ function Community() {
         </div>
         <div className="relative overflow-x-auto col-span-full">
           <div className="mb-24 items-center grid grid-cols-1 2xl:grid-cols-5 justify-center gap-4 justify-items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {storiesData.map((item, index) => (
-              <div
-                key={item.id}
-                id={item.id}
-                className="col-span-1 max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
-              >
-                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                  {item.title}
-                </h5>
-                <p className="font-normal text-gray-700 dark:text-gray-400">
-                  {item.desc}
-                </p>
-                <p className="text-gray-500 font-medium">
-                  Created by:{" "}
-                  <a
-                    className="text-blue-600 underline hover:text-blue-700 hover:no-underline"
-                    href={`/profile/${item.user_id}`}
-                    target="_blank"
-                  >
-                    {item.username}
-                  </a>
-                </p>
-                <p className="text-gray-500 font-medium">
-                  Created at:{" "}
-                  <b>{new Date(item.created_at).toLocaleString("en-GB")}</b>
-                </p>
-                <p className="text-gray-500 font-medium">
-                  Times played: <b>{item.play_count}</b>
-                </p>
-                <p className="text-gray-500 font-medium">
-                  High score: <b>{item.high_score}/100</b>
-                </p>
-                <p className="m-2 font-normal text-left text-gray-700 dark:text-gray-400">
-                  {JSON.parse(item.tags).map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300"
+            {storiesData.map(
+              (
+                item: {
+                  created_at: string;
+                  desc: string;
+                  id: string;
+                  tags: string;
+                  title: string;
+                  upvotes: number;
+                  user_id: string;
+                  username: string;
+                  play_count: number;
+                  high_score: number;
+                  user_votes: number;
+                },
+                index
+              ) => (
+                <div
+                  key={item.id}
+                  id={item.id}
+                  className="col-span-1 max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                >
+                  <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                    {item.title}
+                  </h5>
+                  <p className="font-normal text-gray-700 dark:text-gray-400">
+                    {item.desc}
+                  </p>
+                  <p className="text-gray-500 font-medium">
+                    Created by:{" "}
+                    <a
+                      className="text-blue-600 underline hover:text-blue-700 hover:no-underline"
+                      href={`/profile/${item.user_id}`}
+                      target="_blank"
                     >
-                      {tag.text}
-                    </span>
-                  ))}
-                </p>
-                <div className="mt-2 flex gap-2">
-                  <button
-                    onClick={() => submitVote(item.id, item.user_votes, 1)}
-                  >
-                    {item.user_votes == 1 ? <BiSolidUpvote /> : <BiUpvote />}
-                  </button>
-                  {item.upvotes}
-                  <button
-                    onClick={() => submitVote(item.id, item.user_votes, -1)}
-                  >
-                    {item.user_votes == -1 ? (
-                      <BiSolidDownvote />
-                    ) : (
-                      <BiDownvote />
+                      {item.username}
+                    </a>
+                  </p>
+                  <p className="text-gray-500 font-medium">
+                    Created at:{" "}
+                    <b>{new Date(item.created_at).toLocaleString("en-GB")}</b>
+                  </p>
+                  <p className="text-gray-500 font-medium">
+                    Times played: <b>{item.play_count}</b>
+                  </p>
+                  <p className="text-gray-500 font-medium">
+                    High score: <b>{item.high_score}/100</b>
+                  </p>
+                  <p className="m-2 font-normal text-left text-gray-700 dark:text-gray-400">
+                    {JSON.parse(item.tags).map(
+                      (tag: { id: string; text: string }) => (
+                        <span
+                          key={tag.id}
+                          className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300"
+                        >
+                          {tag.text}
+                        </span>
+                      )
                     )}
-                  </button>
-                </div>
-                {isAuth && (
+                  </p>
                   <div className="mt-2 flex gap-2">
                     <button
-                      className="mt-4 h-fit text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
-                      onClick={() => {
-                        setCurrStoryId(item.id);
-                        setModalDesc(item.desc);
-                        setModalTitle(item.title);
-                        setShowModal(true);
-                      }}
+                      onClick={() => submitVote(item.id, item.user_votes, 1)}
                     >
-                      Play
+                      {item.user_votes == 1 ? <BiSolidUpvote /> : <BiUpvote />}
                     </button>
-                    {item.user_id === authUser && (
-                      <button
-                        className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-50 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                        onClick={() => deleteStory(item.id)}
-                      >
-                        Delete
-                      </button>
-                    )}
+                    {item.upvotes}
+                    <button
+                      onClick={() => submitVote(item.id, item.user_votes, -1)}
+                    >
+                      {item.user_votes == -1 ? (
+                        <BiSolidDownvote />
+                      ) : (
+                        <BiDownvote />
+                      )}
+                    </button>
                   </div>
-                )}
-              </div>
-            ))}
+                  {isAuth && (
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        className="mt-4 h-fit text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
+                        onClick={() => {
+                          setCurrStoryId(item.id);
+                          setModalDesc(item.desc);
+                          setModalTitle(item.title);
+                          setShowModal(true);
+                        }}
+                      >
+                        Play
+                      </button>
+                      {item.user_id === authUser && (
+                        <button
+                          className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-50 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                          onClick={() => deleteStory(item.id)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            )}
           </div>
           {isAuth && (
             <div className="fixed bottom-0 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">

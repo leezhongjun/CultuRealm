@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import { useAuthHeader, useAuthUser } from "react-auth-kit";
 import defaultProfilePic from "../assets/default_profile_pic.png";
-import ProcessAchievements from "../components/Achievements";
+import axios from "axios";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
 import { useMyContext } from "../components/Context";
@@ -78,9 +77,8 @@ export const countries = [
   "Cuba",
   "Jordan",
   "Oman",
-  "Slovakia"
-]
-
+  "Slovakia",
+];
 
 function generateAges() {
   const objectsArray = [];
@@ -132,7 +130,7 @@ function Settings() {
 
   const authHeader = useAuthHeader();
   const authUser = useAuthUser();
-  const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [profilePic, setProfilePic] = useState<Blob | null>(null);
   const [imgSrc, setImgSrc] = useState(defaultProfilePic);
   const [uploadResult, setUploadResult] = useState("");
   const [settingResult, setSettingResult] = useState("");
@@ -199,7 +197,9 @@ function Settings() {
   const handleSubmitPfp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData();
-    formData.append("profile_pic", profilePic);
+    if (profilePic) {
+      formData.append("profile_pic", profilePic);
+    }
     const res = await axios.post(
       import.meta.env.VITE_BACKEND_ENDPOINT + "/set_user_profile_pic",
       formData,
@@ -371,7 +371,7 @@ function Settings() {
                   name="countries"
                   className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   onChange={(e) => {
-                    setStyle(e.target.value);
+                    setStyle(e.currentTarget.value);
                   }}
                   value={style}
                 >
@@ -415,16 +415,16 @@ function Settings() {
                     defaultValue={username}
                     placeholder={username}
                     onChange={(e) => {
-                      setUsername(e.target.value);
+                      setUsername(e.currentTarget.value);
                     }}
                     onBlur={(e) => {
-                      setUsername(e.target.value);
+                      setUsername(e.currentTarget.value);
                     }}
                     onInput={(e) => {
-                      setUsername(e.target.value);
+                      setUsername(e.currentTarget.value);
                     }}
                     onFocus={(e) => {
-                      setUsername(e.target.value);
+                      setUsername(e.currentTarget.value);
                     }}
                     required
                   />
@@ -439,16 +439,16 @@ function Settings() {
                     defaultValue={email}
                     placeholder={email}
                     onChange={(e) => {
-                      setEmail(e.target.value);
+                      setEmail(e.currentTarget.value);
                     }}
                     onBlur={(e) => {
-                      setEmail(e.target.value);
+                      setEmail(e.currentTarget.value);
                     }}
                     onInput={(e) => {
-                      setEmail(e.target.value);
+                      setEmail(e.currentTarget.value);
                     }}
                     onFocus={(e) => {
-                      setEmail(e.target.value);
+                      setEmail(e.currentTarget.value);
                     }}
                     required
                   />
@@ -466,16 +466,16 @@ function Settings() {
                     defaultValue={name}
                     placeholder={name}
                     onChange={(e) => {
-                      setName(e.target.value);
+                      setName(e.currentTarget.value);
                     }}
                     onBlur={(e) => {
-                      setName(e.target.value);
+                      setName(e.currentTarget.value);
                     }}
                     onInput={(e) => {
-                      setName(e.target.value);
+                      setName(e.currentTarget.value);
                     }}
                     onFocus={(e) => {
-                      setName(e.target.value);
+                      setName(e.currentTarget.value);
                     }}
                     required
                   />
@@ -492,16 +492,16 @@ function Settings() {
                     name="countries"
                     className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     onChange={(e) => {
-                      setAge(e.target.value);
+                      setAge(e.currentTarget.value);
                     }}
                     onBlur={(e) => {
-                      setAge(e.target.value);
+                      setAge(e.currentTarget.value);
                     }}
                     onInput={(e) => {
-                      setAge(e.target.value);
+                      setAge(e.currentTarget.value);
                     }}
                     onFocus={(e) => {
-                      setAge(e.target.value);
+                      setAge(e.currentTarget.value);
                     }}
                     value={age}
                   >
@@ -526,16 +526,16 @@ function Settings() {
                     name="countries"
                     className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     onChange={(e) => {
-                      setGender(e.target.value);
+                      setGender(e.currentTarget.value);
                     }}
                     onBlur={(e) => {
-                      setGender(e.target.value);
+                      setGender(e.currentTarget.value);
                     }}
                     onInput={(e) => {
-                      setGender(e.target.value);
+                      setGender(e.currentTarget.value);
                     }}
                     onFocus={(e) => {
-                      setGender(e.target.value);
+                      setGender(e.currentTarget.value);
                     }}
                     value={gender}
                   >
@@ -560,16 +560,16 @@ function Settings() {
                     name="countries"
                     className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     onChange={(e) => {
-                      setRace(e.target.value);
+                      setRace(e.currentTarget.value);
                     }}
                     onBlur={(e) => {
-                      setRace(e.target.value);
+                      setRace(e.currentTarget.value);
                     }}
                     onInput={(e) => {
-                      setRace(e.target.value);
+                      setRace(e.currentTarget.value);
                     }}
                     onFocus={(e) => {
-                      setRace(e.target.value);
+                      setRace(e.currentTarget.value);
                     }}
                     value={race}
                   >
@@ -594,16 +594,16 @@ function Settings() {
                     name="countries"
                     className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     onChange={(e) => {
-                      setReligion(e.target.value);
+                      setReligion(e.currentTarget.value);
                     }}
                     onBlur={(e) => {
-                      setReligion(e.target.value);
+                      setReligion(e.currentTarget.value);
                     }}
                     onInput={(e) => {
-                      setReligion(e.target.value);
+                      setReligion(e.currentTarget.value);
                     }}
                     onFocus={(e) => {
-                      setReligion(e.target.value);
+                      setReligion(e.currentTarget.value);
                     }}
                     value={religion}
                   >

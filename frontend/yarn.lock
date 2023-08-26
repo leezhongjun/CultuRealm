@@ -208,6 +208,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-tag-input@^6.6.1":
+  version "6.6.1"
+  resolved "https://registry.npmjs.org/@types/react-tag-input/-/react-tag-input-6.6.1.tgz"
+  integrity sha512-IaCnZu4gplbt2pR+3bD/yy9SdzsuT+fTOLeJcwYuyBw0aoHAuiTg8lKPii1fPPrV+nisxOWU3SmEqL9VwqaXuw==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react@*", "@types/react@^18.2.15":
   version "18.2.15"
   resolved "https://registry.npmjs.org/@types/react/-/react-18.2.15.tgz"

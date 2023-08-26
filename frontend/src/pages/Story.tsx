@@ -126,7 +126,7 @@ function App() {
     return [res.data.story_id, res.data.flagged, text];
   };
 
-  const startStoryForm = async (event) => {
+  const startStoryForm = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); //Don't refresh page
 
     setLoadingSubmit(true);
@@ -373,7 +373,9 @@ function App() {
     setSuggestion2(response.data.suggestion_2);
   }
 
-  const submitUserResponse = async (event) => {
+  const submitUserResponse = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setLoadingSubmit(true);
     try {
@@ -632,7 +634,9 @@ function App() {
                               </label>
                               <select
                                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                                onChange={(e) => setCountry(e.target.value)}
+                                onChange={(e) =>
+                                  setCountry(e.currentTarget.value)
+                                }
                                 value={country}
                               >
                                 {countries.map((country) => (
@@ -673,16 +677,16 @@ function App() {
                                   flagged ? "border-red-300" : ""
                                 }`}
                                 onChange={(e) =>
-                                  setCustomStoryTitle(e.target.value)
+                                  setCustomStoryTitle(e.currentTarget.value)
                                 }
                                 onBlur={(e) =>
-                                  setCustomStoryTitle(e.target.value)
+                                  setCustomStoryTitle(e.currentTarget.value)
                                 }
                                 onInput={(e) =>
-                                  setCustomStoryTitle(e.target.value)
+                                  setCustomStoryTitle(e.currentTarget.value)
                                 }
                                 onFocus={(e) =>
-                                  setCustomStoryTitle(e.target.value)
+                                  setCustomStoryTitle(e.currentTarget.value)
                                 }
                                 required
                               />
@@ -696,16 +700,16 @@ function App() {
                                   flagged ? "border-red-300" : ""
                                 }`}
                                 onChange={(e) =>
-                                  setCustomStoryText(e.target.value)
+                                  setCustomStoryText(e.currentTarget.value)
                                 }
                                 onBlur={(e) =>
-                                  setCustomStoryText(e.target.value)
+                                  setCustomStoryText(e.currentTarget.value)
                                 }
                                 onInput={(e) =>
-                                  setCustomStoryText(e.target.value)
+                                  setCustomStoryText(e.currentTarget.value)
                                 }
                                 onFocus={(e) =>
-                                  setCustomStoryText(e.target.value)
+                                  setCustomStoryText(e.currentTarget.value)
                                 }
                                 required
                               />
@@ -853,7 +857,7 @@ function App() {
                         name="resp"
                         className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                         onChange={(e) => {
-                          setAction(e.target.value);
+                          setAction(e.currentTarget.value);
                         }}
                         value={action}
                       >
@@ -876,16 +880,16 @@ function App() {
                               : "Enter something to say"
                           }
                           onChange={(e) => {
-                            setResp(e.target.value);
+                            setResp(e.currentTarget.value);
                           }}
                           onBlur={(e) => {
-                            setResp(e.target.value);
+                            setResp(e.currentTarget.value);
                           }}
                           onInput={(e) => {
-                            setResp(e.target.value);
+                            setResp(e.currentTarget.value);
                           }}
                           onFocus={(e) => {
-                            setResp(e.target.value);
+                            setResp(e.currentTarget.value);
                           }}
                           required
                           disabled={!showResponseSubmit}
@@ -1057,7 +1061,7 @@ function App() {
                       name="action"
                       className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                       onChange={(e) => {
-                        setStyle(e.target.value);
+                        setStyle(e.currentTarget.value);
                       }}
                       value={style}
                     >
