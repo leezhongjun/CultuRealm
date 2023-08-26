@@ -57,8 +57,8 @@ FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app.config['SQLALCHEMY_DATABASE_URI'] =\
-    'sqlite:///' + os.path.join(basedir, 'database.db')
+app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///' + os.path.join(basedir, 'database.db')
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 
 expires_dict = {
     'Access token': datetime.timedelta(minutes=15),
@@ -1261,4 +1261,4 @@ def challenge_index():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, ssl_context=('server.crt', 'server.key'))

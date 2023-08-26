@@ -11,3 +11,4 @@ pyopenssl
 duckduckgo_search
 pyscord_storage
 gunicorn
+psycopg2
