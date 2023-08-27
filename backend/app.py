@@ -174,7 +174,7 @@ class UpvoteSystem(db.Model):
 
 class ChallengeHistory(db.Model):
     user_id = db.Column(db.String(36), nullable=False, primary_key=True)
-    event = db.Column(db.Integer, nullable=False, primary_key=True)
+    event = db.Column(db.String(36), nullable=False, primary_key=True)
     challenge_score = db.Column(db.Integer, nullable=False)
     time_taken = db.Column(db.Integer, nullable=False)
     # 1 for easy, 2 for medium, 3 for hard
@@ -1269,5 +1269,6 @@ def challenge_index():
 
 if __name__ == '__main__':
     with app.app_context():
+        db.drop_all()
         db.create_all()
     app.run(debug=True, ssl_context=('server.crt', 'server.key'))
