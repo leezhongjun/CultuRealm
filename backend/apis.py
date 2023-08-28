@@ -6,8 +6,6 @@ from duckduckgo_search import DDGS
 import pyscord_storage
 
 from img_api import get_image, upload_from_data, ImageGenerator
-from settings import achievements, breakpoints
-import time
 
 load_dotenv()
 
@@ -25,20 +23,22 @@ styles = {
 
 
 def ask_gpt(prompt, max_tokens=0, temp=-1):
-    kwarg = {"max_tokens": max_tokens} if max_tokens else {}
-    if temp >= 0:
-        kwarg["temperature"] = temp
-    response = openai.ChatCompletion.create(
-        model='gpt-3.5-turbo',
-        messages=[
-            {'role': 'system', 'content': 'You are a helpful chatbot.'},
-            {'role': 'user', 'content': prompt},
-        ],
-        # allow_fallback=False,
-        **kwarg
-    )
-    print(response.choices[0].message.content)
-    return response.choices[0].message.content
+    try:
+        kwarg = {"max_tokens": max_tokens} if max_tokens else {}
+        if temp >= 0:
+            kwarg["temperature"] = temp
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                {'role': 'user', 'content': prompt},
+            ],
+            # allow_fallback=False,
+            **kwarg
+        )
+        print(response.choices[0].message.content)
+        return response.choices[0].message.content
+    except Exception as e:
+        print(e)
 
 
 def ask_gpt_convo(messages, max_tokens=0, temp=-1):
@@ -61,7 +61,6 @@ async def a_ask_gpt(prompt, max_tokens=0, temp=-1):
     response = await openai.ChatCompletion.acreate(
         model='gpt-3.5-turbo',
         messages=[
-            {'role': 'system', 'content': 'You are a helpful chatbot.'},
             {'role': 'user', 'content': prompt},
         ],
         # allow_fallback=False,
@@ -120,7 +119,7 @@ Example Format:
 ["...", ... ]"""
     while True:
         try:
-            res = ask_gpt(prompt, temp=2)
+            res = ask_gpt(prompt, temp=1)
             res = res.split("[")[-1].split("]")[0]
             res = "[" + res + "]"
             res = eval(res)
@@ -148,7 +147,7 @@ List the summaries as a Python list. Follow the format strictly.
 Example Format: 
 ["...", ... ]"""
     try:
-        res = ask_gpt(prompt, temp=2)
+        res = ask_gpt(prompt, temp=1)
         res = res.split("[")[-1].split("]")[0]
         res = "[" + res + "]"
         res = eval(res)
@@ -319,7 +318,7 @@ STORY:
     while len(res) < 2:
         res = []
         try:
-            resp = await a_ask_gpt(prompt, temp=2)
+            resp = await a_ask_gpt(prompt, temp=1)
             for r in resp.split('\n'):
                 s = ''
                 if "Do: " in r:

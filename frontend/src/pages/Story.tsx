@@ -462,7 +462,7 @@ function App() {
       {completedProfile === false && (
         <div
           id="alert"
-          className="relative bot-0 bot-0 w-full flex items-center p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
+          className="relative bot-0 bot-0 w-full flex items-center p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50"
           role="alert"
         >
           <svg
@@ -488,7 +488,7 @@ function App() {
           <button
             onClick={handleButtonClick}
             type="button"
-            className="ml-auto -mx-1.5 -my-1.5 bg-yellow-50 text-yellow-500 rounded-lg focus:ring-2 focus:ring-yellow-400 p-1.5 hover:bg-yellow-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-yellow-300 dark:hover:bg-gray-700"
+            className="ml-auto -mx-1.5 -my-1.5 bg-yellow-50 text-yellow-500 rounded-lg focus:ring-2 focus:ring-yellow-400 p-1.5 hover:bg-yellow-200 inline-flex items-center justify-center h-8 w-8   "
             data-dismiss-target="#alert"
             aria-label="Close"
           >
@@ -601,12 +601,12 @@ function App() {
                             id="suggestion-checkbox"
                             type="checkbox"
                             defaultChecked={needSuggestions}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                             onClick={() => setNeedSuggestions(!needSuggestions)}
                           />
                           <label
                             htmlFor="suggestion-checkbox"
-                            className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                            className="ml-2 text-sm font-medium text-gray-900 "
                           >
                             Enable Suggested Responses
                           </label>
@@ -617,12 +617,12 @@ function App() {
                               id="global-story-checkbox"
                               type="checkbox"
                               defaultChecked={showGlobal}
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                               onClick={() => setShowGlobal(!showGlobal)}
                             />
                             <label
                               htmlFor="global-story-checkbox"
-                              className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              className="ml-2 text-sm font-medium text-gray-900 "
                             >
                               Enable Global Mode
                             </label>
@@ -632,7 +632,7 @@ function App() {
                           //show countries here as a dropdown
                           <div className="mt-2 justify-center bg-white border border-gray-200 rounded-lg shadow-sm p-4">
                             <div className="flex flex-col">
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              <label className="block text-sm font-medium text-gray-700 ">
                                 Country
                               </label>
                               <select
@@ -656,12 +656,12 @@ function App() {
                             id="custom-story-checkbox"
                             type="checkbox"
                             defaultChecked={isCustomStory}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded "
                             onClick={() => setIsCustomStory(!isCustomStory)}
                           />
                           <label
                             htmlFor="custom-story-checkbox"
-                            className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                            className="ml-2 text-sm font-medium text-gray-900 "
                           >
                             Enable Custom Story
                           </label>
@@ -669,14 +669,14 @@ function App() {
                         {isCustomStory && (
                           <div className="mt-2 justify-center bg-white border border-gray-200 rounded-lg shadow-sm p-4">
                             <div className="flex flex-col">
-                              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-left">
+                              <label className="block mb-2 text-sm font-medium text-gray-900  text-left">
                                 Title
                               </label>
                               <input
                                 type="text"
                                 value={customStoryTitle}
                                 placeholder="Custom Story Title"
-                                className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 ${
+                                className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5  ${
                                   flagged ? "border-red-300" : ""
                                 }`}
                                 onChange={(e) =>
@@ -693,13 +693,13 @@ function App() {
                                 }
                                 required
                               />
-                              <label className="mt-2 block mb-2 text-sm font-medium text-gray-900 dark:text-white text-left">
+                              <label className="mt-2 block mb-2 text-sm font-medium text-gray-900  text-left">
                                 Description
                               </label>
                               <textarea
                                 value={customStoryText}
                                 placeholder="Custom Story Description"
-                                className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 ${
+                                className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5  ${
                                   flagged ? "border-red-300" : ""
                                 }`}
                                 onChange={(e) =>
@@ -730,18 +730,18 @@ function App() {
                                   id="share-story-checkbox"
                                   type="checkbox"
                                   defaultChecked={isShareStory}
-                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600"
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                                   onClick={() => setIsShareStory(!isShareStory)}
                                 />
                                 <label
                                   htmlFor="share-story-checkbox"
-                                  className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                                  className="ml-2 text-sm font-medium text-gray-900 "
                                 >
                                   Share on Community Stories
                                 </label>
                               </div>
                               <button
-                                className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700  "
                                 type="button"
                                 onClick={suggestCustomStory}
                                 disabled={genStoryLoading}
@@ -791,9 +791,9 @@ function App() {
       {/* Story Index Page */}
       {currentPage !== -1 && (
         <>
-          <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
+          <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 ">
             <div className="px-2 mb-4 col-span-full xl:mb-2">
-              <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
+              <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl ">
                 Story
               </h1>
               {isCustomStory && (
@@ -801,7 +801,7 @@ function App() {
                   You're playing a custom story. View more custom stories{" "}
                   <Link
                     to="/community-stories"
-                    className="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline"
+                    className="font-medium text-blue-600 underline hover:no-underline"
                   >
                     here
                   </Link>
@@ -815,10 +815,8 @@ function App() {
               )}
             </div>
             <div className="col-span-2">
-              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <h3 className="mb-4 text-xl font-semibold dark:text-white ">
-                  Text
-                </h3>
+              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                <h3 className="mb-4 text-xl font-semibold  ">Text</h3>
                 <div className="mb-4">
                   <HighlightedParagraph
                     paragraph={storyText}
@@ -849,16 +847,14 @@ function App() {
                 </div>
               </div>
               {!showFinal && (
-                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                  <h3 className="mb-4 text-xl font-semibold dark:text-white">
-                    Response
-                  </h3>
+                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                  <h3 className="mb-4 text-xl font-semibold ">Response</h3>
 
                   <form id="form-resp" onSubmit={(e) => submitUserResponse(e)}>
                     <div className="flex mb-4">
                       <select
                         name="resp"
-                        className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 "
                         onChange={(e) => {
                           setAction(e.currentTarget.value);
                         }}
@@ -873,7 +869,7 @@ function App() {
                       </select>
                       <div className="flex-grow ml-2">
                         <textarea
-                          className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 ${
+                          className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5  ${
                             flagged ? "border-red-300" : ""
                           }`}
                           value={resp}
@@ -944,13 +940,11 @@ function App() {
                 </div>
               )}
               {needSuggestions && showResponseSubmit && (
-                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                  <h3 className="mb-4 text-xl font-semibold dark:text-white">
-                    Suggestions
-                  </h3>
+                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                  <h3 className="mb-4 text-xl font-semibold ">Suggestions</h3>
                   <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
                     <button
-                      className=" mb-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                      className=" mb-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700  "
                       onClick={() => {
                         handleSuggestionClick(suggestion1);
                       }}
@@ -958,7 +952,7 @@ function App() {
                       {suggestion1}
                     </button>
                     <button
-                      className=" mb-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                      className=" mb-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700  "
                       onClick={() => {
                         handleSuggestionClick(suggestion2);
                       }}
@@ -980,18 +974,14 @@ function App() {
                 </div>
               )}
               {!showResponseSubmit && (
-                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                  <h3 className="mb-4 text-xl font-semibold dark:text-white">
-                    Feedback
-                  </h3>
+                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                  <h3 className="mb-4 text-xl font-semibold ">Feedback</h3>
                   <p>{feedback}</p>
                 </div>
               )}
               {achievements !== "" && (
-                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                  <h3 className="mb-4 text-xl font-semibold dark:text-white">
-                    Achievements
-                  </h3>
+                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                  <h3 className="mb-4 text-xl font-semibold ">Achievements</h3>
                   <div>
                     {ProcessAchievements(achievements)}
                     <span id="rewardId" />
@@ -999,10 +989,8 @@ function App() {
                 </div>
               )}
               {showFinal && (
-                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                  <h3 className="mb-4 text-xl font-semibold dark:text-white">
-                    Results
-                  </h3>
+                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                  <h3 className="mb-4 text-xl font-semibold ">Results</h3>
                   <div className="font-bold">
                     Score:{" "}
                     <span className="font-bold text-green-700">
@@ -1044,10 +1032,8 @@ function App() {
             </div>
 
             <div className="col-span-1">
-              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <h3 className="mb-4 text-xl font-semibold dark:text-white">
-                  Image
-                </h3>
+              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                <h3 className="mb-4 text-xl font-semibold ">Image</h3>
                 <div className="py-2">
                   <img
                     className="mb-4 rounded-lg w-1024 h-1024 sm:mb-0 xl:mb-4 2xl:mb-0"
@@ -1057,12 +1043,12 @@ function App() {
                 </div>
                 <form id="form-img">
                   <div className="mb-4">
-                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    <label className="block mb-2 text-sm font-medium text-gray-900 ">
                       Image style
                     </label>
                     <select
                       name="action"
-                      className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                      className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                       onChange={(e) => {
                         setStyle(e.currentTarget.value);
                       }}
@@ -1096,11 +1082,11 @@ function App() {
           <div
             className={`fixed ${
               completedProfile ? `top-20` : `top-32`
-            } bg-blue-200 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800`}
+            } bg-blue-200 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  flex items-center space-x-4 mb-4 p-1 `}
           >
             {currentPage !== 0 && (
               <button
-                className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"
                 onClick={() => {
                   setCurrentPage(currentPage - 1);
                   setFlagged(false);
@@ -1112,7 +1098,7 @@ function App() {
             )}
             {!(currentPage === latestIndex) && (
               <button
-                className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"
                 onClick={() => {
                   setCurrentPage(currentPage + 1);
                   setFlagged(false);

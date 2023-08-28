@@ -427,7 +427,7 @@ function App() {
                 <div className="flex mt-8">
                   <select
                     name="resp"
-                    className="mb-2 bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="mb-2 bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
                     onChange={(e) => {
                       setFilter(e.currentTarget.value);
                     }}
@@ -446,7 +446,7 @@ function App() {
                   <div className="w-full relative mb-2">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                       <svg
-                        className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                        className="w-4 h-4 text-gray-500"
                         aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -467,7 +467,7 @@ function App() {
                     <input
                       type="search"
                       id="default-search"
-                      className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Search Culture and History..."
                       value={search}
                       onChange={(e) => setSearch(e.currentTarget.value)}
@@ -475,7 +475,7 @@ function App() {
                   </div>
                 </div>
                 <button
-                  className="mt-2 mb-2 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                  className="mt-2 mb-2 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700"
                   type="button"
                   onClick={() => {
                     setRandom();
@@ -508,25 +508,25 @@ function App() {
                         item.played
                           ? `bg-green-100 hover:bg-green-200`
                           : `bg-white hover:bg-gray-100`,
-                        `w-full m-2 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700`
+                        `w-full m-2 border border-gray-200 rounded-lg shadow`
                       )}
                     >
                       <div className="justify-between items-center sm:flex">
                         <div>
-                          <h5 className="mb-2 text-2xl font-bold text-left p-2 text-gray-900 dark:text-white">
+                          <h5 className="mb-2 text-2xl font-bold text-left p-2 text-gray-900">
                             {item.event}
                           </h5>
-                          <p className="m-2 font-normal text-left text-gray-700 dark:text-gray-400">
+                          <p className="m-2 font-normal text-left text-gray-700">
                             {item.tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300"
+                                className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
                               >
                                 {tag}
                               </span>
                             ))}
                           </p>
-                          <p className="m-2 font-normal text-left text-gray-700 dark:text-gray-400">
+                          <p className="m-2 font-normal text-left text-gray-700">
                             High Scores:{" "}
                             <span className="font-semibold text-green-600">
                               Easy: <b className="font-bold">{item.easy}</b>{" "}
@@ -646,18 +646,16 @@ function App() {
       )}
       {playState !== -1 && (
         <>
-          <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
+          <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 ">
             <div className="mt-12 px-2 mb-4 col-span-full xl:mb-2">
-              <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
+              <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl ">
                 Challenge
               </h1>
             </div>
 
             <div className="col-span-2">
-              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <h3 className="mb-4 text-xl font-semibold dark:text-white ">
-                  {event}
-                </h3>
+              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                <h3 className="mb-4 text-xl font-semibold  ">{event}</h3>
                 <p>
                   Difficulty:{" "}
                   <b
@@ -709,7 +707,7 @@ function App() {
                 )}
                 {playState >= 1 && (
                   <>
-                    <div className="z-40 fixed top-20 bg-blue-200 left-5 bg-blue-50 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
+                    <div className="z-40 fixed top-20 bg-blue-200 left-5 bg-blue-50 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  flex items-center space-x-4 mb-4 p-1 ">
                       {playState === 1 && (
                         <p className="text-semibold px-3 py-2 tracking-wide">
                           Seconds left:{" "}
@@ -758,7 +756,7 @@ function App() {
                                 return (
                                   <>
                                     <div
-                                      className={`mb-2 mt-2 flex items-center pl-4 border border-gray-200 rounded-lg dark:border-gray-700${
+                                      className={`mb-2 mt-2 flex items-center pl-4 border border-gray-200 rounded-lg ${
                                         playState === 2 && index2 === ans[index]
                                           ? ` bg-green-100 hover:bg-green-200`
                                           : index2 === userAns[index]
@@ -774,7 +772,7 @@ function App() {
                                         type="radio"
                                         value={index2}
                                         name="bordered-radio"
-                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300  dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 "
                                         disabled={playState !== 1}
                                         checked={index2 === userAns[index]}
                                         onChange={() => {
@@ -787,7 +785,7 @@ function App() {
                                       />
                                       <label
                                         htmlFor={choice + index}
-                                        className="w-full py-4 ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                                        className="w-full py-4 ml-2 text-sm font-medium text-gray-900 "
                                       >
                                         {choice}
                                       </label>
@@ -839,10 +837,8 @@ function App() {
             </div>
 
             <div className="col-span-1">
-              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <h3 className="mb-4 text-xl font-semibold dark:text-white">
-                  Image
-                </h3>
+              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+                <h3 className="mb-4 text-xl font-semibold ">Image</h3>
                 <div className="py-2">
                   <img
                     className="mb-4 rounded-lg w-1024 h-1024 sm:mb-0 xl:mb-4 2xl:mb-0"
@@ -853,9 +849,9 @@ function App() {
               </div>
             </div>
           </div>
-          <div className="fixed top-20 bg-white right-5 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
+          <div className="fixed top-20 bg-white right-5 border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  flex items-center space-x-4 mb-4 p-1 ">
             <button
-              className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+              className="py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"
               onClick={resetState}
             >
               New Challenge

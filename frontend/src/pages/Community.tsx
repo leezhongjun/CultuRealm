@@ -411,28 +411,26 @@ function Community() {
   };
   return (
     <>
-      <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
+      <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 ">
         <div className="mb-4 col-span-full xl:mb-2">
-          <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
+          <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl ">
             Community Custom Stories
           </h1>
         </div>
         {isAuth && showCustom && (
           <div
             id="create-new"
-            className="z-50 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800"
+            className="z-50 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 "
           >
-            <h3 className="mb-4 text-xl font-semibold dark:text-white ">
-              New Custom Story
-            </h3>
+            <h3 className="mb-4 text-xl font-semibold  ">New Custom Story</h3>
             <div className="gap-4 z-50">
               <form>
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Title
                 </label>
                 <input
                   type="text"
-                  className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 ${
+                  className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5  ${
                     flag ? "border-red-300" : ""
                   }`}
                   value={title}
@@ -451,11 +449,11 @@ function Community() {
                   }}
                   required
                 />
-                <label className="mt-2 block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="mt-2 block mb-2 text-sm font-medium text-gray-900 ">
                   Description
                 </label>
                 <textarea
-                  className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 ${
+                  className={`shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5  ${
                     flag ? "border-red-300" : ""
                   }`}
                   value={description}
@@ -475,7 +473,7 @@ function Community() {
                   required
                 />
                 <div className="z-50 mt-4">
-                  <label className="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
+                  <label className="mt-2 block text-sm font-medium text-gray-900 ">
                     Tags
                   </label>
                   <div className="z-50">
@@ -498,7 +496,7 @@ function Community() {
                   {flagText}
                 </p>
                 <button
-                  className="z-0 mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                  className="z-0 mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700  "
                   type="button"
                   onClick={suggestCustomStory}
                   disabled={genStoryLoading}
@@ -577,7 +575,7 @@ function Community() {
                   </button>
                 </div>
                 <button
-                  className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                  className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"
                   type="button"
                   onClick={() => {
                     setShowCustom(false);
@@ -707,12 +705,12 @@ function Community() {
         )}
         <div className="col-span-full mb-0">
           <div className="mb-0">
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label className="block mb-2 text-sm font-medium text-gray-900 ">
               Sort by
             </label>
             <div className="flex space-x-4 mb-2">
               <select
-                className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                className="bg-gray-50 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                 value={sortValue}
                 onChange={(e) => {
                   setSortValue(e.currentTarget.value);
@@ -727,7 +725,7 @@ function Community() {
                 })}
               </select>
             </div>
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label className="block mb-2 text-sm font-medium text-gray-900 ">
               Search
             </label>
             <input
@@ -751,7 +749,7 @@ function Community() {
           </div>
         </div>
         <div className="z-40">
-          <label className="mb-0 p-0 block text-sm font-medium text-gray-900 dark:text-white">
+          <label className="mb-0 p-0 block text-sm font-medium text-gray-900 ">
             Tags
           </label>
           <div className="z-40 flex justify-normal mb-6 mt-0">
@@ -792,14 +790,12 @@ function Community() {
                 <div
                   key={item.id}
                   id={item.id}
-                  className="col-span-1 max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                  className="col-span-1 max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100   "
                 >
-                  <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                  <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 ">
                     {item.title}
                   </h5>
-                  <p className="font-normal text-gray-700 dark:text-gray-400">
-                    {item.desc}
-                  </p>
+                  <p className="font-normal text-gray-700 ">{item.desc}</p>
                   <p className="text-gray-500 font-medium">
                     Created by:{" "}
                     <a
@@ -820,12 +816,12 @@ function Community() {
                   <p className="text-gray-500 font-medium">
                     High score: <b>{item.high_score}/100</b>
                   </p>
-                  <p className="m-2 font-normal text-left text-gray-700 dark:text-gray-400">
+                  <p className="m-2 font-normal text-left text-gray-700 ">
                     {JSON.parse(item.tags).map(
                       (tag: { id: string; text: string }) => (
                         <span
                           key={tag.id}
-                          className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300"
+                          className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded "
                         >
                           {tag.text}
                         </span>
@@ -864,7 +860,7 @@ function Community() {
                       </button>
                       {item.user_id === authUser && (
                         <button
-                          className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-50 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                          className="mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-50 focus:ring-4 focus:ring-gray-200"
                           onClick={() => deleteStory(item.id)}
                         >
                           Delete
@@ -877,7 +873,7 @@ function Community() {
             )}
           </div>
           {isAuth && (
-            <div className="fixed bottom-0 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 flex items-center space-x-4 mb-4 p-1 dark:bg-gray-800">
+            <div className="fixed bottom-0 right-5 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  flex items-center space-x-4 mb-4 p-1 ">
               <button
                 className="text-xl font-medium p-4 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600"
                 onClick={() => {

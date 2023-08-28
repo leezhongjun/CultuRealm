@@ -93,17 +93,15 @@ function Profile() {
 
   return (
     <>
-      <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
+      <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 ">
         <div className="mb-4 col-span-full xl:mb-2">
-          <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
+          <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl ">
             Profile
           </h1>
         </div>
         <div className="col-span-full xl:col-auto">
-          <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-            <h3 className="px-4 mb-4 text-xl font-semibold dark:text-white">
-              User
-            </h3>
+          <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+            <h3 className="px-4 mb-4 text-xl font-semibold ">User</h3>
             <div className="items-center sm:flex xl:block sm:space-x-4 xl:space-x-0 2xl:space-x-4">
               <div className="px-4">
                 <img
@@ -114,67 +112,67 @@ function Profile() {
               </div>
               <div>
                 <div className="col-span-6 sm:col-span-3 py-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 ">
                     Username
                   </label>
                   <input
                     type="text"
-                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                     value={username}
                     disabled
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-3 py-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 ">
                     Name
                   </label>
                   <input
                     type="text"
-                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                     value={name}
                     disabled
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-3 py-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 ">
                     Age
                   </label>
                   <input
                     type="text"
-                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                     value={age}
                     disabled
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-3 py-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 ">
                     Gender
                   </label>
                   <input
                     type="text"
-                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                     value={gender}
                     disabled
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-3 py-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 ">
                     Race
                   </label>
                   <input
                     type="text"
-                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                     value={race}
                     disabled
                   />
                 </div>
                 {/* <div className="col-span-6 sm:col-span-3 py-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 ">
                     Religion
                   </label>
                   <input
                     type="text"
-                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                     value={religion}
                     disabled
                   />
@@ -184,111 +182,107 @@ function Profile() {
           </div>
         </div>
         <div className="col-span-2">
-          <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-            <h3 className="mb-4 text-xl font-semibold dark:text-white">
-              Story
-            </h3>
+          <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+            <h3 className="mb-4 text-xl font-semibold ">Story</h3>
             <div className="grid grid-cols-6 gap-6">
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Rating
                 </label>
                 <input
                   type="text"
-                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                   value={rating}
                   disabled
                 />
               </div>
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   High score
                 </label>
                 <input
                   type="text"
-                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                   value={`${highScore}/100`}
                   disabled
                 />
               </div>
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Stories played
                 </label>
                 <input
                   type="text"
-                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                   value={gamesPlayed}
                   disabled
                 />
               </div>
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Achievements
                 </label>
-                <div className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                <div className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 ">
                   {ProcessAchievements(achievements)}
                 </div>
               </div>
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Global mode unlocked
                 </label>
                 <input
                   type="text"
-                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                   value={globalUnlocked ? "Yes" : "No"}
                   disabled
                 />
               </div>
             </div>
           </div>
-          <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-            <h3 className="mb-4 text-xl font-semibold dark:text-white">
-              Challenge
-            </h3>
+          <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
+            <h3 className="mb-4 text-xl font-semibold ">Challenge</h3>
 
             <div className="grid grid-cols-6 gap-6">
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Unique challenges played
                 </label>
                 <input
                   type="text"
-                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                   value={challengesPlayed}
                   disabled
                 />
               </div>
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Easy mode high score
                 </label>
                 <input
                   type="text"
-                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                   value={easyHighScore}
                   disabled
                 />
               </div>
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Medium mode high score
                 </label>
                 <input
                   type="text"
-                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                   value={mediumHighScore}
                   disabled
                 />
               </div>
               <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Hard mode high score
                 </label>
                 <input
                   type="text"
-                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
                   value={hardHighScore}
                   disabled
                 />

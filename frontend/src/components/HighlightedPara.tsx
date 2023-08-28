@@ -15,7 +15,7 @@ const HighlightedParagraph: React.FC<HighlightedParagraphProps> = ({
       new RegExp(`^${phrase}$`, "i").test(match)
     );
     return matchingPhrase
-      ? `<a href="https://you.com/search?q=What+is%3A+${matchingPhrase}&fromSearchBar=true&tbm=youchat" target="_blank" class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline">${match}</a>`
+      ? `<a href="https://you.com/search?q=What+is%3A+${matchingPhrase}&fromSearchBar=true&tbm=youchat" target="_blank" class="font-medium text-blue-600 underline hover:no-underline">${match}</a>`
       : match;
   });
 
