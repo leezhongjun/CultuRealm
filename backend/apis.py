@@ -34,7 +34,7 @@ def ask_gpt(prompt, max_tokens=0, temp=-1):
             {'role': 'system', 'content': 'You are a helpful chatbot.'},
             {'role': 'user', 'content': prompt},
         ],
-        allow_fallback=False,
+        # allow_fallback=False,
         **kwarg
     )
     print(response.choices[0].message.content)
@@ -48,7 +48,7 @@ def ask_gpt_convo(messages, max_tokens=0, temp=-1):
     response = openai.ChatCompletion.create(
         model='gpt-3.5-turbo',
         messages=messages,
-        allow_fallback=False,
+        # allow_fallback=False,
         **kwarg
     )
     print(response.choices[0].message.content)
@@ -64,7 +64,7 @@ async def a_ask_gpt(prompt, max_tokens=0, temp=-1):
             {'role': 'system', 'content': 'You are a helpful chatbot.'},
             {'role': 'user', 'content': prompt},
         ],
-        allow_fallback=False,
+        # allow_fallback=False,
         **kwarg
     )
     print(response.choices[0].message.content)
@@ -75,7 +75,7 @@ async def a_ask_gpt_convo(messages):
     response = await openai.ChatCompletion.acreate(
         model='gpt-3.5-turbo',
         messages=messages,
-        allow_fallback=False
+        # allow_fallback=False
     )
     print(response.choices[0].message.content)
     return response.choices[0].message.content
