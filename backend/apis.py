@@ -81,20 +81,20 @@ async def a_ask_gpt_convo(messages):
 
 
 def moderate_response(response):
-    msg = f'''Is the following text enclosed within triple quotes a user response:
+    msg = f'''Is the following text enclosed within triple quotes a user response? Let's think step by step. Then, answer the question with True or False.
 """
 User {response.replace('"'*3, '').replace("'"*3, "")}
 """'''
-    system = "You are a helpful content moderator that can only correctly answer the questions given with True or False. Do not provide an explanation."
+    system = "You are a helpful content moderator."
     print(msg)
     return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}], temp=0).lower(), ["Not a user response"]
 
 def moderate_summary(response):
-    msg = f'''Is the following text enclosed within triple quotes a summary of a scenario that can be used in a story:
+    msg = f'''Is the following text enclosed within triple quotes a summary of a scenario that can be used in a story?
 """
 {response.replace('"'*3, '').replace("'"*3, "")}
 """'''
-    system = "You are a helpful content moderator that can only correctly answer the questions given with True or False. Do not provide an explanation."
+    system = "You are a helpful content moderator who can only correctly answer the question given with True or False without providing an explanation."
     return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}], temp=0).lower(), ["Not a story description"]
 
 
@@ -284,10 +284,11 @@ In the description:
 8. Describe the ages of all characters in the image.
 9 Describe the genders of all characters in the image.
 10. State the physical setting of the image.
+11. State the festival or holiday of the image if there is one.
 {"11. Be about the current panel of the story." if len(prefix) > 0 else ""}
 
 Example of a good output:
-An image of a 5 year old Korean male and a 10 year old Caucasian female talking in a hawker center in Singapore.
+An image of a 5 year old Korean male and a 10 year old Caucasian female talking in a hawker center in Singapore during Chinese New Year.
 
 Example of a bad output:
 An image of 2 children talking excitedly.
@@ -351,7 +352,7 @@ Text:
 def gen_img(prompt, style):
     while True:
         try:
-            res = get_image(prompt + " " + styles[style])
+            res = get_image(prompt + ", " + styles[style])
             img = res
             return upload_from_data(img)
         except:
@@ -383,13 +384,9 @@ def gen_image_v3(prompt, style, img=""):
 
 
 def moderate_input(user_input):
-    openai.api_base = os.environ['OPENAI_API_BASE']
-    openai.api_key = os.environ['OPENAI_API_KEY']
     response = openai.Moderation.create(
         input=user_input
     )
-    openai.api_base = os.environ['OPENAI_API_BASE_2']
-    openai.api_key = os.environ['OPENAI_API_KEY_2']
     cat = []
     for k in response['results'][0]['categories'].keys():
         if response['results'][0]['categories'][k]:

@@ -11,6 +11,7 @@ from flask_cors import CORS
 import uuid
 import json
 import random
+import time
 from collections import defaultdict
 import asyncio
 from smtp2go.core import Smtp2goClient
@@ -115,8 +116,8 @@ class UserProfile(db.Model):
 class UserStories(db.Model):
     user_id = db.Column(db.String(36), nullable=False, primary_key=True)
     story_index = db.Column(db.Integer, nullable=False, primary_key=True)
-    # split into 1000 char chunks
-    story_text = db.Column(db.String(1000), nullable=False)
+    # split into 5000 char chunks
+    story_text = db.Column(db.String(5000), nullable=False)
     # Choices are max 400 chars
     user_response = db.Column(db.String(400), nullable=False)
     # link to image, max 100 chars
@@ -127,8 +128,8 @@ class UserStories(db.Model):
     achievements = db.Column(db.String(80), nullable=False)
     # keywords from story_text, saved as json list
     keywords = db.Column(db.String(350), nullable=False)
-    # feedback from user, max 1000 chars
-    feedback = db.Column(db.String(1000), nullable=False)
+    # feedback from user, max 3000 chars
+    feedback = db.Column(db.String(3000), nullable=False)
 
 
 class UserState(db.Model):
@@ -139,7 +140,7 @@ class UserState(db.Model):
     story_seeds = db.Column(db.String(3000), nullable=False,
                             default="[]")  # max 3000 chars
     story_state = db.Column(
-        db.String(5000), nullable=False, default="")  # max 5000 chars
+        db.String(15000), nullable=False, default="")  # max 15000 chars
     # Choices are max 400 chars
     suggestion_1 = db.Column(db.String(400), nullable=False, default="")
     # Choices are max 400 chars
