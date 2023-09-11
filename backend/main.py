@@ -38,7 +38,6 @@ app.route = prefix_route(app.route, '/api')
 # configuration
 app.config['SECRET_KEY'] = os.getenv('BACKEND_SECRET_KEY')
 app.config["JWT_COOKIE_SECURE"] = False
-FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -241,7 +240,7 @@ def reset_password_request():
                   sender=app.config['MAIL_USERNAME'],
                   recipients=[user.email])
     msg.body = f'''To reset your password, visit the following link:
-{FRONTEND_URL + '/reset-new-password?token=' + token}
+{request.base_url + '/reset-new-password?token=' + token}
 If you did not make this request then simply ignore this email and no changes will be made.
 '''
     mail.send(msg)

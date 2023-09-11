@@ -54,7 +54,6 @@ app.route = prefix_route(app.route, '/api')
 # configuration
 app.config['SECRET_KEY'] = os.getenv('BACKEND_SECRET_KEY')
 app.config["JWT_COOKIE_SECURE"] = False
-FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -120,8 +119,8 @@ class UserStories(db.Model):
     story_text = db.Column(db.String(5000), nullable=False)
     # Choices are max 400 chars
     user_response = db.Column(db.String(400), nullable=False)
-    # link to image, max 100 chars
-    img_url = db.Column(db.String(100), nullable=False)
+    # link to image, max 250 chars
+    img_url = db.Column(db.String(250), nullable=False)
     # prompt for image, max 100 chars
     img_prompt = db.Column(db.String(300), nullable=False)
     # format "achivement_id:achivement_times achivement_id:achivement_times"
@@ -671,28 +670,52 @@ async def start_story():
 def regen_img():
     id = get_jwt_identity()['id']
     data = request.get_json()
-    # call api -> img gen
-    user_profile = UserProfile.query.filter_by(id=id).first()
-    # get image style from data
-    image_style = data['image_style']
-    # update image style in db
-    user_profile.image_style = image_style
+    
+    # get current story index
     story_index = data['story_index']
+
+    # get current user story
     user_story = UserStories.query.filter_by(
         user_id=id, story_index=story_index).first()
+    
+    # story image is still loading, wait for it to be done
+    if user_story.img_url == "loading":
+        for _ in range(45): # for 45s
+            time.sleep(1)
+            user_story = UserStories.query.filter_by(
+                user_id=id, story_index=story_index).first()
+            if user_story.img_url != "loading":
+                return {'image_url': user_story.img_url}
+            
+    # generating new image
+    # set user story's img_url to loading
+    user_story.img_url = "loading"
+    db.session.commit()
+
+    # get user profile
+    user_profile = UserProfile.query.filter_by(id=id).first()
+
+    # get image style from data
+    image_style = data['image_style']
+
+    # update image style in db
+    user_profile.image_style = image_style
+
+    # get previous image
+    img = ""
     if story_index > 0:
         prev_user_story = UserStories.query.filter_by(
             user_id=id, story_index=story_index-1).first()
         if prev_user_story.img_url:
             img = prev_user_story.img_url
-        else:
-            img = ""
-    else:
-        img = ""
-    img_url = gen_image_v3(user_story.img_prompt, user_profile.image_style, img)
-    user_story.img_url = img_url
 
+    # image generation
+    img_url = gen_image_v4(user_story.img_prompt, user_profile.image_style, img)
+
+    # write to db
+    user_story.img_url = img_url
     db.session.commit()
+
     return {'image_url': img_url}
 
 # reset story index endpoint
@@ -787,17 +810,21 @@ async def story_index():
             "role": "user",
             "content": "I " + resp + ("\n\nSTORY ENDS THIS TURN" if final else "."),
         }]
-        story_text = "SOMERANDOMSTRING" if final else "END"
-        while (final and "SOMERANDOMSTRING" in story_text) or (not final and "END" in story_text):
+
+        # loop while (final but text has no "END") or (not final but text has "END")
+        story_text = "" if final else "END"
+        while (final and "END" not in story_text) or (not final and "END" in story_text):
             story_text = ask_gpt_convo(story_state).replace("*", "")
+
         story_state += [{
             "role": "assistant",
             "content": story_text,
         }]
+
         user_state.story_state = json.dumps(story_state)
 
+        # keywords
         async def keyword_thread():
-            # keywords
             keywords = await get_keywords(story_text)
             return keywords
 

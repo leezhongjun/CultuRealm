@@ -472,6 +472,9 @@ function Community() {
                   }}
                   required
                 />
+                <p className={flag ? "text-pink-600 text-sm" : "hidden"}>
+                  {flagText}
+                </p>
                 <div className="z-50 mt-4">
                   <label className="mt-2 block text-sm font-medium text-gray-900 ">
                     Tags
@@ -492,9 +495,6 @@ function Community() {
                     />
                   </div>
                 </div>
-                <p className={flag ? "text-pink-600 text-sm" : "hidden"}>
-                  {flagText}
-                </p>
                 <button
                   className="z-0 mt-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700  "
                   type="button"

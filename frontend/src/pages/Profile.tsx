@@ -220,14 +220,6 @@ function Profile() {
               </div>
               <div className="col-span-6 sm:col-span-3">
                 <label className="block mb-2 text-sm font-medium text-gray-900 ">
-                  Achievements
-                </label>
-                <div className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 ">
-                  {ProcessAchievements(achievements)}
-                </div>
-              </div>
-              <div className="col-span-6 sm:col-span-3">
-                <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Global mode unlocked
                 </label>
                 <input
@@ -236,6 +228,14 @@ function Profile() {
                   value={globalUnlocked ? "Yes" : "No"}
                   disabled
                 />
+              </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">
+                  Achievements
+                </label>
+                <div className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 ">
+                  {ProcessAchievements(achievements)}
+                </div>
               </div>
             </div>
           </div>

@@ -71,11 +71,11 @@ function App() {
   const [genStoryLoading, setGenStoryLoading] = useState(false);
   const [prevHighScore, setPrevHighScore] = useState(false);
   const [completedProfile, setCompletedProfile] = useState(true);
-  const [globalUnlocked, setGlobalUnlocked] = useState(false);
+  const [globalUnlocked, setGlobalUnlocked] = useState(false); // when user has unlocked global mode
   const [showGlobal, setShowGlobal] = useState(false);
-  const [country, setCountry] = useState("Singapore");
-  const [unlockGlobal, setUnlockGlobal] = useState(false);
-  const [unlockRating, setUnlockRating] = useState(false);
+  const [country, setCountry] = useState("Random");
+  const [unlockGlobal, setUnlockGlobal] = useState(false); // only the first time user unlocks global mode
+  const [unlockRating, setUnlockRating] = useState(1800);
 
   const { reward, isAnimating: _isAnimating } = useReward(
     "rewardId",
@@ -83,6 +83,9 @@ function App() {
   );
   const { reward: customReward, isAnimating: _customRewardAnimating } =
     useReward("customRewardId", "balloons");
+  const { reward: globalReward, isAnimating: _globalRewardAnimating } =
+    useReward("globalRewardId", "balloons");
+
   const authHeader = useAuthHeader();
   const synth = window.speechSynthesis;
 
@@ -191,18 +194,8 @@ function App() {
       setStyle(data.image_style);
       setFeedback("");
       setResp("");
-      setUnlockGlobal(false);
       setCountry(data.country);
-      const response_img = await axios.post(
-        import.meta.env.VITE_BACKEND_ENDPOINT + "/regen_img",
-        { image_style: data.image_style, story_index: 0 },
-        {
-          headers: {
-            Authorization: authHeader(),
-          },
-        }
-      );
-      setImgSrc(response_img.data.image_url);
+      handleImageRegen(0);
     } catch (error) {
       console.error(error);
     }
@@ -277,13 +270,18 @@ function App() {
               response.data.old_rating < response.data.unlock_rating
             ) {
               setUnlockGlobal(true);
+            } else {
+              setUnlockGlobal(false);
             }
           }
           setNeedSuggestions(false);
         } else {
           setShowFinal(false);
         }
-        if (response.data.image_url === "") {
+        if (
+          response.data.image_url === "" ||
+          response.data.image_url === "loading"
+        ) {
           handleImageRegen(page);
         } else {
           setImgSrc(response.data.image_url);
@@ -349,7 +347,7 @@ function App() {
   }
 
   async function handleImageRegen(page: number = currentPage) {
-    setImgSrc(loadingIcon);
+    if (page === currentPage) setImgSrc(loadingIcon);
     const response = await axios.post(
       import.meta.env.VITE_BACKEND_ENDPOINT + "/regen_img",
       { image_style: style, story_index: page },
@@ -359,7 +357,7 @@ function App() {
         },
       }
     );
-    setImgSrc(response.data.image_url);
+    if (page === currentPage) setImgSrc(response.data.image_url);
   }
 
   async function handleSuggestionsRegen() {
@@ -402,10 +400,11 @@ function App() {
         setAchievements(response.data.achievements);
         setLatestIndex(currentPage + 1);
       }
+      setLoadingSubmit(false);
+      if (!response.data.flagged) handleImageRegen(currentPage + 1);
     } catch (error) {
       console.error(error);
     }
-    setLoadingSubmit(false);
   };
 
   async function suggestCustomStory() {
@@ -438,6 +437,7 @@ function App() {
 
   const delay = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
+
   useEffect(() => {
     async function animateReward() {
       await delay(600);
@@ -453,6 +453,14 @@ function App() {
     }
     if (isCustomStory) animateReward();
   }, [isCustomStory]);
+
+  useEffect(() => {
+    async function animateReward() {
+      await delay(500);
+      globalReward();
+    }
+    if (showGlobal) animateReward();
+  }, [showGlobal]);
 
   return (
     <>
@@ -533,6 +541,13 @@ function App() {
                       tom{" "}
                     </span>
                   )}
+                  {showGlobal && (
+                    <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-yellow-400">
+                      Glo
+                      <span id="globalRewardId" />
+                      bal{" "}
+                    </span>
+                  )}
                   Stories
                 </h1>
                 <div className="max-w-3xl mx-auto">
@@ -551,7 +566,7 @@ function App() {
                   >
                     Current rating: <b className="text-blue-600">{rating}</b>
                   </p>
-                  {!unlockGlobal && (
+                  {!globalUnlocked && (
                     <>
                       <p
                         className="text-base text-gray-800 mb-8"
@@ -631,24 +646,27 @@ function App() {
                         {showGlobal && (
                           //show countries here as a dropdown
                           <div className="mt-2 justify-center bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-                            <div className="flex flex-col">
-                              <label className="block text-sm font-medium text-gray-700 ">
-                                Country
-                              </label>
-                              <select
-                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                                onChange={(e) =>
-                                  setCountry(e.currentTarget.value)
-                                }
-                                value={country}
-                              >
-                                {countries.map((country) => (
-                                  <option key={country} value={country}>
-                                    {country}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
+                            <label className="block text-sm font-medium text-gray-700 ">
+                              Country
+                            </label>
+                            <select
+                              className="mt-1 dropdown-content w-full block py-2 text-base border-gray-300 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                              onChange={(e) =>
+                                setCountry(e.currentTarget.value)
+                              }
+                              value={country}
+                              size={10}
+                            >
+                              {countries.map((country) => (
+                                <option
+                                  className=""
+                                  key={country}
+                                  value={country}
+                                >
+                                  {country}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         )}
                         <div className="flex justify-center mt-4">
