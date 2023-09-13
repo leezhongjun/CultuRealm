@@ -339,7 +339,7 @@ STORY:
 
 
 async def get_keywords(text):
-    prompt = f"""Extract only very specific and important cultures, religions, cultural and religious from the following text. There might be none. Return it as a Python list.
+    prompt = f"""Extract only very specific and important cultures, religions, cultural and religious elements from the following text. There might be none. Return it as a Python list.
 
 Follow this format for the output: ["...", "..."]
 
