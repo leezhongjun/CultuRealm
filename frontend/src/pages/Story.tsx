@@ -73,7 +73,7 @@ function App() {
   const [completedProfile, setCompletedProfile] = useState(true);
   const [globalUnlocked, setGlobalUnlocked] = useState(false); // when user has unlocked global mode
   const [showGlobal, setShowGlobal] = useState(false);
-  const [country, setCountry] = useState("Random");
+  const [country, setCountry] = useState("Singapore");
   const [unlockGlobal, setUnlockGlobal] = useState(false); // only the first time user unlocks global mode
   const [unlockRating, setUnlockRating] = useState(1800);
 
@@ -282,7 +282,7 @@ function App() {
           response.data.image_url === "" ||
           response.data.image_url === "loading"
         ) {
-          handleImageRegen(page);
+          handleImageRegen(page, true);
         } else {
           setImgSrc(response.data.image_url);
         }
@@ -346,7 +346,10 @@ function App() {
     setResp(strs[1]);
   }
 
-  async function handleImageRegen(page: number = currentPage) {
+  async function handleImageRegen(
+    page: number = currentPage,
+    showImg: boolean = false
+  ) {
     if (page === currentPage) setImgSrc(loadingIcon);
     const response = await axios.post(
       import.meta.env.VITE_BACKEND_ENDPOINT + "/regen_img",
@@ -357,7 +360,8 @@ function App() {
         },
       }
     );
-    if (page === currentPage) setImgSrc(response.data.image_url);
+    if (page === currentPage || page === 0 || showImg)
+      setImgSrc(response.data.image_url);
   }
 
   async function handleSuggestionsRegen() {
@@ -834,7 +838,9 @@ function App() {
             </div>
             <div className="col-span-2">
               <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
-                <h3 className="mb-4 text-xl font-semibold  ">Text</h3>
+                <h3 className="mb-4 text-xl font-semibold ">
+                  Chapter {currentPage + 1}
+                </h3>
                 <div className="mb-4">
                   <HighlightedParagraph
                     paragraph={storyText}
@@ -1051,7 +1057,6 @@ function App() {
 
             <div className="col-span-1">
               <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
-                <h3 className="mb-4 text-xl font-semibold ">Image</h3>
                 <div className="py-2">
                   <img
                     className="mb-4 rounded-lg w-1024 h-1024 sm:mb-0 xl:mb-4 2xl:mb-0"
@@ -1087,7 +1092,7 @@ function App() {
                       type="button"
                       onClick={() => {
                         setImgSrc(loadingIcon);
-                        handleImageRegen();
+                        handleImageRegen(currentPage, true);
                       }}
                     >
                       Regenerate

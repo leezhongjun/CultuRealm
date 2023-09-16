@@ -872,7 +872,6 @@ function App() {
 
             <div className="col-span-1">
               <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
-                <h3 className="mb-4 text-xl font-semibold ">Image</h3>
                 <div className="py-2">
                   <img
                     className="mb-4 rounded-lg w-1024 h-1024 sm:mb-0 xl:mb-4 2xl:mb-0"
