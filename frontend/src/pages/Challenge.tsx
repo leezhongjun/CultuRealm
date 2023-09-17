@@ -393,7 +393,7 @@ function App() {
                   data-aos="zoom-y-out"
                   data-aos-delay="150"
                 >
-                  Unique stories played:{" "}
+                  Unique challenges played:{" "}
                   <b className="text-blue-600">
                     {totalPlays}/{rawEvents.length}
                   </b>
@@ -419,7 +419,7 @@ function App() {
                   >
                     Play <b className="text-green-600">{3 - totalPlays} </b>
                     {`more unique ${
-                      3 - totalPlays > 1 ? `stories` : `story`
+                      3 - totalPlays > 1 ? `challenges` : `challenge`
                     } to unlock `}{" "}
                     <b className="text-red-600">Hard</b> difficulty
                   </p>
