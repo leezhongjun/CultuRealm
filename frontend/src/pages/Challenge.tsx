@@ -406,7 +406,7 @@ function App() {
                   >
                     Play <b className="text-green-600">{1 - totalPlays} </b>
                     {`more unique ${
-                      1 - totalPlays > 1 ? `stories` : `story`
+                      1 - totalPlays > 1 ? `challenges` : `challenge`
                     } to unlock `}{" "}
                     <b className="text-blue-600">Medium</b> difficulty
                   </p>
