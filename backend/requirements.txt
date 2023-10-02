@@ -1,8 +1,8 @@
-Flask[async]
-flask_jwt_extended
-flask_sqlalchemy
+Flask[async]==2.3.2
+Flask-JWT-Extended==4.5.2
+Flask-SQLAlchemy==3.0.5
 Werkzeug
-flask-cors
+Flask-Cors==4.0.0
 watchdog
 python-dotenv
 openai
@@ -13,3 +13,4 @@ gunicorn
 psycopg2
 smtp2go
 gevent
+
