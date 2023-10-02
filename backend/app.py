@@ -119,8 +119,8 @@ class UserStories(db.Model):
     story_text = db.Column(db.String(5000), nullable=False)
     # Choices are max 400 chars
     user_response = db.Column(db.String(400), nullable=False)
-    # link to image, max 250 chars
-    img_url = db.Column(db.String(250), nullable=False)
+    # link to image, max 1000 chars
+    img_url = db.Column(db.String(1000), nullable=False)
     # prompt for image, max 100 chars
     img_prompt = db.Column(db.String(300), nullable=False)
     # format "achivement_id:achivement_times achivement_id:achivement_times"
@@ -196,6 +196,19 @@ class UserStateC(db.Model):
     ans = db.Column(db.String(5000), nullable=False, default="")
     exp = db.Column(db.String(5000), nullable=False, default="")
     user_ans = db.Column(db.String(5000), nullable=False, default="")
+
+class Report(db.Model):
+    id = db.Column(db.String(36), nullable=False, primary_key=True)
+    user_id = db.Column(db.String(36), nullable=False)
+    # split into 5000 char chunks
+    story_text = db.Column(db.String(5000), nullable=False)
+    # Choices are max 400 chars
+    user_response = db.Column(db.String(400), nullable=False)
+    # format "achivement_id:achivement_times achivement_id:achivement_times"
+    achievements = db.Column(db.String(80), nullable=False)
+    # feedback from user, max 3000 chars
+    feedback = db.Column(db.String(3000), nullable=False)
+    report_desc = db.Column(db.String(5000), nullable=False)
 
 # Callback function to check if a JWT exists in the database blocklist
 
@@ -1294,6 +1307,22 @@ def challenge_index():
     else:
         return {'play_state': userStateC.play_state}
 
+
+@app.route('/report', methods=['POST'])
+@jwt_required()
+def report():
+    id = get_jwt_identity()['id']
+    data = request.get_json()
+    story_index = data["story_index"]
+    report_desc = data["report_desc"]
+    # get details from UserStories' story index
+    user_story = UserStories.query.filter_by(
+        user_id=id, story_index=story_index).first()
+    report = Report(id=str(uuid.uuid4()), user_id=id, story_text=user_story.story_text, user_response=user_story.user_response, achievements=user_story.achievements, feedback=user_story.feedback, report_desc=report_desc)
+    print(report.__dict__)
+    db.session.add(report)
+    db.session.commit()
+    return {'message': 'Success'}
 
 if __name__ == '__main__':
     with app.app_context():

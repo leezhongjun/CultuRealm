@@ -76,6 +76,9 @@ function App() {
   const [country, setCountry] = useState("Singapore");
   const [unlockGlobal, setUnlockGlobal] = useState(false); // only the first time user unlocks global mode
   const [unlockRating, setUnlockRating] = useState(1800);
+  const [report, setReport] = useState(false);
+  const [reportText, setReportText] = useState("");
+  const [reportAltText, setReportAltText] = useState("");
 
   const { reward, isAnimating: _isAnimating } = useReward(
     "rewardId",
@@ -426,6 +429,31 @@ function App() {
     setCustomStoryTitle(response.data.story_title);
     setGenStoryLoading(false);
   }
+
+  const sendReport = async () => {
+    try {
+      const response = await axios.post(
+        import.meta.env.VITE_BACKEND_ENDPOINT + "/report",
+        { report_desc: reportText, story_index: currentPage },
+        {
+          headers: {
+            Authorization: authHeader(),
+          },
+        }
+      );
+      console.log(response);
+      setReport(false);
+      setReportAltText("Report submitted!");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const resetReportState = () => {
+    setReport(false);
+    setReportAltText("");
+    setReportText("");
+  };
 
   const handleButtonClick = async () => {
     const alertElement = document.getElementById("alert");
@@ -1001,6 +1029,69 @@ function App() {
                 <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2  sm:p-6 ">
                   <h3 className="mb-4 text-xl font-semibold ">Feedback</h3>
                   <p>{feedback}</p>
+                  {!report && (
+                    <>
+                      <button
+                        className="mt-4 text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:bg-red-600"
+                        type="button"
+                        onClick={() => {
+                          setReport(true);
+                        }}
+                      >
+                        Report
+                      </button>
+                      <p
+                        className={
+                          reportAltText === ""
+                            ? "hidden"
+                            : "mt-2 text-pink-600 text-sm"
+                        }
+                      >
+                        {reportAltText}
+                      </p>
+                    </>
+                  )}
+                  {report && (
+                    <>
+                      <textarea
+                        className={`mt-4 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5  ${
+                          flagged ? "border-red-300" : ""
+                        }`}
+                        value={reportText}
+                        placeholder={"Enter report details"}
+                        onChange={(e) => {
+                          setReportText(e.currentTarget.value);
+                        }}
+                        onBlur={(e) => {
+                          setReportText(e.currentTarget.value);
+                        }}
+                        onInput={(e) => {
+                          setReportText(e.currentTarget.value);
+                        }}
+                        onFocus={(e) => {
+                          setReportText(e.currentTarget.value);
+                        }}
+                      />
+                      <div className="space-x-4">
+                        <button
+                          className="mt-4 text-sm font-medium px-3 py-2 tracking-wide text-white transition-colors duration-200 transform bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:bg-red-600"
+                          type="button"
+                          onClick={sendReport}
+                        >
+                          Send Report
+                        </button>
+                        <button
+                          className="mb-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700"
+                          type="button"
+                          onClick={() => {
+                            setReport(false);
+                          }}
+                        >
+                          Cancel Report
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
               {achievements !== "" && (
@@ -1114,6 +1205,7 @@ function App() {
                   setCurrentPage(currentPage - 1);
                   setFlagged(false);
                   getStoryData(currentPage - 1);
+                  resetReportState();
                 }}
               >
                 Previous
@@ -1126,6 +1218,7 @@ function App() {
                   setCurrentPage(currentPage + 1);
                   setFlagged(false);
                   getStoryData(currentPage + 1);
+                  resetReportState();
                 }}
               >
                 Next
@@ -1144,6 +1237,7 @@ function App() {
                   }
                 );
                 setCurrentPage(-1);
+                resetReportState();
               }}
             >
               New Story
