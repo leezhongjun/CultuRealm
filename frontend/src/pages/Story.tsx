@@ -12,7 +12,6 @@ import { styles } from "./Settings";
 import ProcessAchievements from "../components/Achievements";
 import HighlightedParagraph from "../components/HighlightedPara";
 import { countries } from "./Settings";
-import { Link } from "react-router-dom";
 
 // let config = {
 //   num: [1, 2],
@@ -849,12 +848,13 @@ function App() {
               {isCustomStory && (
                 <p className="mt-2 text-gray-500 text-sm font-medium">
                   You're playing a custom story. View more custom stories{" "}
-                  <Link
-                    to="/community-stories"
+                  <a
+                    href="/community-stories"
+                    target="_blank"
                     className="font-medium text-blue-600 underline hover:no-underline"
                   >
                     here
-                  </Link>
+                  </a>
                 </p>
               )}
               {country !== "Singapore" && (
@@ -1083,9 +1083,7 @@ function App() {
                         <button
                           className="mb-4 py-2 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700"
                           type="button"
-                          onClick={() => {
-                            setReport(false);
-                          }}
+                          onClick={resetReportState}
                         >
                           Cancel Report
                         </button>
