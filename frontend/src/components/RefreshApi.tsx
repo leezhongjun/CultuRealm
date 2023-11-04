@@ -11,7 +11,7 @@ axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 // }) => Promise<RefreshTokenCallbackResponse>;
 
 const refreshApi = createRefresh({
-  interval: 10, // Refreshs the token in every 10 minutes
+  interval: 10, // refreshs the token in every 10 minutes
   refreshApiCallback: async ({ refreshToken }) => {
     try {
       const response = await axios.post(

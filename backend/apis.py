@@ -3,18 +3,14 @@ from dotenv import load_dotenv
 import os
 import json
 from duckduckgo_search import DDGS
-import pyscord_storage
 import requests
-import time
-
-from img_api import get_image, upload_from_data, ImageGenerator
 
 load_dotenv()
 
-openai.api_base = os.environ['OPENAI_API_BASE_2']
-openai.api_key = os.environ['OPENAI_API_KEY_2']
+openai.api_base = os.environ["OPENAI_API_BASE"]
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
-MIDJOURNEY_TOKEN = os.environ['MIDJOURNEY_TOKEN']
+MIDJOURNEY_TOKEN = os.environ["MIDJOURNEY_TOKEN"]
 
 
 styles = {
@@ -22,8 +18,9 @@ styles = {
     "Anime": " --niji 5",
     "Illustrated": " --niji 5 --style expressive",
     "Cute": " --niji 5 --style cute",
-    "Scenic": " --niji 5 --style scenic"
+    "Scenic": " --niji 5 --style scenic",
 }
+
 
 def ask_gpt(prompt, max_tokens=0, temp=-1):
     try:
@@ -31,12 +28,11 @@ def ask_gpt(prompt, max_tokens=0, temp=-1):
         if temp >= 0:
             kwarg["temperature"] = temp
         response = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo',
+            model="gpt-3.5-turbo",
             messages=[
-                {'role': 'user', 'content': prompt},
+                {"role": "user", "content": prompt},
             ],
-            # allow_fallback=False,
-            **kwarg
+            **kwarg,
         )
         print(response.choices[0].message.content)
         return response.choices[0].message.content
@@ -49,25 +45,22 @@ def ask_gpt_convo(messages, max_tokens=0, temp=-1):
     if temp >= 0:
         kwarg["temperature"] = temp
     response = openai.ChatCompletion.create(
-        model='gpt-3.5-turbo',
-        messages=messages,
-        # allow_fallback=False,
-        **kwarg
+        model="gpt-3.5-turbo", messages=messages, **kwarg
     )
     print(response.choices[0].message.content)
     return response.choices[0].message.content
+
 
 async def a_ask_gpt(prompt, max_tokens=0, temp=-1):
     kwarg = {"max_tokens": max_tokens} if max_tokens else {}
     if temp >= 0:
         kwarg["temperature"] = temp
     response = await openai.ChatCompletion.acreate(
-        model='gpt-3.5-turbo',
+        model="gpt-3.5-turbo",
         messages=[
-            {'role': 'user', 'content': prompt},
+            {"role": "user", "content": prompt},
         ],
-        # allow_fallback=False,
-        **kwarg
+        **kwarg,
     )
     print(response.choices[0].message.content)
     return response.choices[0].message.content
@@ -75,9 +68,8 @@ async def a_ask_gpt(prompt, max_tokens=0, temp=-1):
 
 async def a_ask_gpt_convo(messages):
     response = await openai.ChatCompletion.acreate(
-        model='gpt-3.5-turbo',
+        model="gpt-3.5-turbo",
         messages=messages,
-        # allow_fallback=False
     )
     print(response.choices[0].message.content)
     return response.choices[0].message.content
@@ -90,7 +82,11 @@ User {response.replace('"'*3, '').replace("'"*3, "").replace(chr(10), " ")}
 """'''
     system = "You are a helpful content moderator."
     print(msg)
-    return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}], temp=0).lower(), ["Not a user response"]
+    return "false" in ask_gpt_convo(
+        [{"role": "system", "content": system}, {"role": "user", "content": msg}],
+        temp=0,
+    ).lower(), ["Not a user response"]
+
 
 def moderate_summary(response):
     msg = f'''Is the following text enclosed within triple quotes a summary of an appropriate real life scenario that can be used in a story?
@@ -98,8 +94,10 @@ def moderate_summary(response):
 {response.replace('"'*3, '').replace("'"*3, "")}
 """'''
     system = "You are a helpful content moderator who can only correctly answer the question given with True or False without providing an explanation."
-    return "false" in ask_gpt_convo([{"role": "system", "content": system}, {"role": "user", "content": msg}], temp=0).lower(), ["Not a story description"]
-
+    return "false" in ask_gpt_convo(
+        [{"role": "system", "content": system}, {"role": "user", "content": msg}],
+        temp=0,
+    ).lower(), ["Not a story description"]
 
 
 def get_story_seeds(age, gender, race):
@@ -170,7 +168,7 @@ Example Output Format:
 Title: ..."""
     try:
         res = ask_gpt(prompt, temp=1)
-        return res.split("Title: ")[-1].replace('"', '').replace("'", "")
+        return res.split("Title: ")[-1].replace('"', "").replace("'", "")
     except:
         pass
 
@@ -214,32 +212,37 @@ Start the RPG. Start it directly by introducing the scene and context. Do not as
 
 def get_start_story(seed, name, age, race, gender, country="Singapore"):
     messages = [
-        {"role": "system", "content": system_prompt(
-            seed, name, age, race, gender, country)}
+        {
+            "role": "system",
+            "content": system_prompt(seed, name, age, race, gender, country),
+        }
     ]
     # remove all asterisks
     return ask_gpt_convo(messages).replace("*", ""), messages[0]
 
+
 async def get_characters(text):
-    prompt = f'''Return a formatted JSON list of characters and their race, age and gender in the following story. If the age, gender or race is not explicitly mentioned, try to infer the age, gender or race.
+    prompt = f"""Return a formatted JSON list of characters and their race, age and gender in the following story. If the age, gender or race is not explicitly mentioned, try to infer the age, gender or race.
 
 STORY:
 {text}
 
 Example output:
 [{{"character": "John, "age": 5, "race" : "Chinese"}} ,
-{{"character": "Mary", "age": 10", "race": "Indian"}}]'''
+{{"character": "Mary", "age": 10", "race": "Indian"}}]"""
     res = await a_ask_gpt(prompt, temp=0)
     if "[" not in res:
         return []
     try:
-        res = "[" + res.split('[')[-1].split(']')[0] + "]"
+        res = "[" + res.split("[")[-1].split("]")[0] + "]"
         return eval(res)
     except:
         return []
 
 
-async def get_start_img_prompt(text, name, age, gender, race, prev_text="", prev_img_prompt=""):
+async def get_start_img_prompt(
+    text, name, age, gender, race, prev_text="", prev_img_prompt=""
+):
     if gender == "Unspecified":
         gender = ""
     else:
@@ -300,7 +303,7 @@ An image of 2 children talking excitedly.
     print(prompt)
     img_prompt = await a_ask_gpt(prompt)
 
-    return img_prompt.strip('.')
+    return img_prompt.strip(".")
 
 
 async def get_suggestions(text):
@@ -324,8 +327,8 @@ STORY:
         res = []
         try:
             resp = await a_ask_gpt(prompt, temp=1)
-            for r in resp.split('\n'):
-                s = ''
+            for r in resp.split("\n"):
+                s = ""
                 if "Do: " in r:
                     s = "Do: " + r.split("Do: ")[-1]
                 elif "Say: " in r:
@@ -349,63 +352,24 @@ Text:
     res = await a_ask_gpt(prompt, temp=0)
     if "[" not in res:
         return []
-    res = "[" + res.split('[')[-1].split(']')[0] + "]"
+    res = "[" + res.split("[")[-1].split("]")[0] + "]"
     return eval(res)
 
 
-def gen_img(prompt, style):
-    while True:
-        try:
-            res = get_image(prompt + ", " + styles[style])
-            img = res
-            return upload_from_data(img)
-        except:
-            pass
-
-
-def gen_image_v2(prompt, style):
-    openai.api_base = os.environ['OPENAI_API_BASE']
-    openai.api_key = os.environ['OPENAI_API_KEY']
-    response = openai.Image.create(
-        prompt=prompt + styles[style],
-        n=1,  # images count
-        size="1024x1024"
-    )
-    result = pyscord_storage.upload_from_url("culturealm.png",response['data'][0]['url'])
-    openai.api_base = os.environ['OPENAI_API_BASE_2']
-    openai.api_key = os.environ['OPENAI_API_KEY_2']
-    return result['data']['url']
-
-def gen_image_v3(prompt, style, img=""):
-    client = ImageGenerator()
-    is_photo = style == "Photorealistic"
-    styles = {
-        "Photorealistic": "realistic, highly detailed, art-station, trending on artstation, masterpiece, great artwork, ultra render realistic n-9, 4k, 8k, 16k, 20k",
-        "Pixel": "16 bit pixel art, cinematic still, hdr, pixelated full body, character icon concept art, pixel perfect",
-        "Cartoon": "cartoon, intricate, sharp focus, illustration, highly detailed, digital painting, concept art, matte, art by wlop and artgerm and ivan shishkin and andrey shishkin, masterpiece",
-        "Anime": "anime, digital art, trending on artstation, pixiv, hyperdetailed, 8k realistic, symmetrical, high coherence, depth of field, very coherent artwork"
-    }
-    images = client.gen_image(
-        prompt=prompt + styles[style],
-        image=img,
-        negative_prompt=f"(deformed iris, deformed pupils, semi-realistic" + (", cgi, 3d, render, sketch, cartoon, drawing, anime), " if is_photo else "), ") + "text, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, BadDream" + (", UnrealisticDream" if is_photo else ""),
-        )
-    return images['images'][0]
-
-def gen_image_v4(prompt, style, img=""):
+def gen_image(prompt, style, img=""):
     # remove "An image of "
     prompt = prompt.split("An image of ")[-1]
+
     # add img link
     if len(img) > 0:
         prompt = img + " " + prompt + " --iw .5"
+
     # add styles
     prompt = prompt + styles[style] + " --q .5"
     print(prompt)
 
     url = "https://api.zhishuyun.com/midjourney/imagine/turbo"
-    params = {
-        "token": MIDJOURNEY_TOKEN
-    }
+    params = {"token": MIDJOURNEY_TOKEN}
     payload = {
         "action": "generate",
         "prompt": prompt,
@@ -413,24 +377,18 @@ def gen_image_v4(prompt, style, img=""):
     response = requests.post(url, json=payload, params=params)
     # print(response.json())
 
-    payload = {
-        "action": "upsample1",
-        "image_id": response.json()['image_id']
-    }
+    payload = {"action": "upsample1", "image_id": response.json()["image_id"]}
     response = requests.post(url, json=payload, params=params)
-    return response.json()['image_url']
-
+    return response.json()["image_url"]
 
 
 def moderate_input(user_input):
-    response = openai.Moderation.create(
-        input=user_input
-    )
+    response = openai.Moderation.create(input=user_input)
     cat = []
-    for k in response['results'][0]['categories'].keys():
-        if response['results'][0]['categories'][k]:
+    for k in response["results"][0]["categories"].keys():
+        if response["results"][0]["categories"][k]:
             cat.append(k)
-    return response['results'][0]['flagged'], cat
+    return response["results"][0]["flagged"], cat
 
 
 async def get_feedback_and_score(user_response, text):
@@ -447,9 +405,9 @@ STORY CONTEXT:
 USER RESPONSE:
 {user_response}
 """
-    score = ''
-    explanation = ''
-    while score == '' or explanation == '':
+    score = ""
+    explanation = ""
+    while score == "" or explanation == "":
         try:
             res = await a_ask_gpt(prompt, temp=0)
             reses = res.split("EXPLANATION: ")[-1].split("SCORE: ")
@@ -465,16 +423,16 @@ USER RESPONSE:
 
 
 async def get_opportunity_score(name, text):
-    prompt = f'''Rate the quality and quantity of opportunities given to demonstrate their ability to respect and appreciate other cultures to the user, {name}, during the following STORY CONTEXT on a scale of 1 to 100.
+    prompt = f"""Rate the quality and quantity of opportunities given to demonstrate their ability to respect and appreciate other cultures to the user, {name}, during the following STORY CONTEXT on a scale of 1 to 100.
 
 Example output:
 SCORE: [score]/100
 
 STORY CONTEXT:
 {text}
-'''
-    score = ''
-    while score == '':
+"""
+    score = ""
+    while score == "":
         try:
             res = await a_ask_gpt(prompt, temp=0, max_tokens=10)
             score = res.split("SCORE: ")[-1].split("/100")[0]
@@ -519,7 +477,7 @@ USER RESPONSE:
     while True:
         try:
             res = await a_ask_gpt(prompt, temp=0)
-            res = json.loads("[" + res.split("[")[-1].split(']')[0] + "]")
+            res = json.loads("[" + res.split("[")[-1].split("]")[0] + "]")
             print(res)
             ls = []
             for i, x in enumerate(res):
@@ -531,26 +489,26 @@ USER RESPONSE:
 
 
 def get_challenge_essay(event, length):
-    prompt = f'''Generate a {length} word, concise, and information dense passage about the 
-    history, culture and information of {event} in Singapore.'''
+    prompt = f"""Generate a {length} word, concise, and information dense passage about the 
+    history, culture and information of {event} in Singapore."""
 
     res = ask_gpt(prompt, temp=1)
     return res
 
 
 def get_challenge_mcq(essay, number, event):
-    prompt = f'''You are a quiz creator of highly diagnostic quizzes. You will make good low-stakes tests and diagnostics.
+    prompt = f"""You are a quiz creator of highly diagnostic quizzes. You will make good low-stakes tests and diagnostics.
 
 Generate {number} multiple choice questions to test the user about {event}. The multiple choice questions should only test information from the following passage.
 
 Passage: {essay}
 
-The questions should be at a very difficult level. Return your answer entirely in the form of a JSON object. The JSON object should have a key named "questions" which is an array of the questions. Each quiz question should include the choices, the answer, and a brief explanation of why the answer is correct. Don't include anything other than the JSON. The JSON properties of each question should be "query" (which is the question), "choices", "answer", and "explanation". The choices shouldn't have any ordinal value like A, B, C, D or a number like 1, 2, 3, 4. The answer should be the 0-indexed number of the correct choice. The choices should include plausible, competitive alternate choices and should not include an "all of the above" choice.'''
+The questions should be at a very difficult level. Return your answer entirely in the form of a JSON object. The JSON object should have a key named "questions" which is an array of the questions. Each quiz question should include the choices, the answer, and a brief explanation of why the answer is correct. Don't include anything other than the JSON. The JSON properties of each question should be "query" (which is the question), "choices", "answer", and "explanation". The choices shouldn't have any ordinal value like A, B, C, D or a number like 1, 2, 3, 4. The answer should be the 0-indexed number of the correct choice. The choices should include plausible, competitive alternate choices and should not include an "all of the above" choice."""
 
     res = ask_gpt(prompt, temp=1)
-    first = res.find('{')
-    last = len(res)-1-res[::-1].find('}')
-    cropped = res[first:last+1]
+    first = res.find("{")
+    last = len(res) - 1 - res[::-1].find("}")
+    cropped = res[first : last + 1]
     res = json.loads(cropped)
     return res
 
@@ -559,4 +517,4 @@ def get_search_img(prompt):
     with DDGS() as ddgs:
         ddgs_images_gen = ddgs.images(prompt)
         res = next(ddgs_images_gen)
-        return res['image']
+        return res["image"]

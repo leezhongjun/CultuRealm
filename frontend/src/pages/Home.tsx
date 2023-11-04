@@ -5,9 +5,7 @@ function App() {
   return (
     <>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Hero content */}
         <div className="pt-32 pb-12 md:pt-40 md:pb-20">
-          {/* Section header */}
           <div className="text-center pb-12 md:pb-16">
             <h1
               className="text-5xl md:text-6xl font-extrabold leading-tighter tracking-tighter mb-4"
@@ -46,14 +44,6 @@ function App() {
                     Play Challenges
                   </Link>
                 </div>
-                {/* <div>
-                  <button className=" invisible w-full px-2 py-2 tracking-wide text-white"></button>
-                </div>
-                <div>
-                  <button className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-600">
-                    Learn
-                  </button>
-                </div> */}
               </div>
             </div>
           </div>

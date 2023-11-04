@@ -112,29 +112,15 @@ export const races = [
   "Unspecified",
 ];
 
-// export const religions = [
-//   "Buddhism",
-//   "Christianity",
-//   "Islam",
-//   "Hinduism",
-//   "Other",
-//   "Unspecified",
-// ];
-
 function Settings() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
 
   const [race, setRace] = useState("");
-  // const [religion, setReligion] = useState("");
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
   const [style, setStyle] = useState("");
-
-  // const [profile_pic, setProfile_pic] = useState<File | null>(null);
-  // const [errorMessage, setErrorMessage] = useState("");
-  // const [isEditing, setIsEditing] = useState(false);
 
   const authHeader = useAuthHeader();
   const authUser = useAuthUser();
@@ -165,7 +151,6 @@ function Settings() {
         setAge(jsonifiedData["age"]);
         setGender(jsonifiedData["gender"]);
         setRace(jsonifiedData["race"]);
-        // setReligion(jsonifiedData["religion"]);
 
         setUsername(jsonifiedData["username"]);
         setEmail(jsonifiedData["email"]);
@@ -230,7 +215,6 @@ function Settings() {
     event.preventDefault();
     const json = {
       race: race,
-      // religion: religion,
       gender: gender,
       age: age,
       image_style: style,

@@ -13,32 +13,6 @@ import ProcessAchievements from "../components/Achievements";
 import HighlightedParagraph from "../components/HighlightedPara";
 import { countries } from "./Settings";
 
-// let config = {
-//   num: [1, 2],
-//   rps: 0.1,
-//   radius: [5, 40],
-//   life: [1.5, 3],
-//   v: [2, 3],
-//   tha: [-40, 40],
-//   // body: "./img/icon.png", // Whether to render pictures
-//   // rotate: [0, 20],
-//   alpha: [0.6, 0],
-//   scale: [1, 0.1],
-//   position: "center", // all or center or {x:1,y:1,width:100,height:100}
-//   color: ["random", "#ff0000"],
-//   cross: "dead", // cross or bround
-//   random: 15,  // or null,
-//   g: 5,    // gravity
-//   // f: [2, -1], // force
-//   onParticleUpdate: (ctx, particle) => {
-//       ctx.beginPath();
-//       ctx.rect(particle.p.x, particle.p.y, particle.radius * 2, particle.radius * 2);
-//       ctx.fillStyle = particle.color;
-//       ctx.fill();
-//       ctx.closePath();
-//   }
-// };
-
 function App() {
   const [currentPage, setCurrentPage] = useState(-1);
   const [needSuggestions, setNeedSuggestions] = useState(true);
@@ -135,7 +109,7 @@ function App() {
   };
 
   const startStoryForm = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); //Don't refresh page
+    event.preventDefault(); // don't refresh page
 
     setLoadingSubmit(true);
     setSuggestion1("Loading...");
@@ -204,7 +178,6 @@ function App() {
   };
 
   // call state api, set page to corect page
-
   const getStoryData = async (
     page: number,
     latestPage: number = latestIndex
@@ -306,7 +279,6 @@ function App() {
             },
           }
         );
-        // console.log(response);
         setCurrentPage(response.data.story_index);
         setLatestIndex(response.data.story_index);
         getStoryData(response.data.story_index, response.data.story_index);
@@ -554,9 +526,7 @@ function App() {
       {currentPage === -1 && (
         <>
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            {/* Hero content */}
             <div className="pt-32 pb-12 md:pt-40 md:pb-20">
-              {/* Section header */}
               <div className="text-center pb-12 md:pb-16">
                 <h1
                   className="text-5xl md:text-6xl font-extrabold leading-tighter tracking-tighter mb-4"
@@ -675,7 +645,7 @@ function App() {
                           </div>
                         )}
                         {showGlobal && (
-                          //show countries here as a dropdown
+                          // show countries here as a dropdown
                           <div className="mt-2 justify-center bg-white border border-gray-200 rounded-lg shadow-sm p-4">
                             <label className="block text-sm font-medium text-gray-700 ">
                               Country
@@ -832,7 +802,6 @@ function App() {
           </div>
           <div>
             <ParticlesBg num={100} type="square" bg={true} />
-            {/* <ParticlesBg type="custom" config={config} bg={true} /> */}
           </div>
         </>
       )}

@@ -7,7 +7,6 @@ axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 const indexes = {
   Race: [...races, "All"],
   Age: [...ages, "All"],
-  // Religion: [...religions, "All"],
 };
 
 function Leaderboard() {

@@ -13,4 +13,3 @@ gunicorn
 psycopg2==2.9.7
 smtp2go
 gevent
-

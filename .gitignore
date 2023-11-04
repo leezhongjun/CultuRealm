@@ -1,4 +1,16 @@
-### Frontend ###
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+frontend/fullchain.pem
+frontend/privkey.pem
+
+# Backend
+backend/database.db
+backend/.env
+backend/__pycache__/
+backend/env/
+backend/instance/
 
 # Logs
 frontend/logs
@@ -8,15 +20,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-frontend/node_modules
-frontend/dist
-frontend/dist-ssr
-frontend/fullchain.pem
-frontend/privkey.pem
-*.local
-
-frontend/.env
 
 # Editor directories and files
 .vscode/*
@@ -28,15 +31,4 @@ frontend/.env
 *.njsproj
 *.sln
 *.sw?
-
-### Backend ###
-
-# database
-backend/database.db
-backend/.env
-backend/__pycache__/
-backend/env/
-# backend/dist/
-backend/instance/
-
-temp.ipynb
+*.local

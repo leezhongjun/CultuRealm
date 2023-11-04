@@ -15,18 +15,14 @@ function Profile() {
   const [name, setName] = useState("");
 
   const [race, setRace] = useState("");
-  // const [religion, setReligion] = useState("");
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
+
   const [globalUnlocked, setGlobalUnlocked] = useState(false);
   const [challengesPlayed, setChallengesPlayed] = useState(0);
   const [easyHighScore, setEasyHighScore] = useState(0);
   const [mediumHighScore, setMediumHighScore] = useState(0);
   const [hardHighScore, setHardHighScore] = useState(0);
-
-  // const [profile_pic, setProfile_pic] = useState<File | null>(null);
-  // const [errorMessage, setErrorMessage] = useState("");
-  // const [isEditing, setIsEditing] = useState(false);
 
   const [imgSrc, setImgSrc] = useState(defaultProfilePic);
   let { id } = useParams();
@@ -45,7 +41,6 @@ function Profile() {
         setAge(jsonifiedData["age"]);
         setGender(jsonifiedData["gender"]);
         setRace(jsonifiedData["race"]);
-        // setReligion(jsonifiedData["religion"]);
 
         setUsername(jsonifiedData["username"]);
         setName(jsonifiedData["name"]);
@@ -165,17 +160,6 @@ function Profile() {
                     disabled
                   />
                 </div>
-                {/* <div className="col-span-6 sm:col-span-3 py-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 ">
-                    Religion
-                  </label>
-                  <input
-                    type="text"
-                    className="font-bold shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 "
-                    value={religion}
-                    disabled
-                  />
-                </div> */}
               </div>
             </div>
           </div>

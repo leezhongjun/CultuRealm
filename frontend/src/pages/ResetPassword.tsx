@@ -49,7 +49,6 @@ export default function ResetPassword() {
   const location = useLocation();
   let alertDiv;
   if (location.state) {
-    // console.log(className);
     alertDiv = (
       <>
         <div
